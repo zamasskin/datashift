@@ -1,5 +1,5 @@
 import User from '#models/user'
-import { Link, usePage } from '@inertiajs/react'
+import { Link, usePage, router } from '@inertiajs/react'
 import { IconDotsVertical, IconLogout, IconUserCircle } from '@tabler/icons-react'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
 import {
@@ -20,8 +20,8 @@ import {
 export function NavUser() {
   const avatar = 'https://github.com/shadcn.png'
   const { isMobile } = useSidebar()
-  const { props: pageProps } = usePage<{ user: User }>()
-  const { user } = pageProps
+  const { props: pageProps } = usePage<{ user: User; csrfToken: string }>()
+  const { user, csrfToken } = pageProps
 
   return (
     <SidebarMenu>
@@ -71,11 +71,13 @@ export function NavUser() {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href="/logout">
-                <IconLogout />
-                Выход
-              </Link>
+            <DropdownMenuItem
+              onSelect={() => {
+                router.post('/logout', {}, { headers: { 'X-CSRF-TOKEN': csrfToken } })
+              }}
+            >
+              <IconLogout />
+              Выход
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
