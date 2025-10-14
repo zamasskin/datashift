@@ -30,4 +30,4 @@ router.group(() => {
   router.on('/migrations').renderInertia('migrations/index')
   router.on('/tasks').renderInertia('tasks/index')
 })
-//.middleware(middleware.auth())
+// .middleware(middleware.auth())
