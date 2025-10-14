@@ -1,5 +1,5 @@
 import { Head } from '@inertiajs/react'
-import { RootLayout } from '~/components/layouts/root_layout'
+import { RootLayout } from '~/components/root-layout'
 
 const Home = () => {
   return (
@@ -11,7 +11,7 @@ const Home = () => {
 }
 
 Home.layout = (page: React.ReactNode) => {
-  return <RootLayout title="Главная страница">{page}</RootLayout>
+  return <RootLayout title="Dataship">{page}</RootLayout>
 }
 
 export default Home
