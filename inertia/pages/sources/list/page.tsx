@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react'
-import { RootLayout } from '~/components/layouts/root_layout'
+import { RootLayout } from '~/components/root-layout'
 import { columns, Sources } from './columns'
 import { DataTable } from './data-table'
 import { Button } from '~/components/ui/button'

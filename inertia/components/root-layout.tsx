@@ -2,7 +2,7 @@ import { AppSidebar } from '~/components/app-sidebar'
 import { SiteHeader } from '~/components/site-header'
 import { SidebarInset, SidebarProvider } from '~/components/ui/sidebar'
 
-const Example = () => {
+export const RootLayout = ({ children, title }: { children: React.ReactNode; title: string }) => {
   return (
     <SidebarProvider
       style={
@@ -14,10 +14,9 @@ const Example = () => {
     >
       <AppSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader />
+        <SiteHeader title={title} />
+        {children}
       </SidebarInset>
     </SidebarProvider>
   )
 }
-
-export default Example

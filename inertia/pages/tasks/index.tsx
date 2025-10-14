@@ -1,5 +1,5 @@
 import { Head } from '@inertiajs/react'
-import { RootLayout } from '~/components/layouts/root_layout'
+import { RootLayout } from '~/components/root-layout'
 
 const Tasks = () => {
   return (
