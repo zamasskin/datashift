@@ -1,12 +1,6 @@
 import User from '#models/user'
 import { Link, usePage } from '@inertiajs/react'
-import {
-  IconCreditCard,
-  IconDotsVertical,
-  IconLogout,
-  IconNotification,
-  IconUserCircle,
-} from '@tabler/icons-react'
+import { IconDotsVertical, IconLogout, IconUserCircle } from '@tabler/icons-react'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
 import {
   DropdownMenu,
