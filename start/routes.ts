@@ -30,6 +30,8 @@ router
     router.on('/datasets').renderInertia('datasets/index')
     router.on('/migrations').renderInertia('migrations/index')
     router.on('/tasks').renderInertia('tasks/index')
+    router.on('/settings').renderInertia('settings/index')
+    router.on('/help').renderInertia('help/index')
   })
   .middleware(middleware.auth())
 

@@ -60,7 +60,7 @@ const data = {
     },
     {
       title: 'Помощь',
-      url: '#',
+      url: '/help',
       icon: IconHelp,
     },
     {
