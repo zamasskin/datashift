@@ -23,13 +23,14 @@ router.post('/logout', async ({ auth, response }) => {
 
 // Home (protected)
 
-router.group(() => {
-  router.on('/').renderInertia('home')
-  router.on('/sources').renderInertia('sources/list/page')
-  router.on('/datasets').renderInertia('datasets/index')
-  router.on('/migrations').renderInertia('migrations/index')
-  router.on('/tasks').renderInertia('tasks/index')
-})
-// .middleware(middleware.auth())
+router
+  .group(() => {
+    router.on('/').renderInertia('home')
+    router.on('/sources').renderInertia('sources/list/page')
+    router.on('/datasets').renderInertia('datasets/index')
+    router.on('/migrations').renderInertia('migrations/index')
+    router.on('/tasks').renderInertia('tasks/index')
+  })
+  .middleware(middleware.auth())
 
 router.on('/example').renderInertia('example')
