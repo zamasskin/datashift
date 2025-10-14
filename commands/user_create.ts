@@ -16,7 +16,7 @@ export default class UserCreate extends BaseCommand {
 
   async run() {
     const { default: User } = await import('#models/user')
-    const { default: Hash } = await import('@adonisjs/core/services/hash')
+    // No manual hashing. The User model (withAuthFinder mixin) will hash the password
 
     const email = this.email ?? (await this.prompt.ask('Email'))
     const fullName =
@@ -42,9 +42,14 @@ export default class UserCreate extends BaseCommand {
       return
     }
 
-    const hashed = await Hash.use('scrypt').make(passwordInput)
+    // Pass plain password, model hook/mixin will hash it
 
-    const user = await User.create({ email, fullName: fullName || null, password: hashed })
+    const user = await User.create({ email, fullName: fullName || null, password: passwordInput })
+    const saved = await User.query().where('email', email).first()
     this.logger.success(`User created: id=${user.id}, email=${user.email}`)
+    if (saved) {
+      const savedHash = saved.password
+      this.logger.info(`post-save: hash_len=${savedHash.length}`)
+    }
   }
 }

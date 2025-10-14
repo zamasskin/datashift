@@ -31,3 +31,5 @@ router.group(() => {
   router.on('/tasks').renderInertia('tasks/index')
 })
 // .middleware(middleware.auth())
+
+router.on('/example').renderInertia('example')
