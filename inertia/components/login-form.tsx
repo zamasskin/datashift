@@ -47,7 +47,7 @@ export function LoginForm({
           </form>
           <div className="bg-muted relative hidden md:block">
             <img
-              src="https://i.pinimg.com/originals/ae/7d/9f/ae7d9ff577999f525e003322f3bed346.jpg"
+              src="/images/login_bg.jpg"
               alt="Image"
               className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
             />
