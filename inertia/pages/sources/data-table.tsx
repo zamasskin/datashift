@@ -30,6 +30,11 @@ export function DataTable() {
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [data, setData] = React.useState<DataSource[]>(pageProps.dataSources)
 
+  // Синхронизируем состояние таблицы при обновлении props
+  React.useEffect(() => {
+    setData(pageProps.dataSources)
+  }, [pageProps.dataSources])
+
   const table = useReactTable({
     data,
     columns,
@@ -48,7 +53,7 @@ export function DataTable() {
     }
 
     const selectedIds = selectedRows.map((row) => row.original.id)
-    SourcesDelete(selectedIds, pageProps.csrfToken)
+    SourcesDelete(selectedIds)
   }
 
   const onFindChange = (e: React.ChangeEvent<HTMLInputElement>) => {

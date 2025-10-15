@@ -1,7 +1,7 @@
 import { IconPlus } from '@tabler/icons-react'
 import { useState } from 'react'
 import { useForm, UseFormReturn } from 'react-hook-form'
-import { usePage } from '@inertiajs/react'
+import { router, usePage } from '@inertiajs/react'
 import { Button } from '~/components/ui/button'
 import {
   Form,
@@ -49,35 +49,19 @@ export function CreateSource() {
   })
 
   const onSubmit = async (values: z.infer<typeof schemaInsert>) => {
-    console.log('SUBMIT FORM', values)
-    try {
-      const res = await fetch('/sources', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': props.csrfToken,
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-        body: JSON.stringify(values),
-        redirect: 'follow',
-      })
-
-      if (res.status === 422) {
-        const json = await res.json()
-        const errors: Record<string, string | string[]> = json.errors || {}
-        Object.entries(errors).forEach(([field, message]) => {
-          const msg = Array.isArray(message) ? message[0] : message
+    router.post('/sources', values, {
+      preserveScroll: true,
+      onError: (errors) => {
+        Object.entries(errors || {}).forEach(([field, message]) => {
+          const msg = Array.isArray(message) ? message[0] : (message as string)
           form.setError(field as any, { type: 'server', message: msg })
         })
-        return
-      }
-
-      // Успех: закрываем форму и чистим поля
-      setOpen(false)
-      form.reset()
-    } catch (err) {
-      console.error(err)
-    }
+      },
+      onSuccess: () => {
+        setOpen(false)
+        form.reset()
+      },
+    })
   }
 
   return (

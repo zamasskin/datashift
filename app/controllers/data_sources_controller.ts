@@ -31,11 +31,10 @@ export default class DataSourcesController {
         .andWhere('user_id', auth.user!.id)
 
       const existingIds = existing.map((r) => r.id)
-      const notFoundIds = uniqueIds.filter((id) => !existingIds.includes(id))
 
-      const deletedCount = await DataSource.query().whereIn('id', existingIds).delete()
+      await DataSource.query().whereIn('id', existingIds).delete()
 
-      return response.send({ deletedCount, notFoundIds })
+      return response.redirect('/sources')
     } catch (error: any) {
       const fieldErrors = this.mapVineErrors(error)
       return response.status(422).send({ errors: fieldErrors })

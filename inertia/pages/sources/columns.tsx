@@ -13,7 +13,6 @@ import { Checkbox } from '~/components/ui/checkbox'
 import DataSource from '#models/data_source'
 import { typesIcon } from './config'
 import { Avatar, AvatarImage } from '~/components/ui/avatar'
-import { usePage } from '@inertiajs/react'
 import { SourcesDelete } from './functions'
 
 export type Sources = {
@@ -49,7 +48,6 @@ export const columns: ColumnDef<DataSource>[] = [
   {
     id: 'actions',
     cell: ({ row }) => {
-      const { props: pageProps } = usePage<{ csrfToken: string }>()
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -66,7 +64,7 @@ export const columns: ColumnDef<DataSource>[] = [
             <DropdownMenuSeparator />
             <DropdownMenuItem
               variant="destructive"
-              onClick={() => SourcesDelete([row.original.id], pageProps.csrfToken)}
+              onClick={() => SourcesDelete([row.original.id])}
             >
               <Trash /> Удалить
             </DropdownMenuItem>
