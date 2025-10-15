@@ -13,7 +13,31 @@ export default class DataSourcesController {
   }
 
   async store({ request, auth, response }: HttpContext) {
-    console.log(request.all())
+    try {
+      const { basePayload, configPayload } = await this.validateAndNormalize(request)
+
+      // TODO: перед записью проверить подключение с источником данных
+      // Если не получится подключиться выдать ошибку
+
+      await DataSource.create({
+        name: basePayload.name,
+        type: basePayload.type,
+        config: configPayload,
+        userId: auth.user?.id,
+      })
+
+      return response.redirect('/sources')
+    } catch (error: any) {
+      const fieldErrors = this.mapVineErrors(error)
+      return response.status(422).send({ errors: fieldErrors })
+    }
+  }
+
+  /**
+   * Валидирует базовые поля и конфиг по типу источника,
+   * а также нормализует значения конфига (host/port).
+   */
+  private async validateAndNormalize(request: HttpContext['request']) {
     // Валидация базовых полей (name, type)
     const baseSchema = vine.compile(
       vine.object({
@@ -34,63 +58,55 @@ export default class DataSourcesController {
       file: vine.string().trim().minLength(1),
     })
 
-    try {
-      // Валидируем базовые поля
-      const basePayload = await baseSchema.validate(request.all())
+    // Валидируем базовые поля
+    const basePayload = await baseSchema.validate(request.all())
 
-      // Подготавливаем и нормализуем конфиг из запроса
-      const rawConfig = (request.input('config') || {}) as Record<string, unknown>
-      if (basePayload.type !== 'sqlite' && rawConfig.port !== undefined) {
-        const num = Number(rawConfig.port)
-        rawConfig.port = Number.isFinite(num) ? num : rawConfig.port
-      }
-
-      if (rawConfig.host === undefined) {
-        rawConfig.host = 'localhost'
-      }
-
-      if (rawConfig.port === undefined) {
-        if (basePayload.type === 'mysql') {
-          rawConfig.port = 3306
-        } else if (basePayload.type === 'postgres') {
-          rawConfig.port = 5432
-        }
-      }
-
-      // Валидируем конфиг по типу источника
-      const compiledConfigSchema = vine.compile(
-        basePayload.type === 'sqlite' ? sqliteConfigSchema : sqlConfigSchema
-      )
-      const configPayload = await compiledConfigSchema.validate(rawConfig)
-
-      // TODO: перед записью проверить подключение с источником данных
-      // Если не получится подключиться выдать ошибку
-
-      // Создаём запись
-      await DataSource.create({
-        name: basePayload.name,
-        type: basePayload.type,
-        config: configPayload,
-        userId: auth.user?.id,
-      })
-
-      return response.redirect('/sources')
-    } catch (error: any) {
-      // Преобразуем ошибки Vine в { field: message }, добавляем префикс для вложенных полей конфига
-      const fieldErrors: Record<string, string> = {}
-      if (error?.messages && Array.isArray(error.messages)) {
-        for (const e of error.messages) {
-          if (!e.field || !e.message) continue
-          const fieldName = String(e.field)
-          const prefixed = ['host', 'port', 'database', 'username', 'password', 'file'].includes(
-            fieldName
-          )
-            ? `config.${fieldName}`
-            : fieldName
-          fieldErrors[prefixed] = String(e.message)
-        }
-      }
-      return response.status(422).send({ errors: fieldErrors })
+    // Подготавливаем и нормализуем конфиг из запроса
+    const rawConfig = (request.input('config') || {}) as Record<string, unknown>
+    if (basePayload.type !== 'sqlite' && rawConfig.port !== undefined) {
+      const num = Number(rawConfig.port)
+      rawConfig.port = Number.isFinite(num) ? num : rawConfig.port
     }
+
+    if (rawConfig.host === undefined) {
+      rawConfig.host = 'localhost'
+    }
+
+    if (rawConfig.port === undefined) {
+      if (basePayload.type === 'mysql') {
+        rawConfig.port = 3306
+      } else if (basePayload.type === 'postgres') {
+        rawConfig.port = 5432
+      }
+    }
+
+    // Валидируем конфиг по типу источника
+    const compiledConfigSchema = vine.compile(
+      basePayload.type === 'sqlite' ? sqliteConfigSchema : sqlConfigSchema
+    )
+    const configPayload = await compiledConfigSchema.validate(rawConfig)
+
+    return { basePayload, configPayload }
+  }
+
+  /**
+   * Преобразует ошибки Vine в { field: message }.
+   * Добавляет префикс "config." для вложенных полей конфигурации.
+   */
+  private mapVineErrors(error: any): Record<string, string> {
+    const fieldErrors: Record<string, string> = {}
+    if (error?.messages && Array.isArray(error.messages)) {
+      for (const e of error.messages) {
+        if (!e.field || !e.message) continue
+        const fieldName = String(e.field)
+        const prefixed = ['host', 'port', 'database', 'username', 'password', 'file'].includes(
+          fieldName
+        )
+          ? `config.${fieldName}`
+          : fieldName
+        fieldErrors[prefixed] = String(e.message)
+      }
+    }
+    return fieldErrors
   }
 }
