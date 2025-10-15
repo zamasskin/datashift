@@ -13,7 +13,29 @@ export default class DataSource extends BaseModel {
   @column()
   declare type: string
 
-  @column()
+  @column({
+    prepare: (value: any) => {
+      if (value === null || value === undefined) return null
+      // Для MySQL/SQLite храним JSON как строку
+      try {
+        return typeof value === 'string' ? value : JSON.stringify(value)
+      } catch {
+        return value
+      }
+    },
+    consume: (value: any) => {
+      if (value === null || value === undefined) return null
+      // Преобразуем строку JSON обратно в объект
+      if (typeof value === 'string') {
+        try {
+          return JSON.parse(value)
+        } catch {
+          return value
+        }
+      }
+      return value
+    },
+  })
   declare config: Record<string, any>
 
   @column()
