@@ -16,8 +16,13 @@ export default class DataSourcesController {
     try {
       const { basePayload, configPayload } = await this.validateAndNormalize(request)
 
-      // TODO: перед записью проверить подключение с источником данных
-      // Если не получится подключиться выдать ошибку
+      // Проверяем подключение к источнику данных до сохранения
+      try {
+        await this.checkConnection(basePayload.type, configPayload)
+      } catch (connError) {
+        const connErrors = this.mapConnectionErrors(connError, basePayload.type)
+        return response.status(422).send({ errors: connErrors })
+      }
 
       await DataSource.create({
         name: basePayload.name,
@@ -108,5 +113,111 @@ export default class DataSourcesController {
       }
     }
     return fieldErrors
+  }
+
+  /**
+   * Проверяет подключение к источнику данных по типу и конфигу.
+   * Бросает исключение при ошибке подключения.
+   */
+  private async checkConnection(type: string, config: any): Promise<void> {
+    if (type === 'sqlite') {
+      const sqlite3Module = await import('sqlite3')
+      const sqlite3 = sqlite3Module.default
+      await new Promise<void>((resolve, reject) => {
+        const db = new sqlite3.Database(
+          String(config.file),
+          sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,
+          (err: Error | null) => {
+            if (err) return reject(err)
+            db.close((closeErr: Error | null) => {
+              if (closeErr) return reject(closeErr)
+              resolve()
+            })
+          }
+        )
+      })
+      return
+    }
+
+    if (type === 'mysql') {
+      const mysql = await import('mysql2/promise')
+      const connection = await mysql.createConnection({
+        host: String(config.host),
+        port: Number(config.port),
+        user: String(config.username),
+        password: String(config.password),
+        database: String(config.database),
+        connectTimeout: 3000,
+      })
+      try {
+        await connection.query('SELECT 1')
+      } finally {
+        await connection.end()
+      }
+      return
+    }
+
+    if (type === 'postgres') {
+      const pgModule = await import('pg')
+      const { Client } = pgModule as any
+      const client = new Client({
+        host: String(config.host),
+        port: Number(config.port),
+        user: String(config.username),
+        password: String(config.password),
+        database: String(config.database),
+        connectionTimeoutMillis: 3000,
+      })
+      await client.connect()
+      try {
+        await client.query('SELECT 1')
+      } finally {
+        await client.end()
+      }
+      return
+    }
+
+    throw new Error('Unsupported data source type')
+  }
+
+  /**
+   * Возвращает дружественные сообщения ошибок для проблем подключения.
+   */
+  private mapConnectionErrors(error: any, type: string): Record<string, string> {
+    const msg = (error?.message && String(error.message)) || 'Не удалось подключиться'
+    const code = String(error?.code || error?.errno || '')
+
+    // Базовые сообщения по типам
+    if (type === 'sqlite') {
+      return {
+        'config.file': 'Не удалось открыть файл SQLite. Проверьте путь и права доступа.',
+      }
+    }
+
+    // Для SQL баз пытаемся дать подсказку
+    if (code === 'ECONNREFUSED') {
+      return { 'config.host': 'Подключение отклонено. Проверьте host/port и доступность сервера.' }
+    }
+    if (code === 'ENOTFOUND') {
+      return { 'config.host': 'Хост не найден. Проверьте имя хоста.' }
+    }
+    if (code === 'ETIMEDOUT') {
+      return { 'config.host': 'Таймаут подключения. Проверьте сеть и порт.' }
+    }
+    // MySQL: неверные учётные данные
+    if (code === 'ER_ACCESS_DENIED_ERROR') {
+      return { 'config.username': 'Неверные имя пользователя или пароль.' }
+    }
+    // Postgres: неверный пароль
+    if (code === '28P01') {
+      return { 'config.username': 'Неверные имя пользователя или пароль.' }
+    }
+    // Postgres: база не существует
+    if (code === '3D000') {
+      return { 'config.database': 'База данных не существует.' }
+    }
+
+    // По умолчанию — показать общий текст у поля host
+    return { 'config.host': `Ошибка подключения: ${msg}` }
   }
 }
