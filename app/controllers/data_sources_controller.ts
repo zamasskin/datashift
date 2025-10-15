@@ -1,6 +1,8 @@
 import DataSource from '#models/data_source'
 import type { HttpContext } from '@adonisjs/core/http'
 import vine from '@vinejs/vine'
+import path from 'node:path'
+import { mkdir } from 'node:fs/promises'
 
 export default class DataSourcesController {
   /**
@@ -127,6 +129,18 @@ export default class DataSourcesController {
     }
 
     // Валидируем конфиг по типу источника
+    // Специальная нормализация пути для SQLite: сохраняем в папке "data/"
+    if (basePayload.type === 'sqlite') {
+      const fileStr = String(rawConfig.file || '').trim()
+      if (fileStr) {
+        if (fileStr.startsWith('./data/')) {
+          rawConfig.file = fileStr.replace('./', '')
+        } else if (!fileStr.startsWith('data/') && !fileStr.startsWith('/')) {
+          rawConfig.file = `data/${fileStr}`
+        }
+      }
+    }
+
     const compiledConfigSchema = vine.compile(
       basePayload.type === 'sqlite' ? sqliteConfigSchema : sqlConfigSchema
     )
@@ -164,9 +178,14 @@ export default class DataSourcesController {
     if (type === 'sqlite') {
       const sqlite3Module = await import('sqlite3')
       const sqlite3 = sqlite3Module.default
+
+      // Гарантируем наличие директории, где будет лежать файл БД
+      const filePath = String(config.file)
+      await mkdir(path.dirname(filePath), { recursive: true })
+
       await new Promise<void>((resolve, reject) => {
         const db = new sqlite3.Database(
-          String(config.file),
+          filePath,
           sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,
           (err: Error | null) => {
             if (err) return reject(err)
