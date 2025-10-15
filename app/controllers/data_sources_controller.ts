@@ -2,7 +2,8 @@ import DataSource from '#models/data_source'
 import type { HttpContext } from '@adonisjs/core/http'
 import vine from '@vinejs/vine'
 import path from 'node:path'
-import { mkdir } from 'node:fs/promises'
+import { mkdir, unlink } from 'node:fs/promises'
+import app from '@adonisjs/core/services/app'
 
 export default class DataSourcesController {
   /**
@@ -26,11 +27,37 @@ export default class DataSourcesController {
 
       // Проверяем, какие записи существуют и принадлежат текущему пользователю
       const existing = await DataSource.query()
-        .select('id')
         .whereIn('id', uniqueIds)
         .andWhere('user_id', auth.user!.id)
 
       const existingIds = existing.map((r) => r.id)
+
+      // Безопасно удаляем файлы SQLite, относящиеся к источникам
+      const dataRoot = app.makePath('data')
+      for (const ds of existing) {
+        if (ds.type === 'sqlite') {
+          const fileVal = ds.config?.file
+          if (!fileVal || typeof fileVal !== 'string') continue
+
+          const absFile = path.isAbsolute(fileVal) ? fileVal : app.makePath(fileVal)
+          const rel = path.relative(dataRoot, absFile)
+          const insideDataDir = rel && !rel.startsWith('..') && !path.isAbsolute(rel)
+
+          if (insideDataDir) {
+            const candidates = [absFile, `${absFile}-wal`, `${absFile}-shm`, `${absFile}-journal`]
+            for (const p of candidates) {
+              try {
+                await unlink(p)
+              } catch (err: any) {
+                // Игнорируем отсутствие файла/директорий, остальные ошибки не блокируют процесс
+                if (!err || (err.code !== 'ENOENT' && err.code !== 'EISDIR')) {
+                  // Можно залогировать при необходимости
+                }
+              }
+            }
+          }
+        }
+      }
 
       await DataSource.query().whereIn('id', existingIds).delete()
 
