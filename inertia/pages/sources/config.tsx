@@ -34,4 +34,5 @@ const rootSchema = z.object({
   name: z.string().min(3).max(64),
 })
 
-export const schema = rootSchema.and(typeUnion)
+export const schemaInsert = rootSchema.and(typeUnion)
+export const schemaUpdate = rootSchema.and(typeUnion).and(z.object({ id: z.number().int().min(1) }))

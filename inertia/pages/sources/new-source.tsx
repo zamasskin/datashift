@@ -34,21 +34,21 @@ import { AvatarImage, Avatar } from '~/components/ui/avatar'
 import * as z from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { SqlDataSourceFormConfig, SqliteDataSourceFormConfig } from './inputs-form-config'
-import { schema, types, typesIcon } from './config'
+import { schemaInsert, types, typesIcon } from './config'
 
 export function CreateSource() {
   const [open, setOpen] = useState(false)
   const { props } = usePage<{ csrfToken: string }>()
 
-  const form = useForm<z.infer<typeof schema>>({
-    resolver: zodResolver(schema),
+  const form = useForm<z.infer<typeof schemaInsert>>({
+    resolver: zodResolver(schemaInsert),
     defaultValues: {
       name: '',
       type: 'mysql',
     },
   })
 
-  const onSubmit = async (values: z.infer<typeof schema>) => {
+  const onSubmit = async (values: z.infer<typeof schemaInsert>) => {
     console.log('SUBMIT FORM', values)
     try {
       const res = await fetch('/sources', {
@@ -157,7 +157,7 @@ export function CreateSource() {
   )
 }
 
-function RenderConfig({ form }: { form: UseFormReturn<z.infer<typeof schema>> }) {
+function RenderConfig({ form }: { form: UseFormReturn<z.infer<typeof schemaInsert>> }) {
   const selectedType = form.watch('type')
   switch (selectedType) {
     case 'mysql':

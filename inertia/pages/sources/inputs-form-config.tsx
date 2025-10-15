@@ -1,10 +1,14 @@
 import { UseFormReturn } from 'react-hook-form'
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '~/components/ui/form'
 import { Input } from '~/components/ui/input'
-import { schema } from './config'
+import { schemaInsert } from './config'
 import * as z from 'zod'
 
-export function SqlDataSourceFormConfig({ form }: { form: UseFormReturn<z.infer<typeof schema>> }) {
+export function SqlDataSourceFormConfig({
+  form,
+}: {
+  form: UseFormReturn<z.infer<typeof schemaInsert>>
+}) {
   const selectedType = form.watch('type')
   const port = selectedType == 'mysql' ? 3306 : 5432
   return (
@@ -95,7 +99,7 @@ export function SqlDataSourceFormConfig({ form }: { form: UseFormReturn<z.infer<
 export function SqliteDataSourceFormConfig({
   form,
 }: {
-  form: UseFormReturn<z.infer<typeof schema>>
+  form: UseFormReturn<z.infer<typeof schemaInsert>>
 }) {
   return (
     <>
