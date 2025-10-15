@@ -23,7 +23,11 @@ export type Sources = {
   createdBy: string
 }
 
-export const columns: ColumnDef<DataSource>[] = [
+export const makeColumns = ({
+  onEdit,
+}: {
+  onEdit: (source: DataSource) => void
+}): ColumnDef<DataSource>[] => [
   {
     id: 'select',
     header: ({ table }) => (
@@ -58,7 +62,7 @@ export const columns: ColumnDef<DataSource>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onEdit(row.original)}>
               <Pencil /> Изменить
             </DropdownMenuItem>
             <DropdownMenuSeparator />

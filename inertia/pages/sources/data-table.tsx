@@ -19,8 +19,9 @@ import { Button } from '../../components/ui/button'
 import { IconChevronDown, IconLayoutColumns } from '@tabler/icons-react'
 import { usePage } from '@inertiajs/react'
 import DataSource from '#models/data_source'
-import { columns } from './columns'
+import { makeColumns } from './columns'
 import { CreateSource } from './new-source'
+import { EditSource } from './edit-source'
 import { SourcesDelete } from './functions'
 
 export function DataTable() {
@@ -29,11 +30,24 @@ export function DataTable() {
   const [findTimeout, setFindTimeout] = React.useState<NodeJS.Timeout | null>(null)
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [data, setData] = React.useState<DataSource[]>(pageProps.dataSources)
+  const [editOpen, setEditOpen] = React.useState(false)
+  const [editing, setEditing] = React.useState<Pick<DataSource, 'id' | 'name' | 'type' | 'config'> | null>(null)
 
   // Синхронизируем состояние таблицы при обновлении props
   React.useEffect(() => {
     setData(pageProps.dataSources)
   }, [pageProps.dataSources])
+
+  const columns = React.useMemo(
+    () =>
+      makeColumns({
+        onEdit: (src) => {
+          setEditing(src)
+          setEditOpen(true)
+        },
+      }),
+    []
+  )
 
   const table = useReactTable({
     data,
@@ -151,6 +165,7 @@ export function DataTable() {
             </TableBody>
           </Table>
         </div>
+        <EditSource open={editOpen} onOpenChange={setEditOpen} source={editing} />
         <div className="flex items-center justify-end space-x-2 py-4">
           <div className="text-muted-foreground flex-1 text-sm">
             {table.getFilteredSelectedRowModel().rows.length} из{' '}

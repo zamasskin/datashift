@@ -2,7 +2,7 @@ import DataSource from '#models/data_source'
 import type { HttpContext } from '@adonisjs/core/http'
 import vine from '@vinejs/vine'
 import path from 'node:path'
-import { mkdir, unlink } from 'node:fs/promises'
+import { mkdir, unlink, rename as fsRename } from 'node:fs/promises'
 import app from '@adonisjs/core/services/app'
 
 export default class DataSourcesController {
@@ -20,15 +20,13 @@ export default class DataSourcesController {
   /**
    * Массовое удаление источников данных по массиву ID
    */
-  async destroy({ request, auth, response }: HttpContext) {
+  async destroy({ request, response }: HttpContext) {
     try {
       const { ids } = await this.validateDeleteIds(request)
       const uniqueIds = Array.from(new Set(ids))
 
       // Проверяем, какие записи существуют и принадлежат текущему пользователю
-      const existing = await DataSource.query()
-        .whereIn('id', uniqueIds)
-        .andWhere('user_id', auth.user!.id)
+      const existing = await DataSource.query().whereIn('id', uniqueIds)
 
       const existingIds = existing.map((r) => r.id)
 
@@ -60,6 +58,95 @@ export default class DataSourcesController {
       }
 
       await DataSource.query().whereIn('id', existingIds).delete()
+
+      return response.redirect('/sources')
+    } catch (error: any) {
+      const fieldErrors = this.mapVineErrors(error)
+      return response.status(422).send({ errors: fieldErrors })
+    }
+  }
+
+  /**
+   * Обновление источника данных
+   */
+  async update({ params, request, response }: HttpContext) {
+    try {
+      const id = Number(params.id)
+      if (!Number.isFinite(id)) {
+        return response.redirect('/sources')
+      }
+
+      const { basePayload, configPayload } = await this.validateAndNormalize(request)
+
+      // Ищем запись ДО проверки подключения, чтобы при необходимости выполнить перенос файла
+      const ds = await DataSource.query().where('id', id).first()
+
+      if (!ds) {
+        return response.redirect('/sources')
+      }
+
+      // Если это sqlite → sqlite и путь к файлу изменился, переносим файл и сайдкары
+      if (ds.type === 'sqlite' && basePayload.type === 'sqlite') {
+        const oldFileVal = ds.config?.file
+        const newFileVal = (configPayload as any)?.file
+        if (
+          typeof oldFileVal === 'string' &&
+          typeof newFileVal === 'string' &&
+          oldFileVal !== newFileVal
+        ) {
+          const dataRoot = app.makePath('data')
+          const absOld = path.isAbsolute(oldFileVal) ? oldFileVal : app.makePath(oldFileVal)
+          const absNew = path.isAbsolute(newFileVal) ? newFileVal : app.makePath(newFileVal)
+
+          const relOld = path.relative(dataRoot, absOld)
+          const relNew = path.relative(dataRoot, absNew)
+          const oldInside = relOld && !relOld.startsWith('..') && !path.isAbsolute(relOld)
+          const newInside = relNew && !relNew.startsWith('..') && !path.isAbsolute(relNew)
+
+          if (oldInside && newInside) {
+            await mkdir(path.dirname(absNew), { recursive: true })
+
+            // Подготовим список файлов к переносу: основной и возможные sidecar
+            const fromFiles = [absOld, `${absOld}-wal`, `${absOld}-shm`, `${absOld}-journal`]
+            const toFiles = [absNew, `${absNew}-wal`, `${absNew}-shm`, `${absNew}-journal`]
+
+            for (const [i, src] of fromFiles.entries()) {
+              const dst = toFiles[i]
+              try {
+                // Если целевой уже существует (напр., был создан при проверке), удалим его
+                try {
+                  await unlink(dst)
+                } catch (e: any) {
+                  // игнорируем ENOENT
+                }
+                await fsRename(src, dst)
+              } catch (err: any) {
+                // Если исходник отсутствует — это нормально для sidecar-файлов
+                if (!err || err.code !== 'ENOENT') {
+                  // Любые другие ошибки переноса считаем критичными и прерываем
+                  return response.status(422).send({
+                    errors: {
+                      'config.file':
+                        'Не удалось переименовать файл SQLite. Проверьте права доступа.',
+                    },
+                  })
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // Проверяем подключение к источнику данных после возможного переноса
+      try {
+        await this.checkConnection(basePayload.type, configPayload)
+      } catch (connError) {
+        const connErrors = this.mapConnectionErrors(connError, basePayload.type)
+        return response.status(422).send({ errors: connErrors })
+      }
+
+      ds.merge({ name: basePayload.name, type: basePayload.type, config: configPayload })
+      await ds.save()
 
       return response.redirect('/sources')
     } catch (error: any) {
