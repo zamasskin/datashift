@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon'
-import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
+import { BaseModel, belongsTo, column, computed } from '@adonisjs/lucid/orm'
 import User from './user.js'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 
@@ -29,4 +29,16 @@ export default class DataSource extends BaseModel {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
+
+  @computed()
+  public get createdAtFormatted() {
+    const dt = this.createdAt
+    return dt ? dt.toUTC().toFormat('dd.MM.yyyy HH:mm:ss') : null
+  }
+
+  @computed()
+  public get updatedAtFormatted() {
+    const dt = this.updatedAt
+    return dt ? dt.toUTC().toFormat('dd.MM.yyyy HH:mm:ss') : null
+  }
 }

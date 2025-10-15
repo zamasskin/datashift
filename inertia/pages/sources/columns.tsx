@@ -11,6 +11,8 @@ import {
 import { MoreHorizontal, Pencil, Trash } from 'lucide-react'
 import { Checkbox } from '~/components/ui/checkbox'
 import DataSource from '#models/data_source'
+import { typesIcon } from './config'
+import { Avatar, AvatarImage } from '~/components/ui/avatar'
 
 export type Sources = {
   id: number
@@ -74,9 +76,34 @@ export const columns: ColumnDef<DataSource>[] = [
   {
     accessorKey: 'type',
     header: 'Тип',
+    cell: ({ row }) => {
+      const type = row.original.type
+      const icon = typesIcon[type] || ''
+      return (
+        <div className="flex items-center gap-2">
+          {icon && (
+            <Avatar className="h-4 w-4 rounded-lg grayscale">
+              <AvatarImage src={icon} />
+            </Avatar>
+          )}
+          <span>{type}</span>
+        </div>
+      )
+    },
   },
   {
     accessorKey: 'createdBy',
     header: 'Создано пользователем',
+    cell: ({ row }) => {
+      return row.original.user.fullName
+    },
+  },
+  {
+    accessorKey: 'createdAtFormatted',
+    header: 'Дата создания',
+  },
+  {
+    accessorKey: 'updatedAtFormatted',
+    header: 'Дата обновления',
   },
 ]

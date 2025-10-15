@@ -7,8 +7,10 @@ export default class DataSourcesController {
    * Display a list of resource
    */
   async index({ inertia }: HttpContext) {
+    const dataSources = await DataSource.query().preload('user')
+
     return inertia.render('sources/index', {
-      dataSources: await DataSource.all(),
+      dataSources,
     })
   }
 
