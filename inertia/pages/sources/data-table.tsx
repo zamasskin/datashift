@@ -78,8 +78,8 @@ export function DataTable() {
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm">
                   <IconLayoutColumns />
-                  <span className="hidden lg:inline">Customize Columns</span>
-                  <span className="lg:hidden">Columns</span>
+                  <span className="hidden lg:inline">Настроить столбцы</span>
+                  <span className="lg:hidden">Столбцы</span>
                   <IconChevronDown />
                 </Button>
               </DropdownMenuTrigger>
