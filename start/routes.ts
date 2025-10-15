@@ -10,6 +10,7 @@
 import router from '@adonisjs/core/services/router'
 import { middleware } from '#start/kernel'
 const LoginController = () => import('#controllers/login_controller')
+const DataSourcesController = () => import('#controllers/data_sources_controller')
 
 // Login routes
 router.get('/login', [LoginController, 'create']).middleware(middleware.guest())
@@ -26,7 +27,11 @@ router.post('/logout', async ({ auth, response }) => {
 router
   .group(() => {
     router.on('/').renderInertia('home')
-    router.on('/sources').renderInertia('sources/list/page')
+
+    // Data sources
+    router.get('/sources', [DataSourcesController, 'index'])
+    router.post('/sources', [DataSourcesController, 'store'])
+
     router.on('/datasets').renderInertia('datasets/index')
     router.on('/migrations').renderInertia('migrations/index')
     router.on('/tasks').renderInertia('tasks/index')

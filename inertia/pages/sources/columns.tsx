@@ -10,6 +10,7 @@ import {
 } from '~/components/ui/dropdown-menu'
 import { MoreHorizontal, Pencil, Trash } from 'lucide-react'
 import { Checkbox } from '~/components/ui/checkbox'
+import DataSource from '#models/data_source'
 
 export type Sources = {
   id: number
@@ -19,7 +20,7 @@ export type Sources = {
   createdBy: string
 }
 
-export const columns: ColumnDef<Sources>[] = [
+export const columns: ColumnDef<DataSource>[] = [
   {
     id: 'select',
     header: ({ table }) => (
@@ -43,7 +44,7 @@ export const columns: ColumnDef<Sources>[] = [
   },
   {
     id: 'actions',
-    cell: ({ row }) => {
+    cell: ({}) => {
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
