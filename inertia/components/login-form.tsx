@@ -3,7 +3,7 @@ import { Card, CardContent } from './ui/card'
 import { Field, FieldDescription, FieldGroup, FieldLabel } from './ui/field'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
-import { usePage } from '@inertiajs/react'
+import { useForm, usePage } from '@inertiajs/react'
 
 interface LoginFormProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string
@@ -17,22 +17,46 @@ export function LoginForm({
   action = '/login',
   ...props
 }: LoginFormProps) {
-  const { props: pageProps } = usePage<{ csrfToken?: string }>()
+  const { props: pageProps } = usePage<{ csrfToken?: string; errors?: Record<string, string> }>()
   const csrfToken = pageProps?.csrfToken
+  const errors = pageProps?.errors
+  const form = useForm({ email: '', password: '', _csrf: csrfToken || '' })
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card className="overflow-hidden p-0">
         <CardContent className="grid p-0 md:grid-cols-2">
-          <form className="p-6 md:p-8" method={method} action={action}>
+          <form
+            className="p-6 md:p-8"
+            method={method}
+            action={action}
+            onSubmit={(e) => {
+              e.preventDefault()
+              form.post(action)
+            }}
+          >
             <FieldGroup>
               {csrfToken && <input type="hidden" name="_csrf" value={csrfToken} />}
+
               <div className="flex flex-col items-center gap-2 text-center">
                 <h1 className="text-2xl font-bold">Добро пожаловать</h1>
                 <p className="text-muted-foreground text-balance">Войдите в свою учетную запись</p>
               </div>
+              {errors?.login && (
+                <div className="rounded-md border border-destructive bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                  {errors.login}
+                </div>
+              )}
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
-                <Input id="email" name="email" type="email" placeholder="m@example.com" required />
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="m@example.com"
+                  required
+                  value={form.data.email}
+                  onChange={(e) => form.setData('email', e.target.value)}
+                />
               </Field>
 
               <Field>
@@ -42,10 +66,19 @@ export function LoginForm({
                     Забыли пароль?
                   </a>
                 </div>
-                <Input id="password" name="password" type="password" required />
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  value={form.data.password}
+                  onChange={(e) => form.setData('password', e.target.value)}
+                />
               </Field>
               <Field>
-                <Button type="submit">Авторизоваться</Button>
+                <Button type="submit" disabled={form.processing}>
+                  {form.processing ? 'Входим...' : 'Авторизоваться'}
+                </Button>
               </Field>
             </FieldGroup>
           </form>

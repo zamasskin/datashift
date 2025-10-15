@@ -8,12 +8,19 @@ export default class LoginController {
     })
   }
 
-  async store({ request, auth, response }: HttpContext) {
+  async store({ request, auth, response, inertia }: HttpContext) {
     const email = request.input('email')
     const password = request.input('password')
 
     if (!email || !password) {
-      return response.redirect('/login')
+      return inertia.render(
+        'login',
+        {
+          csrfToken: request.csrfToken,
+          errors: { login: 'Укажите e‑mail и пароль.' },
+        },
+        { status: 422 }
+      )
     }
 
     try {
@@ -21,8 +28,14 @@ export default class LoginController {
       await auth.use('web').login(user)
       return response.redirect('/')
     } catch (err) {
-      console.log(err)
-      return response.redirect('/login')
+      return inertia.render(
+        'login',
+        {
+          csrfToken: request.csrfToken,
+          errors: { login: 'Неверный e‑mail или пароль. Попробуйте снова.' },
+        },
+        { status: 422 }
+      )
     }
   }
 }
