@@ -41,6 +41,7 @@ router.use([
   () => import('@adonisjs/auth/initialize_auth_middleware'),
   // Perform a silent auth check on every routed request, so ctx.auth.user is populated
   () => import('#middleware/silent_auth_middleware'),
+  () => import('#middleware/detect_user_locale_middleware'),
 ])
 
 /**

@@ -1,0 +1,10 @@
+{
+  "columns": {
+    "id": "ID",
+    "name": "Имя",
+    "type": "Тип",
+    "createdBy": "Создано",
+    "createdAtFormatted": "Создано",
+    "updatedAtFormatted": "Обновлено"
+  }
+}
