@@ -31,6 +31,7 @@ router
     // Data sources
     router.get('/sources', [DataSourcesController, 'index'])
     router.post('/sources', [DataSourcesController, 'store'])
+    router.delete('/sources', [DataSourcesController, 'destroy'])
 
     router.on('/datasets').renderInertia('datasets/index')
     router.on('/migrations').renderInertia('migrations/index')

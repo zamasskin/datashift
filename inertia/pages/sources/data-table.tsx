@@ -21,6 +21,7 @@ import { usePage } from '@inertiajs/react'
 import DataSource from '#models/data_source'
 import { columns } from './columns'
 import { CreateSource } from './new-source'
+import { SourcesDelete } from './functions'
 
 export function DataTable() {
   const { props: pageProps } = usePage<{ dataSources: DataSource[]; csrfToken: string }>()
@@ -46,9 +47,8 @@ export function DataTable() {
       return
     }
 
-    if (confirm('Удалить выбранные записи?')) {
-      alert('Удаленно')
-    }
+    const selectedIds = selectedRows.map((row) => row.original.id)
+    SourcesDelete(selectedIds, pageProps.csrfToken)
   }
 
   const onFindChange = (e: React.ChangeEvent<HTMLInputElement>) => {

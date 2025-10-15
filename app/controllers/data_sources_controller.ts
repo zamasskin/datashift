@@ -14,6 +14,45 @@ export default class DataSourcesController {
     })
   }
 
+  /**
+   * Массовое удаление источников данных по массиву ID
+   */
+  async destroy({ request, auth, response }: HttpContext) {
+    try {
+      const { ids } = await this.validateDeleteIds(request)
+      const uniqueIds = Array.from(new Set(ids))
+
+      // Проверяем, какие записи существуют и принадлежат текущему пользователю
+      const existing = await DataSource.query()
+        .select('id')
+        .whereIn('id', uniqueIds)
+        .andWhere('user_id', auth.user!.id)
+
+      const existingIds = existing.map((r) => r.id)
+      const notFoundIds = uniqueIds.filter((id) => !existingIds.includes(id))
+
+      const deletedCount = await DataSource.query().whereIn('id', existingIds).delete()
+
+      return response.send({ deletedCount, notFoundIds })
+    } catch (error: any) {
+      const fieldErrors = this.mapVineErrors(error)
+      return response.status(422).send({ errors: fieldErrors })
+    }
+  }
+
+  /**
+   * Валидация массива идентификаторов для удаления
+   */
+  private async validateDeleteIds(request: HttpContext['request']): Promise<{ ids: number[] }> {
+    const schema = vine.compile(
+      vine.object({
+        ids: vine.array(vine.number().withoutDecimals().positive()).minLength(1),
+      })
+    )
+
+    return schema.validate(request.only(['ids']))
+  }
+
   async store({ request, auth, response }: HttpContext) {
     try {
       const { basePayload, configPayload } = await this.validateAndNormalize(request)
