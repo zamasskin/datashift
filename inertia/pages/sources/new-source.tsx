@@ -111,7 +111,7 @@ export function CreateSource() {
                             <SelectContent>
                               {types.map((type) => (
                                 <SelectItem key={type.value} value={type.value}>
-                                  <Avatar className="h-4 w-4 rounded-lg grayscale">
+                                  <Avatar className="h-6 w-6 rounded-lg grayscale">
                                     <AvatarImage src={typesIcon[type.value]} />
                                   </Avatar>
                                   {type.title}

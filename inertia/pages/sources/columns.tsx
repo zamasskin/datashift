@@ -90,7 +90,7 @@ export const makeColumns = ({
       return (
         <div className="flex items-center gap-2">
           {icon && (
-            <Avatar className="h-4 w-4 rounded-lg grayscale">
+            <Avatar className="h-6 w-6 rounded-lg grayscale">
               <AvatarImage src={icon} />
             </Avatar>
           )}
