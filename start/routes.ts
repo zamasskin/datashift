@@ -11,6 +11,7 @@ import router from '@adonisjs/core/services/router'
 import { middleware } from '#start/kernel'
 const LoginController = () => import('#controllers/login_controller')
 const DataSourcesController = () => import('#controllers/data_sources_controller')
+const DatasetsController = () => import('#controllers/datasets_controller')
 
 // Login routes
 router.get('/login', [LoginController, 'create']).middleware(middleware.guest())
@@ -22,8 +23,6 @@ router.post('/logout', async ({ auth, response }) => {
   return response.redirect('/login')
 })
 
-// Home (protected)
-
 router
   .group(() => {
     router.on('/').renderInertia('home')
@@ -34,7 +33,10 @@ router
     router.put('/sources/:id', [DataSourcesController, 'update'])
     router.delete('/sources', [DataSourcesController, 'destroy'])
 
-    router.on('/datasets').renderInertia('datasets/index')
+    // Datasets
+    router.get('/datasets', [DatasetsController, 'index'])
+    router.post('/datasets/test-sql', [DatasetsController, 'testSql'])
+
     router.on('/migrations').renderInertia('migrations/index')
     router.on('/tasks').renderInertia('tasks/index')
     router.on('/settings').renderInertia('settings/index')

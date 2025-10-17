@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import { Button } from '~/components/ui/button'
 import { Field, FieldLabel, FieldError } from '~/components/ui/field'
@@ -18,7 +18,12 @@ export function SqlQuery({
   dataSources: DataSourceOption[]
   initialSql?: string
   initialParams?: ParamItem[]
-  result?: { rows: Array<Record<string, any>>; columns?: string[]; loading?: boolean }
+  result?: {
+    rows: Array<Record<string, any>>
+    columns?: string[]
+    loading?: boolean
+    error?: string
+  }
   onApply?: (payload: { dataSourceId: number | null; sql: string; params: ParamItem[] }) => void
   onRemove?: () => void
 }) {
@@ -26,6 +31,17 @@ export function SqlQuery({
   const [sql, setSql] = useState<string>(initialSql)
   const [params, setParams] = useState<ParamItem[]>(initialParams)
   const [inputMode, setInputMode] = useState<'textarea' | 'code'>('textarea')
+
+  // Автоматически переключаем режим ввода в зависимости от результата
+  useEffect(() => {
+    if (!result) return
+    if (result.loading) return
+    if (result.error) {
+      setInputMode('textarea')
+    } else {
+      setInputMode('code')
+    }
+  }, [result?.loading, result?.error])
 
   return (
     <div className="space-y-4">
@@ -56,7 +72,15 @@ export function SqlQuery({
           </CardAction>
         </CardHeader>
         <CardContent className="space-y-4">
-          <DataSourceSelect options={dataSources} value={dataSourceId} onChange={setDataSourceId} />
+          <DataSourceSelect
+            options={dataSources}
+            value={dataSourceId}
+            onChange={(id) => {
+              setDataSourceId(id)
+              // При смене источника возвращаемся в режим редактирования
+              setInputMode('textarea')
+            }}
+          />
           <Field>
             <div className="flex items-center justify-between">
               <FieldLabel className="flex w-full items-center justify-between">
@@ -87,6 +111,7 @@ export function SqlQuery({
                 {sql.trim().length === 0 && (
                   <FieldError className="mt-2">SQL не может быть пустым</FieldError>
                 )}
+                {result?.error && <FieldError className="mt-2">{result.error}</FieldError>}
                 <div className="mt-2 flex justify-end">
                   <Button
                     type="button"
