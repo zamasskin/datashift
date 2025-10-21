@@ -1,5 +1,6 @@
 import { Head } from '@inertiajs/react'
 import { Plus } from 'lucide-react'
+import { useState } from 'react'
 import { QueryTool } from '~/components/dataset/query-tool'
 import { RootLayout } from '~/components/root-layout'
 import { Button } from '~/components/ui/button'
@@ -12,12 +13,23 @@ import {
 } from '~/components/ui/dropdown-menu'
 
 const Datasets = () => {
+  const [datasets, setDatasets] = useState<any[]>([])
+
+  const addDataset = (dataset: any) => {
+    setDatasets([...datasets, dataset])
+  }
+
   return (
     <>
       <Head title="Датасеты" />
 
       <div className=" px-4 lg:px-6 space-y-4">
-        <QueryTool name="query1" dataSourceId={1} params={['item1.name', 'item1.description']} />
+        <QueryTool
+          title="b1"
+          dataSourceId={1}
+          params={['item1.name', 'item1.description']}
+          onApply={() => Promise.resolve()}
+        />
       </div>
 
       <div className=" px-4 lg:px-6 space-y-4">

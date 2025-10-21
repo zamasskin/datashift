@@ -11,7 +11,7 @@ import * as _ from 'lodash'
 import { VariableInput } from './variable-input'
 
 type QueryToolProps = {
-  name: string
+  title: string
   value?: string
   dataSourceId?: number
   variables?: string[]
@@ -28,7 +28,6 @@ export function QueryTool(props: QueryToolProps) {
   const [error, setError] = useState<string>()
   const [onLoading, setOnLoading] = useState(false)
 
-  const [datasetName, setDatasetName] = useState(props.name || '')
   const [query, setQuery] = useState(props.value || '')
   const [vars, setVars] = useState(props.variables || [])
   const [variable, setVariable] = useState('')
@@ -55,11 +54,7 @@ export function QueryTool(props: QueryToolProps) {
     <Card>
       <CardHeader>
         <CardTitle>
-          {isEditMode ? (
-            <Input value={datasetName} onChange={(ev) => setDatasetName(ev.target.value)} />
-          ) : (
-            <span>{datasetName}</span>
-          )}
+          <div className="flex gap-2">{props.title}</div>
         </CardTitle>
         <CardAction>
           {!isEditMode && (
@@ -87,7 +82,7 @@ export function QueryTool(props: QueryToolProps) {
                     variant="ghost"
                     size="icon"
                     title="Редактировать"
-                    // onClick={() => onEditModeChange(true)}
+                    onClick={() => setIsEditMode(true)}
                   >
                     <IconPencil />
                     <span className="sr-only">Редактировать</span>
