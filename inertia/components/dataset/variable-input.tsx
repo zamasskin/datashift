@@ -44,7 +44,7 @@ export function VariableInput({
     })
   }
 
-  const handleBeforeInput: React.FormEventHandler<HTMLInputElement> = (ev) => {
+  const handleBeforeInput: React.FormEventHandler<HTMLInputElement> = () => {
     requestAnimationFrame(() => {
       const el = inputRef.current
       const val = el?.value ?? String(props.value ?? '')
