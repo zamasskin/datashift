@@ -21,6 +21,7 @@ type QueryToolProps = {
   onSetDatasource?: (dataSourceId: number) => void
   onUpdateColumns?: (columns: string[]) => void
   onSetEditMode?: (isEditMode: boolean) => void
+  onApply?: (query: string, variables: string[]) => void
 }
 
 export function QueryTool(props: QueryToolProps) {
