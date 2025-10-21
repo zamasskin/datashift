@@ -12,7 +12,6 @@ import { VariableInput } from './variable-input'
 
 type QueryToolProps = {
   name: string
-  isEditMode?: boolean
   value?: string
   dataSourceId?: number
   variables?: string[]
@@ -21,11 +20,11 @@ type QueryToolProps = {
   onSetDatasource?: (dataSourceId: number) => void
   onUpdateColumns?: (columns: string[]) => void
   onSetEditMode?: (isEditMode: boolean) => void
-  onApply?: (query: string, variables: string[]) => void
+  onApply: (query: string, variables: string[]) => Promise<void>
 }
 
 export function QueryTool(props: QueryToolProps) {
-  const { isEditMode = true, dataSourceId } = props
+  const [isEditMode, setIsEditMode] = useState(!props.value)
   const [error, setError] = useState<string>()
   const [onLoading, setOnLoading] = useState(false)
 
@@ -33,6 +32,24 @@ export function QueryTool(props: QueryToolProps) {
   const [query, setQuery] = useState(props.value || '')
   const [vars, setVars] = useState(props.variables || [])
   const [variable, setVariable] = useState('')
+
+  const onApply = async () => {
+    setError('')
+    if (!props.onApply) {
+      setError('onApply is not defined')
+      return
+    }
+
+    try {
+      setOnLoading(true)
+      await props.onApply(query, vars)
+      setIsEditMode(false)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setOnLoading(false)
+    }
+  }
 
   return (
     <Card>
@@ -59,7 +76,7 @@ export function QueryTool(props: QueryToolProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         <DataSourceSelect value={props.dataSourceId} onChange={props.onSetDatasource} />
-        {dataSourceId && (
+        {props.dataSourceId && (
           <Field>
             <div className="flex items-center justify-between">
               <FieldLabel className="flex w-full items-center justify-between">
@@ -129,6 +146,7 @@ export function QueryTool(props: QueryToolProps) {
                       variant="outline"
                       size="icon"
                       title="Добавить"
+                      disabled={!variable.trim()}
                       onClick={() => {
                         const v = variable.trim()
                         if (!v) return
@@ -145,7 +163,13 @@ export function QueryTool(props: QueryToolProps) {
                 <div className="mt-2 flex justify-end">
                   {onLoading && <Spinner />}
                   {!onLoading && (
-                    <Button type="button" variant="outline" size="icon" title="Применить">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      title="Применить"
+                      onClick={onApply}
+                    >
                       <IconCheck />
                       <span className="sr-only">Применить</span>
                     </Button>
