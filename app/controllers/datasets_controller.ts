@@ -16,39 +16,35 @@ export default class DatasetsController {
    * Возвращает { rows, columns } или { error } при ошибке.
    */
   async testSql({ request, response }: HttpContext) {
-    console.log('step 1')
     const payload: {
       dataSourceId: number
       sql: string
-      params?: Array<{ key?: string; type: string; value: string }>
+      variables?: string[]
       limit?: number
       offset?: number
     } = {
       dataSourceId: Number(request.input('dataSourceId')),
       sql: String(request.input('sql') || ''),
-      params: Array.isArray(request.input('params')) ? (request.input('params') as any) : [],
+      variables: request.input('variables') as string[],
       limit: request.input('limit') as any,
       offset: request.input('offset') as any,
     }
 
-    console.log('step 2')
     const ds = await DataSource.find(payload.dataSourceId)
     if (!ds) {
       return response.status(404).send({ error: 'Источник данных не найден' })
     }
 
-    console.log('step 3')
-
     try {
-      console.log('execute sql', payload.sql)
       const { rows, columns } = await this.executeSql(
         ds.type,
         ds.config,
         payload.sql,
-        payload.params || [],
-        typeof payload.limit === 'number' ? payload.limit : 5,
-        typeof payload.offset === 'number' ? payload.offset : 5
+        payload.variables,
+        typeof payload.limit === 'number' ? payload.limit : 500,
+        typeof payload.offset === 'number' ? payload.offset : 0
       )
+
       return response.send({ rows, columns })
     } catch (e: any) {
       console.log('ERROR!!', e)
@@ -57,53 +53,11 @@ export default class DatasetsController {
     }
   }
 
-  private castParams(
-    params: Array<{ key?: string; type: string; value: string }>,
-    forDriver: 'sqlite' | 'mysql' | 'postgres'
-  ) {
-    const cast = (type: string, value: string) => {
-      switch (type) {
-        case 'number':
-          return Number(value)
-        case 'boolean':
-          return value === 'true' || value === '1'
-        case 'date':
-        case 'datetime':
-          // Передаём как Date для драйверов, которые поддерживают
-          const d = new Date(value)
-          return Number.isNaN(d.getTime()) ? value : d
-        case 'json':
-          try {
-            return JSON.parse(value)
-          } catch {
-            return value
-          }
-        case 'string':
-        default:
-          return value
-      }
-    }
-
-    // По умолчанию возвращаем позиционный массив значений
-    const arr = params.map((p) => cast(p.type, p.value))
-
-    // Для sqlite попробуем поддержать именованные плейсхолдеры, если они есть в SQL
-    if (forDriver === 'sqlite') {
-      const hasNamed = /[:@$][a-zA-Z_][a-zA-Z0-9_]*/.test((params as any)?.sql || '')
-      // Примечание: выше не знаем SQL. Оставляем массив. Именованные плейсхолдеры можно будет
-      // сформировать на основе ключей при необходимости, но здесь придерживаемся массивов.
-      // Если понадобится объект: const obj = Object.fromEntries(params.map((p,i)=>[p.key||`p${i+1}`, cast(p.type,p.value)]))
-      // return obj
-    }
-
-    return arr
-  }
-
   private async executeSql(
     type: string,
     config: any,
     sql: string,
-    params: Array<{ key?: string; type: string; value: string }>,
+    variables?: string[],
     limit?: number,
     offset?: number
   ): Promise<{ rows: Array<Record<string, any>>; columns?: string[] }> {
@@ -145,8 +99,7 @@ export default class DatasetsController {
 
       const rows = await new Promise<Array<Record<string, any>>>((resolve, reject) => {
         const db = new sqlite3.Database(absFile, sqlite3.OPEN_READWRITE)
-        const casted = this.castParams(params, 'sqlite')
-        db.all(wrappedSql, casted as any, (err: any, res: any[]) => {
+        db.all(wrappedSql, variables, (err: any, res: any[]) => {
           if (err) {
             db.close()
             return reject(err)
@@ -174,8 +127,7 @@ export default class DatasetsController {
         connectTimeout: 3000,
       })
       try {
-        const casted = this.castParams(params, 'mysql')
-        const [rows, fields] = await connection.execute(wrappedSql, casted as any)
+        const [rows, fields] = await connection.execute(wrappedSql, variables)
         const columns = Array.isArray(fields)
           ? (fields as any[]).map((f: any) => f?.name).filter(Boolean)
           : undefined
@@ -197,8 +149,7 @@ export default class DatasetsController {
       })
       await client.connect()
       try {
-        const casted = this.castParams(params, 'postgres')
-        const res = await client.query(wrappedSql, casted as any)
+        const res = await client.query(wrappedSql, variables)
         const columns = Array.isArray(res?.fields)
           ? res.fields.map((f: any) => f?.name).filter(Boolean)
           : undefined
