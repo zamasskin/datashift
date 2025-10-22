@@ -1,8 +1,14 @@
 import { useState } from 'react'
 import { Button } from '~/components/ui/button'
-import { Field, FieldLabel, FieldGroup, FieldError } from '~/components/ui/field'
+import { Field, FieldGroup, FieldError } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '~/components/ui/select'
 import { PlusIcon, Trash2Icon } from 'lucide-react'
 
 export type DatasetParamType = 'string' | 'number' | 'date' | 'date_range'
@@ -33,12 +39,15 @@ export function ParamsEditor({
     onChange?.(next)
   }
 
-  const keyCounts = items.reduce((acc, i) => {
-    const k = (i.key || '').trim().toLowerCase()
-    if (!k) return acc
-    acc[k] = (acc[k] || 0) + 1
-    return acc
-  }, {} as Record<string, number>)
+  const keyCounts = items.reduce(
+    (acc, i) => {
+      const k = (i.key || '').trim().toLowerCase()
+      if (!k) return acc
+      acc[k] = (acc[k] || 0) + 1
+      return acc
+    },
+    {} as Record<string, number>
+  )
   const hasEmptyKeys = items.some((i) => !(i.key || '').trim())
   const duplicateKeys = Object.entries(keyCounts)
     .filter(([_, count]) => count > 1)
@@ -66,7 +75,14 @@ export function ParamsEditor({
     <Field className={className}>
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium">{label}</span>
-        <Button variant="secondary" size="sm" type="button" onClick={addItem} className="h-8 gap-1" title="Добавить параметр">
+        <Button
+          variant="secondary"
+          size="sm"
+          type="button"
+          onClick={addItem}
+          className="h-8 gap-1"
+          title="Добавить параметр"
+        >
           <PlusIcon className="h-3.5 w-3.5" />
           Добавить параметр
         </Button>
@@ -76,10 +92,12 @@ export function ParamsEditor({
           const keyTrim = (item.key || '').trim()
           const keyLower = keyTrim.toLowerCase()
           const isEmpty = keyTrim.length === 0
-          const isDuplicate = !isEmpty && ((keyCounts[keyLower] || 0) > 1)
+          const isDuplicate = !isEmpty && (keyCounts[keyLower] || 0) > 1
           const keyErrorMsg = isEmpty
             ? 'Заполните ключ'
-            : (isDuplicate ? 'Ключ должен быть уникальным' : '')
+            : isDuplicate
+              ? 'Ключ должен быть уникальным'
+              : ''
 
           return (
             <div key={idx} className="flex flex-wrap gap-1.5 items-start">
@@ -102,9 +120,7 @@ export function ParamsEditor({
                     setItem(idx, { key: cleaned })
                   }}
                 />
-                {(isEmpty || isDuplicate) && (
-                  <FieldError errors={[{ message: keyErrorMsg }]} />
-                )}
+                {(isEmpty || isDuplicate) && <FieldError errors={[{ message: keyErrorMsg }]} />}
               </div>
               <Input
                 className="h-8"
@@ -113,7 +129,10 @@ export function ParamsEditor({
                 value={item.title || ''}
                 onChange={(e) => setItem(idx, { title: e.target.value })}
               />
-              <Select value={item.type} onValueChange={(v) => setItem(idx, { type: v as DatasetParamType })}>
+              <Select
+                value={item.type}
+                onValueChange={(v) => setItem(idx, { type: v as DatasetParamType })}
+              >
                 <SelectTrigger className="min-w-40 h-8" title="Тип параметра">
                   <SelectValue placeholder="тип" />
                 </SelectTrigger>
