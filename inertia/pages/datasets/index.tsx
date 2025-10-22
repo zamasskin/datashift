@@ -1,7 +1,7 @@
 import { Head } from '@inertiajs/react'
 import { Plus } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { QueryTool } from '~/components/dataset/query-tool'
+import { SqlTool } from '~/components/dataset/tools/sql-tool'
 import { RootLayout } from '~/components/root-layout'
 import { Button } from '~/components/ui/button'
 
@@ -11,7 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
-import { Dataset } from '~/interfaces/datasets'
+import { Dataset, SqlSaveProps } from '~/interfaces/datasets'
 
 function buildName(datasets: Dataset[], prefix: string) {
   const max = datasets.reduce((acc, d) => {
@@ -21,30 +21,22 @@ function buildName(datasets: Dataset[], prefix: string) {
   return `${prefix}${max + 1}`
 }
 
-const defaultDatasetProps = {
-  sql: {
-    data: { value: '', variables: [] },
-    props: { isEdit: true, isLoading: false, error: '' },
-  },
-}
-
 const Datasets = () => {
   const [datasetsRaw, setDatasetsRaw] = useState<Dataset[]>([])
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [params, setParams] = useState<Record<string, string[]>>({})
+  const [params, setParams] = useState<string[]>([])
 
   const datasets = useMemo(() => {
-    return datasetsRaw.map((dataset) => {
+    return datasetsRaw.map((dataset, i) => {
       return {
         data: dataset,
-        props: {
-          params: [],
-        },
+        datasets: datasetsRaw.slice(0, i),
       }
     })
   }, [datasetsRaw])
 
-  // const
+  const showActions = useMemo(() => {
+    return !datasetsRaw.some((d) => d.type == 'sql' && d.value == '')
+  }, [datasetsRaw])
 
   const pushSqlProps = () => {
     setDatasetsRaw((old) => [
@@ -52,51 +44,68 @@ const Datasets = () => {
       {
         name: buildName(old, 'sql_'),
         type: 'sql',
-        data: { value: '', variables: [] },
-        props: { isEdit: true, isLoading: false, error: '' },
+        value: '',
+        variables: [],
+        dataSourceId: 0,
       },
     ])
   }
 
-  const applySqlProps = (name: string, value: string, variables: string[]) => {}
+  const applySqlProps = (name: string, saved: SqlSaveProps) => {
+    const { dataSourceId, query, variables, fields } = saved
+    setDatasetsRaw((old) =>
+      old.map((d) => (d.name == name ? { ...d, value: query, variables, dataSourceId, fields } : d))
+    )
+  }
 
   return (
     <>
       <Head title="Датасеты" />
 
       <div className=" px-4 lg:px-6 space-y-4">
-        <QueryTool
-          title="b1"
-          dataSourceId={1}
-          params={['item1.name', 'item1.description']}
-          onApply={() => Promise.resolve()}
-        />
+        {datasets.map((dataset) => (
+          <div key={dataset.data.name}>
+            {dataset.data.type == 'sql' && (
+              <SqlTool
+                data={dataset.data}
+                datasets={dataset.datasets}
+                params={params}
+                onSave={(saved) => applySqlProps(dataset.data.name, saved)}
+                onDelete={() =>
+                  setDatasetsRaw((old) => old.filter((d) => d.name != dataset.data.name))
+                }
+              />
+            )}
+          </div>
+        ))}
       </div>
 
-      <div className=" px-4 lg:px-6 space-y-4">
-        <div className="flex gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline">
-                <Plus />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" side="bottom">
-              <DropdownMenuItem>Новая выборка</DropdownMenuItem>
-              <DropdownMenuItem onClick={pushSqlProps}>Новый запрос</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline">Обогатить</Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" side="bottom">
-              <DropdownMenuItem>Настройка полей</DropdownMenuItem>
-              <DropdownMenuItem>Скрипт</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+      {showActions && (
+        <div className=" px-4 lg:px-6 space-y-4">
+          <div className="flex gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  <Plus />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" side="bottom">
+                <DropdownMenuItem>Новая выборка</DropdownMenuItem>
+                <DropdownMenuItem onClick={pushSqlProps}>Новый запрос</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">Обогатить</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" side="bottom">
+                <DropdownMenuItem>Настройка полей</DropdownMenuItem>
+                <DropdownMenuItem>Скрипт</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
-      </div>
+      )}
     </>
   )
 }

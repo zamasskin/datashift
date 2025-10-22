@@ -2,6 +2,32 @@ import DataSource from '#models/data_source'
 import { HttpContext } from '@adonisjs/core/http'
 import app from '@adonisjs/core/services/app'
 import path from 'node:path'
+import _ from 'lodash'
+import mustache from 'mustache'
+
+export interface SqlDataset {
+  type: 'sql'
+  value: string
+  variables: string[]
+  dataSourceId: number
+}
+
+interface MergeDataset {
+  type: 'merge'
+  rules: any[]
+}
+
+type DatasetItem = SqlDataset | MergeDataset
+export type Dataset = DatasetItem & {
+  name: string
+  fields?: string[]
+}
+
+type TestDataset = {
+  limit?: number
+  offset?: number
+  datasets: Dataset[]
+}
 
 export default class DatasetsController {
   async index({ inertia }: HttpContext) {
@@ -9,6 +35,67 @@ export default class DatasetsController {
     return inertia.render('datasets/index', {
       dataSources,
     })
+  }
+
+  async testDataset({ request, response }: HttpContext) {
+    const payload = request.body() as TestDataset
+    const datasets = payload.datasets
+
+    let mustacheConfig: Record<string, any> = {}
+    let fields: string[] = []
+
+    // Подумать как исправить сбор полей
+    const parseVariables = (variables: string[]) => {
+      return variables.map((v) => {
+        const trimmed = v.trim()
+        if (trimmed.startsWith('{{') && trimmed.endsWith('}}')) {
+          const key = trimmed.slice(2, -2)
+          return _.get(mustacheConfig, key)
+        }
+        if (trimmed.includes('{{') && trimmed.includes('}}')) {
+          return mustache.render(trimmed, mustacheConfig)
+        }
+        return trimmed
+      })
+    }
+
+    try {
+      for (const dataset of datasets) {
+        if (dataset.type === 'sql') {
+          mustacheConfig[dataset.name] = {}
+          const ds = await DataSource.find(dataset.dataSourceId)
+          if (!ds) {
+            throw new Error('Источник данных не выбран')
+          }
+
+          const variables = parseVariables(dataset.variables || [])
+
+          const { rows = [], columns = [] } = await this.executeSql(
+            ds.type,
+            ds.config,
+            dataset.value,
+            variables,
+            payload?.limit || 500,
+            payload?.offset || 0
+          )
+
+          for (const col of columns) {
+            mustacheConfig[dataset.name][col] = []
+            for (const row of rows) {
+              mustacheConfig[dataset.name][col].push(row[col])
+            }
+          }
+
+          fields = columns
+        }
+      }
+
+      return response.send({ fields })
+    } catch (e: any) {
+      console.log('ERROR!!', e)
+      const message = e?.message ? String(e.message) : String(e)
+      return response.status(400).send({ error: message })
+    }
   }
 
   /**

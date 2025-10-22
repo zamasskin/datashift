@@ -36,6 +36,7 @@ router
     // Datasets
     router.get('/datasets', [DatasetsController, 'index'])
     router.post('/datasets/test-sql', [DatasetsController, 'testSql'])
+    router.post('/datasets/test-dataset', [DatasetsController, 'testDataset'])
 
     router.on('/migrations').renderInertia('migrations/index')
     router.on('/tasks').renderInertia('tasks/index')
