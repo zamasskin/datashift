@@ -1,8 +1,14 @@
 import { useState } from 'react'
 import { Button } from '~/components/ui/button'
-import { Field, FieldLabel, FieldGroup } from '~/components/ui/field'
+import { Field, FieldGroup } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '~/components/ui/select'
 import { PlusIcon, Trash2Icon } from 'lucide-react'
 
 export type DatasetParamType = 'string' | 'number' | 'date' | 'date_range'
@@ -53,7 +59,14 @@ export function ParamsEditor({
     <Field className={className}>
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium">{label}</span>
-        <Button variant="secondary" size="sm" type="button" onClick={addItem} className="h-8 gap-1" title="Добавить параметр">
+        <Button
+          variant="secondary"
+          size="sm"
+          type="button"
+          onClick={addItem}
+          className="h-8 gap-1"
+          title="Добавить параметр"
+        >
           <PlusIcon className="h-3.5 w-3.5" />
           Добавить параметр
         </Button>
@@ -79,7 +92,10 @@ export function ParamsEditor({
               value={item.title || ''}
               onChange={(e) => setItem(idx, { title: e.target.value })}
             />
-            <Select value={item.type} onValueChange={(v) => setItem(idx, { type: v as DatasetParamType })}>
+            <Select
+              value={item.type}
+              onValueChange={(v) => setItem(idx, { type: v as DatasetParamType })}
+            >
               <SelectTrigger className="min-w-40 h-8" title="Тип параметра">
                 <SelectValue placeholder="тип" />
               </SelectTrigger>

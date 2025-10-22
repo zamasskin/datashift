@@ -64,7 +64,7 @@ const Datasets = () => {
     setDatasetsRaw((old) => [
       ...old,
       {
-        name: buildName(old, 'sql_'),
+        name: buildName(old, 'sql'),
         type: 'sql',
         value: '',
         variables: [],
@@ -155,7 +155,9 @@ const Datasets = () => {
         <div className="flex justify-end">
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="outline" size="sm">Параметры</Button>
+              <Button variant="outline" size="sm">
+                Параметры
+              </Button>
             </SheetTrigger>
             <SheetContent side="right">
               <SheetHeader>
@@ -194,20 +196,12 @@ const Datasets = () => {
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">
                   <Plus />
+                  Добавить датасет
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" side="bottom">
                 <DropdownMenuItem>Новая выборка</DropdownMenuItem>
-                <DropdownMenuItem onClick={pushSqlProps}>Новый запрос</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">Обогатить</Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" side="bottom">
-                <DropdownMenuItem>Настройка полей</DropdownMenuItem>
-                <DropdownMenuItem>Скрипт</DropdownMenuItem>
+                <DropdownMenuItem onClick={pushSqlProps}>Sql-запрос</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

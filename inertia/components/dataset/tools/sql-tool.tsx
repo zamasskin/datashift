@@ -13,6 +13,7 @@ import { VariableInput } from '../variable-input'
 import { usePage } from '@inertiajs/react'
 import { DataSourcePreview } from '../data-source-preview'
 import { Kbd } from '~/components/ui/kbd'
+import { Badge } from '~/components/ui/badge'
 
 export interface SqlToolProps {
   data: Dataset & { type: 'sql' }
@@ -86,7 +87,9 @@ export function SqlTool(props: SqlToolProps) {
     <Card>
       <CardHeader>
         <CardTitle>
-          <div className="flex gap-2">{props.data.name}</div>
+          <div className="flex gap-2">
+            Sql запрос <Badge variant="outline">{props.data.name}</Badge>
+          </div>
         </CardTitle>
         <CardAction>
           <Button
