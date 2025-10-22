@@ -1,6 +1,6 @@
-import { Head } from '@inertiajs/react'
+import { Head, usePage } from '@inertiajs/react'
 import { Plus } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { SqlTool } from '~/components/dataset/tools/sql-tool'
 import { RootLayout } from '~/components/root-layout'
 import { Button } from '~/components/ui/button'
@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
 import { Dataset, SqlSaveProps } from '~/interfaces/datasets'
+import { DatasetResult } from '~/components/dataset/dataset-result'
 
 function buildName(datasets: Dataset[], prefix: string) {
   const max = datasets.reduce((acc, d) => {
@@ -24,6 +25,13 @@ function buildName(datasets: Dataset[], prefix: string) {
 const Datasets = () => {
   const [datasetsRaw, setDatasetsRaw] = useState<Dataset[]>([])
   const [params, setParams] = useState<string[]>([])
+  const { props: pageProps } = usePage<{ csrfToken: string }>()
+  const [overallResult, setOverallResult] = useState<{
+    rows: Array<Record<string, any>>
+    columns?: string[]
+    loading?: boolean
+    error?: string
+  }>({ rows: [] })
 
   const datasets = useMemo(() => {
     return datasetsRaw.map((dataset, i) => {
@@ -57,6 +65,52 @@ const Datasets = () => {
       old.map((d) => (d.name == name ? { ...d, value: query, variables, dataSourceId, fields } : d))
     )
   }
+
+  const runOverall = async () => {
+    setOverallResult((prev) => ({ ...prev, loading: true, error: undefined }))
+    const last = datasetsRaw[datasetsRaw.length - 1]
+    if (!last) {
+      setOverallResult({ rows: [], loading: false, error: 'Нет датасетов' })
+      return
+    }
+    if (last.type !== 'sql') {
+      setOverallResult({ rows: [], loading: false, error: 'Пока поддерживается только SQL' })
+      return
+    }
+    if (!last.dataSourceId || !last.value?.trim()) {
+      setOverallResult({ rows: [], loading: false, error: 'Заполните источник и SQL' })
+      return
+    }
+    try {
+      const res = await fetch('/datasets/test-sql', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': pageProps.csrfToken },
+        body: JSON.stringify({
+          dataSourceId: last.dataSourceId,
+          sql: last.value,
+          variables: last.variables,
+        }),
+      })
+      const data = await res.json()
+      if (data.error) {
+        setOverallResult({ rows: [], columns: [], loading: false, error: data.error })
+      } else {
+        setOverallResult({ rows: data.rows ?? [], columns: data.columns, loading: false })
+      }
+    } catch (e: any) {
+      setOverallResult({ rows: [], loading: false, error: e.message })
+    }
+  }
+
+  // Автозапуск запроса при изменении датасетов
+  useEffect(() => {
+    const last = datasetsRaw[datasetsRaw.length - 1]
+    if (!last || last.type !== 'sql' || !last.dataSourceId || !last.value?.trim()) return
+    const timer = setTimeout(() => {
+      runOverall()
+    }, 400)
+    return () => clearTimeout(timer)
+  }, [datasetsRaw])
 
   return (
     <>
@@ -106,6 +160,10 @@ const Datasets = () => {
           </div>
         </div>
       )}
+
+      <div className=" px-4 lg:px-6 space-y-4">
+        <DatasetResult result={overallResult} onReload={runOverall} />
+      </div>
     </>
   )
 }
