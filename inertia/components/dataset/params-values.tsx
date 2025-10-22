@@ -43,7 +43,7 @@ export function ParamsValues({
 
         {items.map((item, idx) => (
           <div key={idx} className="flex flex-col items-start gap-1.5 whitespace-nowrap">
-            <div className="text-xs font-medium">{item.key}</div>
+            <div className="h-4 text-xs font-medium flex items-center">{item.key || ''}</div>
             {item.type === 'date_range' ? (
               <div className="flex gap-1.5">
                 <Input
