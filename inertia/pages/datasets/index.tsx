@@ -1,6 +1,6 @@
 import { Head } from '@inertiajs/react'
 import { Plus } from 'lucide-react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { QueryTool } from '~/components/dataset/query-tool'
 import { RootLayout } from '~/components/root-layout'
 import { Button } from '~/components/ui/button'
@@ -11,13 +11,54 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
+import { Dataset } from '~/interfaces/datasets'
+
+function buildName(datasets: Dataset[], prefix: string) {
+  const max = datasets.reduce((acc, d) => {
+    const num = Number(d.name.replace(prefix, ''))
+    return num > acc ? num : acc
+  }, 0)
+  return `${prefix}${max + 1}`
+}
+
+const defaultDatasetProps = {
+  sql: {
+    data: { value: '', variables: [] },
+    props: { isEdit: true, isLoading: false, error: '' },
+  },
+}
 
 const Datasets = () => {
-  const [datasets, setDatasets] = useState<any[]>([])
+  const [datasetsRaw, setDatasetsRaw] = useState<Dataset[]>([])
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [params, setParams] = useState<Record<string, string[]>>({})
 
-  const addDataset = (dataset: any) => {
-    setDatasets([...datasets, dataset])
+  const datasets = useMemo(() => {
+    return datasetsRaw.map((dataset) => {
+      return {
+        data: dataset,
+        props: {
+          params: [],
+        },
+      }
+    })
+  }, [datasetsRaw])
+
+  // const
+
+  const pushSqlProps = () => {
+    setDatasetsRaw((old) => [
+      ...old,
+      {
+        name: buildName(old, 'sql_'),
+        type: 'sql',
+        data: { value: '', variables: [] },
+        props: { isEdit: true, isLoading: false, error: '' },
+      },
+    ])
   }
+
+  const applySqlProps = (name: string, value: string, variables: string[]) => {}
 
   return (
     <>
@@ -42,7 +83,7 @@ const Datasets = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" side="bottom">
               <DropdownMenuItem>Новая выборка</DropdownMenuItem>
-              <DropdownMenuItem>Новый запрос</DropdownMenuItem>
+              <DropdownMenuItem onClick={pushSqlProps}>Новый запрос</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           <DropdownMenu>
