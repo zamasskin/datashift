@@ -8,6 +8,7 @@ import { PlusIcon, Trash2Icon } from 'lucide-react'
 export type DatasetParamType = 'string' | 'number' | 'date' | 'date_range'
 export type DatasetParamItem = {
   key: string
+  title?: string
   type: DatasetParamType
   value?: string
   valueFrom?: string
@@ -32,7 +33,7 @@ export function ParamsEditor({
     onChange?.(next)
   }
 
-  const addItem = () => update([...items, { key: '', type: 'string' }])
+  const addItem = () => update([...items, { key: '', title: '', type: 'string' }])
   const removeItem = (idx: number) => update(items.filter((_, i) => i !== idx))
 
   const setItem = (idx: number, patch: Partial<DatasetParamItem>) => {
@@ -50,24 +51,36 @@ export function ParamsEditor({
 
   return (
     <Field className={className}>
-      <FieldLabel className="flex items-center justify-between">
-        <span>{label}</span>
-        <Button variant="outline" size="sm" type="button" onClick={addItem}>
-          <PlusIcon />
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium">{label}</span>
+        <Button variant="secondary" size="sm" type="button" onClick={addItem} className="h-8 gap-1" title="Добавить параметр">
+          <PlusIcon className="h-3.5 w-3.5" />
           Добавить параметр
         </Button>
-      </FieldLabel>
+      </div>
       <FieldGroup>
         {items.map((item, idx) => (
           <div key={idx} className="flex flex-wrap gap-1.5 items-center">
             <Input
               className="h-8"
-              placeholder="ключ"
+              placeholder="ключ (латиница)"
+              title="Ключ параметра: только латиница, лишние символы удаляются"
               value={item.key}
-              onChange={(e) => setItem(idx, { key: e.target.value })}
+              onChange={(e) => {
+                const raw = e.target.value
+                const cleaned = raw.replace(/[^A-Za-z]/g, '')
+                setItem(idx, { key: cleaned })
+              }}
+            />
+            <Input
+              className="h-8"
+              placeholder="название (подпись)"
+              title="Подпись параметра (отображается над значением)"
+              value={item.title || ''}
+              onChange={(e) => setItem(idx, { title: e.target.value })}
             />
             <Select value={item.type} onValueChange={(v) => setItem(idx, { type: v as DatasetParamType })}>
-              <SelectTrigger className="min-w-40 h-8">
+              <SelectTrigger className="min-w-40 h-8" title="Тип параметра">
                 <SelectValue placeholder="тип" />
               </SelectTrigger>
               <SelectContent>
@@ -79,14 +92,15 @@ export function ParamsEditor({
               </SelectContent>
             </Select>
             <Button
-              className="ml-auto"
+              className="ml-auto h-8 p-2"
               variant="ghost"
-              size="icon-sm"
+              size="sm"
               type="button"
               onClick={() => removeItem(idx)}
               aria-label="Удалить"
+              title="Удалить параметр"
             >
-              <Trash2Icon />
+              <Trash2Icon className="h-4 w-4" />
             </Button>
           </div>
         ))}

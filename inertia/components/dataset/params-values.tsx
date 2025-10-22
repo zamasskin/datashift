@@ -43,13 +43,16 @@ export function ParamsValues({
 
         {items.map((item, idx) => (
           <div key={idx} className="flex flex-col items-start gap-1.5 whitespace-nowrap">
-            <div className="h-4 text-xs font-medium flex items-center">{item.key || ''}</div>
+            <div className="h-4 text-xs font-medium flex items-center">
+              {item.title || item.key || ''}
+            </div>
             {item.type === 'date_range' ? (
               <div className="flex gap-1.5">
                 <Input
                   className="h-8"
                   type="date"
                   placeholder="с"
+                  title={`Параметр ${item.title || item.key || ''}: с`}
                   value={item.valueFrom || ''}
                   onChange={(e) => setItem(idx, { valueFrom: e.target.value })}
                 />
@@ -57,6 +60,7 @@ export function ParamsValues({
                   className="h-8"
                   type="date"
                   placeholder="по"
+                  title={`Параметр ${item.title || item.key || ''}: по`}
                   value={item.valueTo || ''}
                   onChange={(e) => setItem(idx, { valueTo: e.target.value })}
                 />
@@ -65,6 +69,7 @@ export function ParamsValues({
               <Input
                 className="h-8"
                 placeholder="значение"
+                title={`Параметр ${item.title || item.key || ''}`}
                 type={item.type === 'number' ? 'number' : item.type === 'date' ? 'date' : 'text'}
                 value={item.value || ''}
                 onChange={(e) => setItem(idx, { value: e.target.value })}
