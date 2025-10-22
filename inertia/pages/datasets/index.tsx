@@ -31,6 +31,26 @@ function buildName(datasets: Dataset[], prefix: string) {
 const Datasets = () => {
   const [datasetsRaw, setDatasetsRaw] = useState<Dataset[]>([])
   const [paramItems, setParamItems] = useState<DatasetParamItem[]>([])
+  const [paramsSheetOpen, setParamsSheetOpen] = useState(false)
+  const canCloseParams = useMemo(() => {
+    if (paramItems.length === 0) return true
+    const keys = paramItems.map((i) => (i.key || '').trim())
+    if (keys.some((k) => k.length === 0)) return false
+    const seen = new Set<string>()
+    for (const k of keys) {
+      const key = k.toLowerCase()
+      if (seen.has(key)) return false
+      seen.add(key)
+    }
+    return true
+  }, [paramItems])
+  const handleParamsOpenChange = (next: boolean) => {
+    if (!next && !canCloseParams) {
+      setParamsSheetOpen(true)
+      return
+    }
+    setParamsSheetOpen(next)
+  }
   const { props: pageProps } = usePage<{ csrfToken: string }>()
   const [overallResult, setOverallResult] = useState<{
     rows: Array<Record<string, any>>
@@ -156,7 +176,7 @@ const Datasets = () => {
 
       <div className=" px-4 lg:px-6 space-y-4">
         <div className="flex justify-end">
-          <Sheet>
+          <Sheet open={paramsSheetOpen} onOpenChange={handleParamsOpenChange}>
             <SheetTrigger asChild>
               <Button variant="outline" size="sm">
                 <Cog />
