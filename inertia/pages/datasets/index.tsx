@@ -1,5 +1,5 @@
 import { Head, usePage } from '@inertiajs/react'
-import { Plus } from 'lucide-react'
+import { Cog, Plus } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { SqlTool } from '~/components/dataset/tools/sql-tool'
 import { RootLayout } from '~/components/root-layout'
@@ -8,7 +8,10 @@ import { Button } from '~/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
 import { Dataset, SqlSaveProps } from '~/interfaces/datasets'
@@ -156,6 +159,7 @@ const Datasets = () => {
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="outline" size="sm">
+                <Cog />
                 Параметры
               </Button>
             </SheetTrigger>
@@ -200,8 +204,17 @@ const Datasets = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" side="bottom">
-                <DropdownMenuItem>Новая выборка</DropdownMenuItem>
-                <DropdownMenuItem onClick={pushSqlProps}>Sql-запрос</DropdownMenuItem>
+                <DropdownMenuLabel>База данных</DropdownMenuLabel>
+                <DropdownMenuGroup>
+                  <DropdownMenuItem>Запрос</DropdownMenuItem>
+                  <DropdownMenuItem onClick={pushSqlProps}>Sql-запрос</DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>Редактирование</DropdownMenuLabel>
+                <DropdownMenuGroup>
+                  <DropdownMenuItem>Объединение</DropdownMenuItem>
+                  <DropdownMenuItem>Трансформация</DropdownMenuItem>
+                </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
