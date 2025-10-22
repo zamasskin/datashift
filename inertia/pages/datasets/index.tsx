@@ -13,6 +13,9 @@ import {
 } from '~/components/ui/dropdown-menu'
 import { Dataset, SqlSaveProps } from '~/interfaces/datasets'
 import { DatasetResult } from '~/components/dataset/dataset-result'
+import { ParamsEditor, DatasetParamItem } from '~/components/dataset/params-editor'
+import { ParamsValues } from '~/components/dataset/params-values'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '~/components/ui/sheet'
 
 function buildName(datasets: Dataset[], prefix: string) {
   const max = datasets.reduce((acc, d) => {
@@ -24,7 +27,7 @@ function buildName(datasets: Dataset[], prefix: string) {
 
 const Datasets = () => {
   const [datasetsRaw, setDatasetsRaw] = useState<Dataset[]>([])
-  const [params, setParams] = useState<string[]>([])
+  const [paramItems, setParamItems] = useState<DatasetParamItem[]>([])
   const { props: pageProps } = usePage<{ csrfToken: string }>()
   const [overallResult, setOverallResult] = useState<{
     rows: Array<Record<string, any>>
@@ -41,6 +44,17 @@ const Datasets = () => {
       }
     })
   }, [datasetsRaw])
+
+  const params = useMemo(() => {
+    // Подсказки: поля из предыдущих датасетов + пользовательские параметры
+    const prevFields = datasetsRaw.flatMap((d) =>
+      d.fields ? d.fields.map((f) => `${d.name}.${f}`) : []
+    )
+    const customParams = paramItems.flatMap((p) =>
+      p.type === 'date_range' ? [`${p.key}.from`, `${p.key}.to`] : [p.key]
+    )
+    return [...prevFields, ...customParams].filter(Boolean)
+  }, [datasetsRaw, paramItems])
 
   const showActions = useMemo(() => {
     return !datasetsRaw.some((d) => d.type == 'sql' && d.value == '')
@@ -66,6 +80,26 @@ const Datasets = () => {
     )
   }
 
+  const resolveVariableValue = (token: string) => {
+    // Ожидается {{key}} или {{key.from}}/{{key.to}}. Если без {{ }}, возвращаем как есть.
+    const m = token.match(/^\s*\{\{\s*([^}]+)\s*\}\}\s*$/)
+    const path = m ? m[1] : token
+    const [key, sub] = path.split('.')
+    const item = paramItems.find((p) => p.key === key)
+    if (!item) return token
+    if (item.type === 'date_range') {
+      if (sub === 'from') return item.valueFrom || ''
+      if (sub === 'to') return item.valueTo || ''
+      return ''
+    }
+    if (item.type === 'number') {
+      const n = Number(item.value || '')
+      return Number.isFinite(n) ? n : item.value || ''
+    }
+    // string/date
+    return item.value || ''
+  }
+
   const runOverall = async () => {
     setOverallResult((prev) => ({ ...prev, loading: true, error: undefined }))
     const last = datasetsRaw[datasetsRaw.length - 1]
@@ -82,13 +116,14 @@ const Datasets = () => {
       return
     }
     try {
+      const resolvedVars = (last.variables || []).map((v) => resolveVariableValue(v))
       const res = await fetch('/datasets/test-sql', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': pageProps.csrfToken },
         body: JSON.stringify({
           dataSourceId: last.dataSourceId,
           sql: last.value,
-          variables: last.variables,
+          variables: resolvedVars,
         }),
       })
       const data = await res.json()
@@ -102,7 +137,7 @@ const Datasets = () => {
     }
   }
 
-  // Автозапуск запроса при изменении датасетов
+  // Автозапуск запроса при изменении датасетов или параметров
   useEffect(() => {
     const last = datasetsRaw[datasetsRaw.length - 1]
     if (!last || last.type !== 'sql' || !last.dataSourceId || !last.value?.trim()) return
@@ -110,13 +145,31 @@ const Datasets = () => {
       runOverall()
     }, 400)
     return () => clearTimeout(timer)
-  }, [datasetsRaw])
+  }, [datasetsRaw, paramItems])
 
   return (
     <>
       <Head title="Датасеты" />
 
       <div className=" px-4 lg:px-6 space-y-4">
+        <div className="flex justify-end">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="sm">Параметры</Button>
+            </SheetTrigger>
+            <SheetContent side="right">
+              <SheetHeader>
+                <SheetTitle>Параметры</SheetTitle>
+              </SheetHeader>
+              <div className="p-4">
+                <ParamsEditor value={paramItems} onChange={setParamItems} />
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+
+        <ParamsValues items={paramItems} onChange={setParamItems} />
+
         {datasets.map((dataset) => (
           <div key={dataset.data.name}>
             {dataset.data.type == 'sql' && (
