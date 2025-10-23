@@ -1,6 +1,12 @@
 import Migration from '#models/migration'
 import { Head, router } from '@inertiajs/react'
-import { AlarmClockCheck, ArrowDownToLine, ArrowUpToLine, Pencil } from 'lucide-react'
+import {
+  AlarmClockCheck,
+  ArrowDownToLine,
+  ArrowUpToLine,
+  Pencil,
+  RectangleEllipsis,
+} from 'lucide-react'
 import { useState } from 'react'
 import { RootLayout } from '~/components/root-layout'
 import { Button } from '~/components/ui/button'
@@ -114,21 +120,40 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
         )}
         {error && <p className="text-sm text-destructive">{error}</p>}
 
-        <Tabs defaultValue="request" className="mt-8">
+        <Tabs defaultValue="params" className="mt-8">
           <TabsList>
+            <TabsTrigger value="params">
+              <RectangleEllipsis />
+              Парамеры
+            </TabsTrigger>
             <TabsTrigger value="request">
               <ArrowDownToLine />
               Датасеты
             </TabsTrigger>
             <TabsTrigger value="response">
               <ArrowUpToLine />
-              Миграторы
+              Выгрузки
             </TabsTrigger>
             <TabsTrigger value="task">
               <AlarmClockCheck />
               Задание
             </TabsTrigger>
           </TabsList>
+          <TabsContent value="params" className="mt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Параметры</CardTitle>
+                <CardDescription>
+                  Добавьте параметры, которые будут использоваться в миграции.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Здесь будет интерфейс управления параметрами миграции.
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
           <TabsContent value="request" className="mt-4">
             <Card>
               <CardHeader>
@@ -147,14 +172,14 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
           <TabsContent value="response" className="mt-4">
             <Card>
               <CardHeader>
-                <CardTitle>Миграторы</CardTitle>
+                <CardTitle>Выгрузки</CardTitle>
                 <CardDescription>
-                  Добавьте миграторы, которые будут использоваться в миграции.
+                  Добавьте выгрузки, которые будут использоваться в миграции.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  Здесь будет интерфейс управления миграторами миграции.
+                  Здесь будет интерфейс управления выгрузками миграции.
                 </p>
               </CardContent>
             </Card>
