@@ -61,8 +61,7 @@ const Datasets = () => {
 
   const datasets = useMemo(() => {
     return datasetsRaw.map((dataset, i, arr) => {
-      const oldDatasets = arr.slice(0, i - 1)
-
+      const oldDatasets = arr.slice(0, i)
       const field = [
         ...paramItems.map((item) => `params.${item.key || ''}`),
         ...oldDatasets.flatMap((d) => (d.fields || []).map((f) => `${d.name}.${f}`)),
