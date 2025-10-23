@@ -13,10 +13,50 @@ export default class Migration extends BaseModel {
   @column()
   declare isActive: boolean
 
-  @column()
+  @column({
+    prepare: (value: any) => {
+      if (value === null || value === undefined) return null
+      try {
+        return typeof value === 'string' ? value : JSON.stringify(value)
+      } catch {
+        return value
+      }
+    },
+    consume: (value: any) => {
+      if (value === null || value === undefined) return null
+      if (typeof value === 'string') {
+        try {
+          return JSON.parse(value)
+        } catch {
+          return value
+        }
+      }
+      return value
+    },
+  })
   declare fetchConfigs: any[]
 
-  @column()
+  @column({
+    prepare: (value: any) => {
+      if (value === null || value === undefined) return null
+      try {
+        return typeof value === 'string' ? value : JSON.stringify(value)
+      } catch {
+        return value
+      }
+    },
+    consume: (value: any) => {
+      if (value === null || value === undefined) return null
+      if (typeof value === 'string') {
+        try {
+          return JSON.parse(value)
+        } catch {
+          return value
+        }
+      }
+      return value
+    },
+  })
   declare saveMappings: any[]
 
   @column()
