@@ -22,8 +22,11 @@ export default class Migration extends BaseModel {
   @column()
   declare cronExpression: string | null
 
+  @column()
+  declare createdBy: number
+
   @belongsTo(() => User, {
-    foreignKey: 'userId',
+    foreignKey: 'createdBy',
   })
   declare user: BelongsTo<typeof User>
 
