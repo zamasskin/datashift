@@ -13,13 +13,12 @@ import { usePage } from '@inertiajs/react'
 import { DataSourcePreview } from '../data-source-preview'
 import { Kbd } from '~/components/ui/kbd'
 import { Badge } from '~/components/ui/badge'
-import { DatasetParamItem } from '../params-editor'
 
 export interface SqlToolProps {
   data: Dataset & { type: 'sql' }
   datasets?: Dataset[]
   fields?: string[]
-  params?: DatasetParamItem[]
+  params?: Record<string, any>
   isEditMode?: boolean
   onSave?: (saved: SqlSaveProps) => void
   onDelete?: () => void

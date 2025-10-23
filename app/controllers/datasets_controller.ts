@@ -26,6 +26,7 @@ export type Dataset = DatasetItem & {
 type TestDataset = {
   limit?: number
   offset?: number
+  params?: Record<string, any>
   datasets: Dataset[]
 }
 
@@ -40,8 +41,9 @@ export default class DatasetsController {
   async testDataset({ request, response }: HttpContext) {
     const payload = request.body() as TestDataset
     const datasets = payload.datasets
+    const params = payload.params || {}
 
-    let mustacheConfig: Record<string, any> = {}
+    let mustacheConfig: Record<string, any> = { params }
     let fields: string[] = []
 
     // Подумать как исправить сбор полей

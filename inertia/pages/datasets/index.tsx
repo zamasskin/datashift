@@ -76,6 +76,11 @@ const Datasets = () => {
     })
   }, [datasetsRaw])
 
+  const params = useMemo(
+    () => paramItems.map((item) => Object.fromEntries([[item.key || '', item.value || '']])),
+    [paramItems]
+  )
+
   const showActions = useMemo(() => {
     return !datasetsRaw.some((d) => d.type == 'sql' && d.value == '')
   }, [datasetsRaw])
@@ -200,7 +205,7 @@ const Datasets = () => {
                 data={dataset.data}
                 datasets={dataset.datasets}
                 fields={dataset.fields}
-                params={paramItems}
+                params={params}
                 onSave={(saved) => applySqlProps(dataset.data.name, saved)}
                 onDelete={() =>
                   setDatasetsRaw((old) => old.filter((d) => d.name != dataset.data.name))
