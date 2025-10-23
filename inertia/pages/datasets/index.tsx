@@ -60,24 +60,21 @@ const Datasets = () => {
   }>({ rows: [] })
 
   const datasets = useMemo(() => {
-    return datasetsRaw.map((dataset, i) => {
+    return datasetsRaw.map((dataset, i, arr) => {
+      const oldDatasets = arr.slice(0, i - 1)
+
+      const field = [
+        ...paramItems.map((item) => `params.${item.key || ''}`),
+        ...oldDatasets.flatMap((d) => (d.fields || []).map((f) => `${d.name}.${f}`)),
+      ]
+
       return {
         data: dataset,
-        datasets: datasetsRaw.slice(0, i),
+        fields: field,
+        datasets: datasetsRaw.slice(0, i - 1),
       }
     })
   }, [datasetsRaw])
-
-  const params = useMemo(() => {
-    // Подсказки: поля из предыдущих датасетов + пользовательские параметры
-    const prevFields = datasetsRaw.flatMap((d) =>
-      d.fields ? d.fields.map((f) => `${d.name}.${f}`) : []
-    )
-    const customParams = paramItems.flatMap((p) =>
-      p.type === 'date_range' ? [`${p.key}.from`, `${p.key}.to`] : [p.key]
-    )
-    return [...prevFields, ...customParams].filter(Boolean)
-  }, [datasetsRaw, paramItems])
 
   const showActions = useMemo(() => {
     return !datasetsRaw.some((d) => d.type == 'sql' && d.value == '')
@@ -202,7 +199,8 @@ const Datasets = () => {
               <SqlTool
                 data={dataset.data}
                 datasets={dataset.datasets}
-                params={params}
+                fields={dataset.fields}
+                params={paramItems}
                 onSave={(saved) => applySqlProps(dataset.data.name, saved)}
                 onDelete={() =>
                   setDatasetsRaw((old) => old.filter((d) => d.name != dataset.data.name))

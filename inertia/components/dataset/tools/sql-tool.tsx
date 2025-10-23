@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react'
-import { buildParams } from '~/helpers/datasets/build-params'
 import { Dataset, SqlSaveProps } from '~/interfaces/datasets'
 import { IconCheck, IconPencil, IconTrash } from '@tabler/icons-react'
 import { Button } from '~/components/ui/button'
@@ -14,11 +13,13 @@ import { usePage } from '@inertiajs/react'
 import { DataSourcePreview } from '../data-source-preview'
 import { Kbd } from '~/components/ui/kbd'
 import { Badge } from '~/components/ui/badge'
+import { DatasetParamItem } from '../params-editor'
 
 export interface SqlToolProps {
   data: Dataset & { type: 'sql' }
   datasets?: Dataset[]
-  params?: string[]
+  fields?: string[]
+  params?: DatasetParamItem[]
   isEditMode?: boolean
   onSave?: (saved: SqlSaveProps) => void
   onDelete?: () => void
@@ -34,10 +35,10 @@ export function SqlTool(props: SqlToolProps) {
   const [dataSourceId, setDataSourceId] = useState(props.data.dataSourceId || undefined)
   const [variable, setVariable] = useState('')
 
-  const params = useMemo(() => {
-    const params = buildParams(props.datasets || [])
-    return [...(props.params || []), ...params]
-  }, [props.datasets, props.params])
+  const savedVariables = useMemo(
+    () => _.filter([...variables, variable], (v) => v !== ''),
+    [variable, variables]
+  )
 
   const onSave = async () => {
     setError('')
@@ -45,15 +46,20 @@ export function SqlTool(props: SqlToolProps) {
     try {
       setOnLoading(true)
       // отправим запрос на проверку
-      const saveVariables = _.filter([...variables, variable], (v) => v !== '')
       const oldDatasets = props.datasets || []
       const newDataset = {
         ...props.data,
         value: query,
-        variables: saveVariables,
+        variables: savedVariables,
         dataSourceId,
       }
-      const body = JSON.stringify({ datasets: [...oldDatasets, newDataset], limit: 1, offset: 0 })
+
+      const body = JSON.stringify({
+        datasets: [...oldDatasets, newDataset],
+        params: props.params,
+        limit: 1,
+        offset: 0,
+      })
 
       const request = await fetch('/datasets/test-dataset', {
         method: 'POST',
@@ -67,7 +73,7 @@ export function SqlTool(props: SqlToolProps) {
         setIsEditMode(false)
         props.onSave?.({
           query,
-          variables: saveVariables,
+          variables: savedVariables,
           dataSourceId: dataSourceId || 0,
           fields: data?.fields || [],
         })
@@ -145,7 +151,7 @@ export function SqlTool(props: SqlToolProps) {
                     {variables.map((v, idx) => (
                       <div key={idx} className="flex gap-2 w-[300px]">
                         <VariableInput
-                          params={params}
+                          params={props.fields}
                           value={v}
                           onChange={(ev) =>
                             setVariables((prev) => {
@@ -171,7 +177,7 @@ export function SqlTool(props: SqlToolProps) {
 
                   <div className="flex gap-2 w-[300px]">
                     <VariableInput
-                      params={params}
+                      params={props.fields || []}
                       value={variable}
                       onChange={(ev) => setVariable(ev.target.value)}
                       placeholder="Переменная"
@@ -219,17 +225,16 @@ export function SqlTool(props: SqlToolProps) {
                   <code>{props.data.value}</code>
                 </pre>
 
-                <div className="flex flex-wrap gap-2">
-                  <div className="font-mono">Переменные:</div>
-                  <div className="flex gap-2">
-                    {props.data.variables.map((v) => (
-                      <Kbd key={v}>{v}</Kbd>
-                      // <Badge variant="outline" key={v}>
-                      //   {v}
-                      // </Badge>
-                    ))}
+                {savedVariables.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    <div className="font-mono">Переменные:</div>
+                    <div className="flex gap-2">
+                      {savedVariables.map((v) => (
+                        <Kbd key={v}>{v}</Kbd>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
           </Field>
