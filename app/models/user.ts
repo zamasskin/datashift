@@ -5,6 +5,7 @@ import { BaseModel, column, hasMany } from '@adonisjs/lucid/orm'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 import DataSource from './data_source.js'
 import type { HasMany } from '@adonisjs/lucid/types/relations'
+import Migration from './migration.js'
 
 const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
   uids: ['email'],
@@ -34,6 +35,11 @@ export default class User extends compose(BaseModel, AuthFinder) {
     foreignKey: 'userId',
   })
   declare dataSources: HasMany<typeof DataSource>
+
+  @hasMany(() => Migration, {
+    foreignKey: 'userId',
+  })
+  declare migrations: HasMany<typeof Migration>
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
