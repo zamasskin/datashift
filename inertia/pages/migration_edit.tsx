@@ -7,12 +7,16 @@ import { Button } from '~/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card'
 import { Input } from '~/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
+import { CronExpressionEditor } from '~/components/migrations/cron-expression-editor'
 
 const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const [isEditing, setIsEditing] = useState(false)
   const [name, setName] = useState(migration.name || '')
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [cron, setCron] = useState(migration.cronExpression || '')
+  const [cronSaving, setCronSaving] = useState(false)
+  const [cronError, setCronError] = useState<string | null>(null)
 
   const startEdit = () => {
     setIsEditing(true)
@@ -48,6 +52,36 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
         },
       }
     )
+  }
+
+  const saveCron = async () => {
+    setCronSaving(true)
+    setCronError(null)
+    return new Promise<void>((resolve, reject) => {
+      router.put(
+        `/migrations/${migration.id}`,
+        { cronExpression: cron },
+        {
+          preserveScroll: true,
+          onError: (errors: any) => {
+            const msg =
+              (errors?.cronExpression && Array.isArray(errors.cronExpression)
+                ? errors.cronExpression[0]
+                : errors?.cronExpression) ||
+              errors?.error ||
+              'Укажите корректное CRON-выражение'
+            setCronError(String(msg))
+            setCronSaving(false)
+            reject(new Error(String(msg)))
+          },
+          onSuccess: () => {
+            setCronSaving(false)
+            setCronError(null)
+            resolve()
+          },
+        }
+      )
+    })
   }
 
   return (
@@ -126,17 +160,13 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
             </Card>
           </TabsContent>
           <TabsContent value="task" className="mt-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Задание</CardTitle>
-                <CardDescription>Укажите задание миграции.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  Здесь будет интерфейс управления заданием миграции.
-                </p>
-              </CardContent>
-            </Card>
+            <CronExpressionEditor
+              value={cron}
+              onChange={setCron}
+              onSave={saveCron}
+              saving={cronSaving}
+              error={cronError}
+            />
           </TabsContent>
         </Tabs>
       </div>
