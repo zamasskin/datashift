@@ -1,10 +1,12 @@
 import Migration from '#models/migration'
 import { Head, router } from '@inertiajs/react'
-import { Pencil } from 'lucide-react'
+import { AlarmClockCheck, ArrowDownToLine, ArrowUpToLine, Pencil } from 'lucide-react'
 import { useState } from 'react'
 import { RootLayout } from '~/components/root-layout'
 import { Button } from '~/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card'
 import { Input } from '~/components/ui/input'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 
 const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const [isEditing, setIsEditing] = useState(false)
@@ -77,6 +79,66 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
           </div>
         )}
         {error && <p className="text-sm text-destructive">{error}</p>}
+
+        <Tabs defaultValue="request" className="mt-8">
+          <TabsList>
+            <TabsTrigger value="request">
+              <ArrowDownToLine />
+              Датасеты
+            </TabsTrigger>
+            <TabsTrigger value="response">
+              <ArrowUpToLine />
+              Миграторы
+            </TabsTrigger>
+            <TabsTrigger value="task">
+              <AlarmClockCheck />
+              Задание
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="request" className="mt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Датасеты</CardTitle>
+                <CardDescription>
+                  Добавьте датасеты, которые будут использоваться в миграции.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Здесь будет интерфейс управления датасетами миграции.
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value="response" className="mt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Миграторы</CardTitle>
+                <CardDescription>
+                  Добавьте миграторы, которые будут использоваться в миграции.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Здесь будет интерфейс управления миграторами миграции.
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value="task" className="mt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Задание</CardTitle>
+                <CardDescription>Укажите задание миграции.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Здесь будет интерфейс управления заданием миграции.
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </>
   )
