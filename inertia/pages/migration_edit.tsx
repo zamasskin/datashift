@@ -106,7 +106,9 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-semibold">{migration.name}</h1>
+            <h1 className="text-xl font-semibold select-none" onDoubleClick={startEdit}>
+              {migration.name}
+            </h1>
             <Button
               type="button"
               size="icon"
