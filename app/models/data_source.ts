@@ -2,6 +2,7 @@ import { DateTime } from 'luxon'
 import { BaseModel, belongsTo, column, computed } from '@adonisjs/lucid/orm'
 import User from './user.js'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import { jsonColumn } from '../helpers/json_column.js'
 
 export default class DataSource extends BaseModel {
   @column({ isPrimary: true })
@@ -13,29 +14,7 @@ export default class DataSource extends BaseModel {
   @column()
   declare type: string
 
-  @column({
-    prepare: (value: any) => {
-      if (value === null || value === undefined) return null
-      // Для MySQL/SQLite храним JSON как строку
-      try {
-        return typeof value === 'string' ? value : JSON.stringify(value)
-      } catch {
-        return value
-      }
-    },
-    consume: (value: any) => {
-      if (value === null || value === undefined) return null
-      // Преобразуем строку JSON обратно в объект
-      if (typeof value === 'string') {
-        try {
-          return JSON.parse(value)
-        } catch {
-          return value
-        }
-      }
-      return value
-    },
-  })
+  @column(jsonColumn())
   declare config: Record<string, any>
 
   @column()
