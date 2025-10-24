@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { DataSourceSelect } from '~/components/datasource/data-source-select'
 import { Button } from '~/components/ui/button'
 import {
@@ -13,22 +13,55 @@ import {
 } from '~/components/ui/dialog'
 import { SqlEditor } from '../sql-editor'
 import { Spinner } from '~/components/ui/spinner'
+import { usePage } from '@inertiajs/react'
 
 export type SqlEditorProps = {
   isLoading?: boolean
 }
 
 export function SqlDataset(props: SqlEditorProps) {
-  const [sourceId, setSourceId] = useState(0)
+  const { csrfToken, dataSources } = usePage().props as any
+  const [sourceId, setSourceId] = useState(dataSources[0]?.id || 0)
   const [query, setQuery] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [tables, setTables] = useState<string[]>([])
 
   const isShowLoading = useMemo(() => props.isLoading || isLoading, [props.isLoading, isLoading])
 
-  const onSelectSourceId = (value: number) => {
+  const onSelectSourceId = async (value: number) => {
     setSourceId(value)
     // TODO: Подгрузить таблицы из источника данных
+    if (!value) {
+      setTables([])
+      return
+    }
+    try {
+      setIsLoading(true)
+      const res = await fetch('/sql/tables', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}),
+        },
+        body: JSON.stringify({ dataSourceId: value /*, schema: 'public' для Postgres */ }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err?.error || `HTTP ${res.status}`)
+      }
+      const data = await res.json()
+      setTables(Array.isArray(data?.tables) ? data.tables : [])
+    } catch (e) {
+      console.error('Не удалось загрузить таблицы', e)
+      setTables([])
+    } finally {
+      setIsLoading(false)
+    }
   }
+
+  useEffect(() => {
+    onSelectSourceId(sourceId)
+  }, [sourceId])
 
   return (
     <Dialog>
@@ -46,7 +79,7 @@ export function SqlDataset(props: SqlEditorProps) {
             <SqlEditor
               value={query}
               onChange={setQuery}
-              tables={['users', 'orders', 'products']}
+              tables={tables}
               paramKeys={['userId', 'date', 'region']}
               prevResults={{ sql1: ['ID', 'TOTAL', 'USER_ID'] }}
             />

@@ -13,6 +13,7 @@ const MigrationsController = () => import('#controllers/migrations_controller')
 const LoginController = () => import('#controllers/login_controller')
 const DataSourcesController = () => import('#controllers/data_sources_controller')
 const DatasetsController = () => import('#controllers/datasets_controller')
+const SqlController = () => import('#controllers/sql_controller')
 
 // Login routes
 router.get('/login', [LoginController, 'create']).middleware(middleware.guest())
@@ -59,6 +60,10 @@ router
     router.get('/datasets', [DatasetsController, 'index'])
     router.post('/datasets/test-sql', [DatasetsController, 'testSql'])
     router.post('/datasets/test-dataset', [DatasetsController, 'testDataset'])
+
+    // SQL
+    router.post('/sql/tables', [SqlController, 'listTables'])
+    router.post('/sql/columns', [SqlController, 'listColumns'])
 
     router.on('/tasks').renderInertia('tasks/index')
     router.on('/settings').renderInertia('settings/index')
