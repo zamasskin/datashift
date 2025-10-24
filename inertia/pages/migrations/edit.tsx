@@ -1,7 +1,7 @@
 import Migration from '#models/migration'
 import { Head, router, usePage } from '@inertiajs/react'
 import { ArrowDownUp, FileWarning, Save, Settings, Trash } from 'lucide-react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { SqlDataset } from '~/components/migrations/datasets/sql-dataset'
 import { RootLayout } from '~/components/root-layout'
 import { Alert, AlertTitle } from '~/components/ui/alert'
@@ -47,9 +47,12 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const [addType, setAddType] = useState('sql')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [prevResults, setPrevResults] = useState<Record<string, string[]>>({})
 
   const [saveLoading, setSaveLoading] = useState(false)
   const [saveErrors, setSaveErrors] = useState<Record<string, string>>({})
+
+  const paramKeys = useMemo(() => params.map((p) => p.key as string), [params])
 
   const onSave = () => {
     setSaveLoading(true)
@@ -170,7 +173,12 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                     </ItemGroup>
 
                     <div className="flex gap-2">
-                      <SqlDataset isLoading={isLoading} />
+                      <SqlDataset
+                        onAdd={(config) => setFetchConfigs([...fetchConfigs, config])}
+                        prevResults={prevResults}
+                        paramKeys={paramKeys}
+                        isLoading={isLoading}
+                      />
 
                       <Select value={addType} onValueChange={setAddType}>
                         <SelectTrigger>

@@ -15,8 +15,18 @@ import { SqlEditor } from '../sql-editor'
 import { Spinner } from '~/components/ui/spinner'
 import { usePage } from '@inertiajs/react'
 
+export type Config = {
+  type: 'sql'
+  id: string
+  sourceId: number
+  query: string
+}
+
 export type SqlEditorProps = {
   isLoading?: boolean
+  paramKeys?: string[]
+  prevResults?: Record<string, string[]>
+  onAdd?: (config: Config) => void
 }
 
 export function SqlDataset(props: SqlEditorProps) {
@@ -25,6 +35,7 @@ export function SqlDataset(props: SqlEditorProps) {
   const [query, setQuery] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [tables, setTables] = useState<string[]>([])
+  const [open, setOpen] = useState(false)
 
   const isShowLoading = useMemo(() => props.isLoading || isLoading, [props.isLoading, isLoading])
 
@@ -63,8 +74,15 @@ export function SqlDataset(props: SqlEditorProps) {
     onSelectSourceId(sourceId)
   }, [sourceId])
 
+  const handleAdd = async () => {
+    if (props.onAdd) {
+      props.onAdd({ type: 'sql', id: Date.now().toString(36), query, sourceId })
+    }
+    setOpen(false)
+  }
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>Добавить</Button>
       </DialogTrigger>
@@ -80,8 +98,8 @@ export function SqlDataset(props: SqlEditorProps) {
               value={query}
               onChange={setQuery}
               tables={tables}
-              paramKeys={['userId', 'date', 'region']}
-              prevResults={{ sql1: ['ID', 'TOTAL', 'USER_ID'] }}
+              paramKeys={props.paramKeys}
+              prevResults={props.prevResults}
             />
 
             {isShowLoading && (
@@ -95,7 +113,9 @@ export function SqlDataset(props: SqlEditorProps) {
             <DialogClose asChild>
               <Button variant="outline">Закрыть</Button>
             </DialogClose>
-            <Button type="submit">Добавить</Button>
+            <Button type="submit" onClick={handleAdd}>
+              Добавить
+            </Button>
           </DialogFooter>
         </DialogHeader>
       </DialogContent>
