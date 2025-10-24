@@ -57,6 +57,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const onSave = () => {
     setSaveLoading(true)
     setSaveErrors({})
+    console.log(fetchConfigs)
     router.put(
       `/migrations/${migration.id}`,
       { name, cronExpression, isActive, fetchConfigs, saveMappings, params },

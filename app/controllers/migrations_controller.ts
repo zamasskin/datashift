@@ -73,9 +73,9 @@ export default class MigrationsController {
     }
 
     try {
-      const { name, cronExpression, isActive } = await schema.validate(request.all())
+      const data = await schema.validate(request.all())
 
-      migration.merge({ name, cronExpression, isActive })
+      migration.merge(data)
       await migration.save()
 
       return response.redirect(`/migrations/${migration.id}`)

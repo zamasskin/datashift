@@ -18,8 +18,10 @@ import { usePage } from '@inertiajs/react'
 export type Config = {
   type: 'sql'
   id: string
-  sourceId: number
-  query: string
+  params: {
+    sourceId: number
+    query: string
+  }
 }
 
 export type SqlEditorProps = {
@@ -76,7 +78,7 @@ export function SqlDataset(props: SqlEditorProps) {
 
   const handleAdd = async () => {
     if (props.onAdd) {
-      props.onAdd({ type: 'sql', id: Date.now().toString(36), query, sourceId })
+      props.onAdd({ type: 'sql', id: Date.now().toString(36), params: { query, sourceId } })
     }
     setOpen(false)
   }
