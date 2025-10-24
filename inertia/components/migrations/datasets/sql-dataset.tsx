@@ -29,7 +29,14 @@ export function SqlDataset() {
             <DataSourceSelect value={sourceId} onChange={setSourceId} />
           </DialogDescription>
 
-          <SqlEditor value={query} onChange={setQuery} tables={[]} columns={[]} />
+          <SqlEditor
+            value={query}
+            onChange={setQuery}
+            tables={[]}
+            columns={[]}
+            paramKeys={["userId", "date", "region"]}
+            prevResults={{ sql1: ["ID", "TOTAL", "USER_ID"] }}
+          />
 
           <DialogFooter>
             <DialogClose asChild>

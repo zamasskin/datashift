@@ -4,8 +4,10 @@ import { useTheme } from '../theme-provider'
 
 type SqlEditorProps = {
   value: string
-  tables: string[]
-  columns: string[]
+  tables?: string[]
+  columns?: string[]
+  paramKeys?: string[]
+  prevResults?: Record<string, string[]>
   onChange: (val: string) => void
 }
 
@@ -21,12 +23,18 @@ export function SqlEditor(props: SqlEditorProps) {
   useEffect(() => {
     if (!monaco) return
 
-    // Подставьте реальные таблицы/поля из вашего источника данных
-    const tables = ['users', 'orders', 'products']
-    const columns = ['id', 'name', 'created_at']
+    // Используем переданные значения, если есть, иначе дефолт
+    const tables = (props.tables && props.tables.length > 0)
+      ? props.tables
+      : ['users', 'orders', 'products']
+    const columns = (props.columns && props.columns.length > 0)
+      ? props.columns
+      : ['id', 'name', 'created_at']
+    const paramKeys = props.paramKeys || []
+    const prevResults = props.prevResults || {}
 
     const provider = monaco.languages.registerCompletionItemProvider('sql', {
-      triggerCharacters: [' ', '.', '('],
+      triggerCharacters: [' ', '.', '(', '{'],
       provideCompletionItems(model, position) {
         const word = model.getWordUntilPosition(position)
         const range = {
@@ -36,7 +44,36 @@ export function SqlEditor(props: SqlEditorProps) {
           endColumn: word.endColumn,
         }
 
+        // Подсказки для параметров: {param.name}
+        const paramSuggestions = paramKeys.map((p, i) => ({
+          label: `{param.${p}}`,
+          kind: monaco.languages.CompletionItemKind.Snippet,
+          insertText: `{param.${p}}`,
+          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          range,
+          detail: 'Параметр',
+          sortText: `00${i}`,
+          preselect: i === 0,
+        }))
+
+        // Подсказки для результатов предыдущих запросов: {sqlAlias.column}
+        const prevResultSuggestions = Object.entries(prevResults).flatMap(([alias, cols]) =>
+          (cols || []).map((c, i) => ({
+            label: `{${alias}.${c}}`,
+            kind: monaco.languages.CompletionItemKind.Snippet,
+            insertText: `{${alias}.${c}}`,
+            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+            range,
+            detail: `Из результата ${alias}`,
+            sortText: `01${i}`,
+          }))
+        )
+
         const suggestions = [
+          // Сначала специальные подсказки с фигурными скобками
+          ...paramSuggestions,
+          ...prevResultSuggestions,
+          // Далее общий сниппет и ключевые слова
           {
             label: 'SELECT * FROM ...',
             kind: monaco.languages.CompletionItemKind.Snippet,
@@ -45,7 +82,7 @@ export function SqlEditor(props: SqlEditorProps) {
             range,
             detail: 'Шаблон запроса',
             documentation: 'Быстрый шаблон SELECT',
-            sortText: '0',
+            sortText: '1',
           },
           ...['SELECT', 'FROM', 'WHERE', 'GROUP BY', 'ORDER BY'].map((kw, i) => ({
             label: kw,
@@ -53,7 +90,7 @@ export function SqlEditor(props: SqlEditorProps) {
             insertText: kw,
             range,
             detail: 'Ключевое слово',
-            sortText: `1${i}`,
+            sortText: `2${i}`,
           })),
           ...tables.map((t, i) => ({
             label: t,
@@ -61,7 +98,7 @@ export function SqlEditor(props: SqlEditorProps) {
             insertText: t,
             range,
             detail: 'Таблица',
-            sortText: `2${i}`,
+            sortText: `3${i}`,
           })),
           ...columns.map((c, i) => ({
             label: c,
@@ -69,7 +106,7 @@ export function SqlEditor(props: SqlEditorProps) {
             insertText: c,
             range,
             detail: 'Колонка',
-            sortText: `3${i}`,
+            sortText: `4${i}`,
           })),
         ]
 
@@ -78,7 +115,7 @@ export function SqlEditor(props: SqlEditorProps) {
     })
 
     return () => provider.dispose()
-  }, [monaco])
+  }, [monaco, props.tables, props.columns, props.paramKeys, props.prevResults])
 
   useEffect(() => {
     if (!mounted) return
@@ -100,7 +137,7 @@ export function SqlEditor(props: SqlEditorProps) {
           minimap: { enabled: false },
           fontSize: 13,
           suggestOnTriggerCharacters: true,
-          wordBasedSuggestions: 'off', // ваши подсказки приоритетнее
+          wordBasedSuggestions: 'off',
         }}
       />
     </div>
