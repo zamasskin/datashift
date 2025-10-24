@@ -11,8 +11,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '~/components/ui/dialog'
+import { SqlEditor } from '../sql-editor'
 
-export function SqlEditor() {
+export function SqlDataset() {
   const [sourceId, setSourceId] = useState(0)
   const [query, setQuery] = useState('')
 
@@ -28,12 +29,7 @@ export function SqlEditor() {
             <DataSourceSelect value={sourceId} onChange={setSourceId} />
           </DialogDescription>
 
-          <textarea
-            className="min-h-40 w-full rounded-md border px-3 py-2 text-sm"
-            placeholder="SELECT * FROM table WHERE ..."
-            value={query}
-            onChange={(ev) => setQuery(ev.target.value)}
-          />
+          <SqlEditor value={query} onChange={setQuery} tables={[]} columns={[]} />
 
           <DialogFooter>
             <DialogClose asChild>

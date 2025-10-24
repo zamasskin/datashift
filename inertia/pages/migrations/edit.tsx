@@ -2,7 +2,7 @@ import Migration from '#models/migration'
 import { Head, router, usePage } from '@inertiajs/react'
 import { ArrowDownUp, FileWarning, Save, Settings, Trash } from 'lucide-react'
 import { useState } from 'react'
-import { SqlEditor } from '~/components/migrations/editors/sql-editor'
+import { SqlDataset } from '~/components/migrations/datasets/sql-dataset'
 import { RootLayout } from '~/components/root-layout'
 import { Alert, AlertTitle } from '~/components/ui/alert'
 import { Button } from '~/components/ui/button'
@@ -170,7 +170,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                     </ItemGroup>
 
                     <div className="flex gap-2">
-                      <SqlEditor />
+                      <SqlDataset />
 
                       <Select value={addType} onValueChange={setAddType}>
                         <SelectTrigger>
