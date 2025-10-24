@@ -1,3 +1,4 @@
+import DataSource from '#models/data_source'
 import Migration from '#models/migration'
 import type { HttpContext } from '@adonisjs/core/http'
 import vine from '@vinejs/vine'
@@ -9,8 +10,9 @@ export default class MigrationsController {
   }
 
   async edit({ inertia, params }: HttpContext) {
+    const dataSources = await DataSource.query().preload('user')
     const migration = await Migration.findOrFail(params.id)
-    return inertia.render('migrations/edit', { migration })
+    return inertia.render('migrations/edit', { migration, dataSources })
   }
 
   async store({ request, response, auth }: HttpContext) {

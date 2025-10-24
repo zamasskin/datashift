@@ -2,11 +2,19 @@ import Migration from '#models/migration'
 import { Head, router, usePage } from '@inertiajs/react'
 import { ArrowDownUp, FileWarning, Save, Settings, Trash } from 'lucide-react'
 import { useState } from 'react'
+import { SqlEditor } from '~/components/migrations/editors/sql-editor'
 import { RootLayout } from '~/components/root-layout'
 import { Alert, AlertTitle } from '~/components/ui/alert'
 import { Button } from '~/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '~/components/ui/card'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '~/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '~/components/ui/dialog'
 import { Input } from '~/components/ui/input'
 import {
   ItemGroup,
@@ -162,7 +170,8 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                     </ItemGroup>
 
                     <div className="flex gap-2">
-                      <Button>Добавить</Button>
+                      <SqlEditor />
+
                       <Select value={addType} onValueChange={setAddType}>
                         <SelectTrigger>
                           <SelectValue placeholder="Тип датасета" />
