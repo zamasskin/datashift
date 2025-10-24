@@ -31,7 +31,7 @@ export default class MigrationsController {
     }
   }
 
-  async update({ params, request, response }: HttpContext) {
+  async update({ params, request, response, inertia }: HttpContext) {
     const id = Number(params.id)
     if (!Number.isFinite(id)) {
       return response.status(404).send({ error: 'Migration not found' })
@@ -44,23 +44,47 @@ export default class MigrationsController {
       })
     )
 
+    const migration = await Migration.find(id)
+    if (!migration) {
+      return response.status(404).send({ error: 'Migration not found' })
+    }
+
     try {
       const { name, cronExpression } = await schema.validate(
         request.only(['name', 'cronExpression'])
       )
-      const migration = await Migration.find(id)
-      if (!migration) {
-        return response.status(404).send({ error: 'Migration not found' })
-      }
 
       migration.merge({ name, cronExpression })
       await migration.save()
 
       return response.redirect(`/migrations/${migration.id}`)
     } catch (error: any) {
-      const message = error?.message ? String(error.message) : 'Укажите корректное имя'
-      return response.status(422).send({ errors: { name: message } })
+      const fieldErrors = this.mapVineErrors(error)
+      return inertia.render('migration_edit', { migration, errors: fieldErrors }, { status: 422 })
     }
+  }
+
+  /**
+   * Преобразует ошибки Vine в { field: message }.
+   * Добавляет префикс "config." для вложенных полей конфигурации.
+   */
+  private mapVineErrors(error: any): Record<string, string> {
+    const fieldErrors: Record<string, string> = {}
+    if (error?.messages && Array.isArray(error.messages)) {
+      for (const e of error.messages) {
+        if (!e.field || !e.message) continue
+        const fieldName = String(e.field)
+        switch (fieldName) {
+          case 'name':
+            fieldErrors[fieldName] = 'Укажите корректное имя'
+            break
+          default:
+            fieldErrors[fieldName] = 'Укажите корректное значение'
+            break
+        }
+      }
+    }
+    return fieldErrors
   }
 
   async storeFetchConfig({}: HttpContext) {

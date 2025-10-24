@@ -19,7 +19,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const [isEditing, setIsEditing] = useState(false)
   const [name, setName] = useState(migration.name || '')
   const [error, setError] = useState<string | null>(null)
-  const [saving, setSaving] = useState(false)
+  const [savingName, setSavingName] = useState(false)
   const [cron, setCron] = useState(migration.cronExpression || '')
   const [cronSaving, setCronSaving] = useState(false)
   const [cronError, setCronError] = useState<string | null>(null)
@@ -37,23 +37,24 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
   }
 
   const saveName = () => {
-    setSaving(true)
+    setSavingName(true)
     setError(null)
     router.put(
       `/migrations/${migration.id}`,
-      { name },
+      { name, cronExpression: cron },
       {
         preserveScroll: true,
         onError: (errors: any) => {
+          console.log(errors)
           const msg =
             (errors?.name && Array.isArray(errors.name) ? errors.name[0] : errors?.name) ||
             errors?.error ||
             'Укажите корректное имя'
           setError(String(msg))
-          setSaving(false)
+          setSavingName(false)
         },
         onSuccess: () => {
-          setSaving(false)
+          setSavingName(false)
           setIsEditing(false)
         },
       }
@@ -66,7 +67,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
     return new Promise<void>((resolve, reject) => {
       router.put(
         `/migrations/${migration.id}`,
-        { cronExpression: cron },
+        { name, cronExpression: cron },
         {
           preserveScroll: true,
           onError: (errors: any) => {
@@ -97,10 +98,10 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
         {isEditing ? (
           <div className="flex items-center gap-2">
             <Input value={name} onChange={(e) => setName(e.target.value)} className="w-[320px]" />
-            <Button onClick={saveName} disabled={saving}>
+            <Button onClick={saveName} disabled={savingName}>
               Сохранить
             </Button>
-            <Button type="button" variant="outline" onClick={cancelEdit} disabled={saving}>
+            <Button type="button" variant="outline" onClick={cancelEdit} disabled={savingName}>
               Отмена
             </Button>
           </div>
