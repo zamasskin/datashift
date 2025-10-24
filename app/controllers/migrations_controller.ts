@@ -55,6 +55,13 @@ export default class MigrationsController {
             source: vine.string(),
           })
         ),
+        params: vine.array(
+          vine.object({
+            key: vine.string(),
+            type: vine.string(),
+            value: vine.any(),
+          })
+        ),
       })
     )
 

@@ -34,6 +34,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const [cronExpression, setCronExpression] = useState(migration.cronExpression || '')
   const [fetchConfigs, setFetchConfigs] = useState(migration.fetchConfigs || [])
   const [saveMappings, setSaveMappings] = useState(migration.saveMappings || [])
+  const [params, setParams] = useState(migration.params || [])
   const [isActive, setIsActive] = useState(migration.isActive || false)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
@@ -46,7 +47,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
     setSaveErrors({})
     router.put(
       `/migrations/${migration.id}`,
-      { name, cronExpression, isActive, fetchConfigs, saveMappings },
+      { name, cronExpression, isActive, fetchConfigs, saveMappings, params },
       {
         preserveScroll: true,
         headers: props.csrfToken ? { 'X-CSRF-TOKEN': props.csrfToken } : undefined,
@@ -150,8 +151,8 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex w-full max-w-xl flex-col gap-6">
-                    <ItemGroup className="gap-4">
+                  <div className="flex w-full max-w-xl flex-col gap-4">
+                    <ItemGroup className="gap-2">
                       <MyItem name="sql1" icon="/icons/sql-edit.png" />
                       <MyItem name="sql2" icon="/icons/sql-build.png" />
                       <MyItem name="sql3" icon="/icons/merge.png" />
