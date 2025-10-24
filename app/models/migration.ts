@@ -59,6 +59,29 @@ export default class Migration extends BaseModel {
   })
   declare saveMappings: any[]
 
+  @column({
+    prepare: (value: any) => {
+      if (value === null || value === undefined) return null
+      try {
+        return typeof value === 'string' ? value : JSON.stringify(value)
+      } catch {
+        return value
+      }
+    },
+    consume: (value: any) => {
+      if (value === null || value === undefined) return null
+      if (typeof value === 'string') {
+        try {
+          return JSON.parse(value)
+        } catch {
+          return value
+        }
+      }
+      return value
+    },
+  })
+  declare params: any[]
+
   @column()
   declare cronExpression: string | null
 
