@@ -4,8 +4,7 @@ import { useTheme } from '../theme-provider'
 
 type SqlEditorProps = {
   value: string
-  tables?: string[]
-  columns?: string[]
+  // убираем tables/columns, оставляем только параметры и результаты
   paramKeys?: string[]
   prevResults?: Record<string, string[]>
   onChange: (val: string) => void
@@ -23,13 +22,7 @@ export function SqlEditor(props: SqlEditorProps) {
   useEffect(() => {
     if (!monaco) return
 
-    // Используем переданные значения, если есть, иначе дефолт
-    const tables = (props.tables && props.tables.length > 0)
-      ? props.tables
-      : ['users', 'orders', 'products']
-    const columns = (props.columns && props.columns.length > 0)
-      ? props.columns
-      : ['id', 'name', 'created_at']
+    // убраны tables/columns: остаются paramKeys и prevResults
     const paramKeys = props.paramKeys || []
     const prevResults = props.prevResults || {}
 
@@ -70,10 +63,8 @@ export function SqlEditor(props: SqlEditorProps) {
         )
 
         const suggestions = [
-          // Сначала специальные подсказки с фигурными скобками
           ...paramSuggestions,
           ...prevResultSuggestions,
-          // Далее общий сниппет и ключевые слова
           {
             label: 'SELECT * FROM ...',
             kind: monaco.languages.CompletionItemKind.Snippet,
@@ -92,22 +83,6 @@ export function SqlEditor(props: SqlEditorProps) {
             detail: 'Ключевое слово',
             sortText: `2${i}`,
           })),
-          ...tables.map((t, i) => ({
-            label: t,
-            kind: monaco.languages.CompletionItemKind.Keyword,
-            insertText: t,
-            range,
-            detail: 'Таблица',
-            sortText: `3${i}`,
-          })),
-          ...columns.map((c, i) => ({
-            label: c,
-            kind: monaco.languages.CompletionItemKind.Field,
-            insertText: c,
-            range,
-            detail: 'Колонка',
-            sortText: `4${i}`,
-          })),
         ]
 
         return { suggestions }
@@ -115,7 +90,7 @@ export function SqlEditor(props: SqlEditorProps) {
     })
 
     return () => provider.dispose()
-  }, [monaco, props.tables, props.columns, props.paramKeys, props.prevResults])
+  }, [monaco, props.paramKeys, props.prevResults])
 
   useEffect(() => {
     if (!mounted) return
