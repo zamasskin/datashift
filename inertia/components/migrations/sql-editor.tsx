@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import Editor, { useMonaco } from '@monaco-editor/react'
+import { useTheme } from '../theme-provider'
 
 type SqlEditorProps = {
   value: string
@@ -11,6 +12,9 @@ type SqlEditorProps = {
 export function SqlEditor(props: SqlEditorProps) {
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
+
+  const { theme } = useTheme()
+  const [editorTheme, setEditorTheme] = useState<'vs' | 'vs-dark'>('vs-dark')
 
   const monaco = useMonaco()
 
@@ -76,19 +80,30 @@ export function SqlEditor(props: SqlEditorProps) {
     return () => provider.dispose()
   }, [monaco])
 
+  useEffect(() => {
+    if (!mounted) return
+    const isDark =
+      theme === 'dark' ||
+      (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    setEditorTheme(isDark ? 'vs-dark' : 'vs')
+  }, [theme, mounted])
+
   return mounted ? (
-    <Editor
-      height="300px"
-      defaultLanguage="sql"
-      value={props.value}
-      onChange={(val) => props?.onChange(val || '')}
-      options={{
-        minimap: { enabled: false },
-        fontSize: 13,
-        suggestOnTriggerCharacters: true,
-        wordBasedSuggestions: 'off', // ваши подсказки приоритетнее
-      }}
-    />
+    <div className="rounded-md border  text-sm bg-background my-2">
+      <Editor
+        height="300px"
+        defaultLanguage="sql"
+        value={props.value}
+        onChange={(val) => props?.onChange(val || '')}
+        theme={editorTheme}
+        options={{
+          minimap: { enabled: false },
+          fontSize: 13,
+          suggestOnTriggerCharacters: true,
+          wordBasedSuggestions: 'off', // ваши подсказки приоритетнее
+        }}
+      />
+    </div>
   ) : (
     <textarea
       className="min-h-40 w-full rounded-md border px-3 py-2 text-sm"

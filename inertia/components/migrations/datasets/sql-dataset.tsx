@@ -22,7 +22,7 @@ export function SqlDataset() {
       <DialogTrigger asChild>
         <Button>Добавить</Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-w-[92vw] sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl max-h-[75vh] overflow-y-auto p-4">
         <DialogHeader>
           <DialogTitle>Sql запрос</DialogTitle>
           <DialogDescription>
