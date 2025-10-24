@@ -42,7 +42,19 @@ export default class MigrationsController {
         name: vine.string().trim().minLength(3).maxLength(64),
         cronExpression: vine.string().optional(),
         isActive: vine.boolean(),
-        // fetchConfigs: vine.object(),
+        fetchConfigs: vine.array(
+          vine.object({
+            type: vine.string(),
+            id: vine.string(),
+            params: vine.record(vine.any()).optional(),
+          })
+        ),
+        saveMappings: vine.array(
+          vine.object({
+            datasetId: vine.number().withoutDecimals().positive(),
+            source: vine.string(),
+          })
+        ),
       })
     )
 
@@ -52,9 +64,7 @@ export default class MigrationsController {
     }
 
     try {
-      const { name, cronExpression, isActive } = await schema.validate(
-        request.only(['name', 'cronExpression', 'isActive'])
-      )
+      const { name, cronExpression, isActive } = await schema.validate(request.all())
 
       migration.merge({ name, cronExpression, isActive })
       await migration.save()
