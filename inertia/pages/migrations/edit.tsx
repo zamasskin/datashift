@@ -1,19 +1,12 @@
 import Migration from '#models/migration'
 import { Head, router, usePage } from '@inertiajs/react'
-import {
-  AlertCircleIcon,
-  ArrowDownUp,
-  FileWarning,
-  Loader,
-  Save,
-  Settings,
-  Trash,
-} from 'lucide-react'
+import { ArrowDownUp, FileWarning, Save, Settings, Trash } from 'lucide-react'
 import { useState } from 'react'
 import { RootLayout } from '~/components/root-layout'
-import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert'
+import { Alert, AlertTitle } from '~/components/ui/alert'
 import { Button } from '~/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '~/components/ui/card'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '~/components/ui/dialog'
 import { Input } from '~/components/ui/input'
 import {
   ItemGroup,
@@ -24,6 +17,13 @@ import {
   ItemDescription,
 } from '~/components/ui/item'
 import { Label } from '~/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '~/components/ui/select'
 import { Spinner } from '~/components/ui/spinner'
 import { Switch } from '~/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
@@ -36,6 +36,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const [saveMappings, setSaveMappings] = useState(migration.saveMappings || [])
   const [params, setParams] = useState(migration.params || [])
   const [isActive, setIsActive] = useState(migration.isActive || false)
+  const [addType, setAddType] = useState('sql')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -153,13 +154,27 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                 <CardContent>
                   <div className="flex w-full max-w-xl flex-col gap-4">
                     <ItemGroup className="gap-2">
+                      {/* TODO:Тут надо мапить fetchConfigs */}
                       <MyItem name="sql1" icon="/icons/sql-edit.png" />
                       <MyItem name="sql2" icon="/icons/sql-build.png" />
                       <MyItem name="sql3" icon="/icons/merge.png" />
                       <MyItem name="sql3" icon="/icons/modify.png" />
                     </ItemGroup>
 
-                    <Button>Добавить</Button>
+                    <div className="flex gap-2">
+                      <Button>Добавить</Button>
+                      <Select value={addType} onValueChange={setAddType}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Тип датасета" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="sql">SQL</SelectItem>
+                          <SelectItem value="sqlBuilder">Редактор запроса</SelectItem>
+                          <SelectItem value="merge">Объединение</SelectItem>
+                          <SelectItem value="modification">Модификация</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -225,9 +240,22 @@ export function MyItem({ name, icon }: { name: string; icon: string }) {
             <Button size="icon" variant="outline">
               <Trash />
             </Button>
-            <Button size="icon" variant="outline">
-              <Settings />
-            </Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button size="icon" variant="outline">
+                  <Settings />
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Are you absolutely sure?</DialogTitle>
+                  <DialogDescription>
+                    This action cannot be undone. This will permanently delete your account and
+                    remove your data from our servers.
+                  </DialogDescription>
+                </DialogHeader>
+              </DialogContent>
+            </Dialog>
           </div>
         </ItemDescription>
       </ItemContent>
