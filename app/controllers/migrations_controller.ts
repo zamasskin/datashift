@@ -10,7 +10,7 @@ export default class MigrationsController {
 
   async edit({ inertia, params }: HttpContext) {
     const migration = await Migration.findOrFail(params.id)
-    return inertia.render('migration_edit', { migration })
+    return inertia.render('migrations/edit', { migration })
   }
 
   async store({ request, response, auth }: HttpContext) {
