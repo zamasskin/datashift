@@ -60,7 +60,7 @@ export default class MigrationsController {
       return response.redirect(`/migrations/${migration.id}`)
     } catch (error: any) {
       const fieldErrors = this.mapVineErrors(error)
-      return inertia.render('migration_edit', { migration, errors: fieldErrors }, { status: 422 })
+      return inertia.render('migrations/edit', { migration, errors: fieldErrors }, { status: 422 })
     }
   }
 

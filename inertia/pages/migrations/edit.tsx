@@ -1,9 +1,17 @@
 import Migration from '#models/migration'
-import { Head } from '@inertiajs/react'
-import { ArrowDownUp, FileWarning, Save, Settings, Trash } from 'lucide-react'
+import { Head, router, usePage } from '@inertiajs/react'
+import {
+  AlertCircleIcon,
+  ArrowDownUp,
+  FileWarning,
+  Loader,
+  Save,
+  Settings,
+  Trash,
+} from 'lucide-react'
 import { useState } from 'react'
 import { RootLayout } from '~/components/root-layout'
-import { Alert, AlertTitle } from '~/components/ui/alert'
+import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert'
 import { Button } from '~/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '~/components/ui/card'
 import { Input } from '~/components/ui/input'
@@ -16,20 +24,49 @@ import {
   ItemDescription,
 } from '~/components/ui/item'
 import { Label } from '~/components/ui/label'
+import { Spinner } from '~/components/ui/spinner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 
 const MigrationEdit = ({ migration }: { migration: Migration }) => {
+  const { props } = usePage<{ csrfToken?: string }>()
   const [name, setName] = useState(migration.name)
   const [cronExpression, setCronExpression] = useState(migration.cronExpression || '')
   const [fetchConfigs, setFetchConfigs] = useState(migration.fetchConfigs || [])
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+
+  const [saveLoading, setSaveLoading] = useState(false)
+  const [saveErrors, setSaveErrors] = useState<Record<string, string>>({})
+
+  const onSave = () => {
+    setSaveLoading(true)
+    setSaveErrors({})
+    router.put(
+      `/migrations/${migration.id}`,
+      { name, cronExpression },
+      {
+        preserveScroll: true,
+        headers: props.csrfToken ? { 'X-CSRF-TOKEN': props.csrfToken } : undefined,
+        onError: (errors: any) => {
+          const map: Record<string, string> = {}
+          Object.entries(errors || {}).forEach(([field, message]) => {
+            map[field] = Array.isArray(message) ? String(message[0]) : String(message as any)
+          })
+          setSaveErrors(map)
+          setSaveLoading(false)
+        },
+        onSuccess: () => {
+          setSaveLoading(false)
+        },
+      }
+    )
+  }
 
   return (
     <>
       <Head title="Миграции" />
       <div className="px-4 lg:px-6 space-y-4">
-        <div className="flex gap-4 justify-between items-end">
+        <div className="space-y-2">
           <div className="grid w-full max-w-sm items-center gap-3">
             <Label htmlFor="name">Название</Label>
             <Input
@@ -38,6 +75,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
               onChange={(e) => setName(e.target.value)}
               className="w-[320px]"
             />
+            {saveErrors?.name && <p className="text-sm text-destructive">{saveErrors.name}</p>}
           </div>
         </div>
 
@@ -75,13 +113,16 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                 </CardHeader>
                 <CardContent>
                   <div className="grid w-full max-w-sm items-center gap-3">
-                    <Label htmlFor="cronExpression">Название</Label>
+                    <Label htmlFor="cronExpression">Cron выражение</Label>
                     <Input
                       id="cronExpression"
                       value={cronExpression}
                       onChange={(e) => setCronExpression(e.target.value)}
                       className="w-[320px]"
                     />
+                    {saveErrors?.cronExpression && (
+                      <p className="text-sm text-destructive">{saveErrors.cronExpression}</p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -137,14 +178,14 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
           </TabsContent>
         </Tabs>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
           <Button variant="outline">
             <Trash />
             Удалить
           </Button>
-          <Button>
+          <Button onClick={onSave} disabled={saveLoading}>
             <Save />
-            Сохранить
+            {saveLoading ? 'Сохранение…' : 'Сохранить'}
           </Button>
         </div>
       </div>
