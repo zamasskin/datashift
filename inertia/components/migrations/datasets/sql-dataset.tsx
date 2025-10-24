@@ -32,7 +32,7 @@ export function SqlDataset() {
           <SqlEditor
             value={query}
             onChange={setQuery}
-            // убираем tables/columns, оставляем только параметры и результаты для подсказок
+            tables={["users", "orders", "products"]}
             paramKeys={["userId", "date", "region"]}
             prevResults={{ sql1: ["ID", "TOTAL", "USER_ID"] }}
           />

@@ -4,7 +4,7 @@ import { useTheme } from '../theme-provider'
 
 type SqlEditorProps = {
   value: string
-  // убираем tables/columns, оставляем только параметры и результаты
+  tables?: string[]
   paramKeys?: string[]
   prevResults?: Record<string, string[]>
   onChange: (val: string) => void
@@ -22,9 +22,9 @@ export function SqlEditor(props: SqlEditorProps) {
   useEffect(() => {
     if (!monaco) return
 
-    // убраны tables/columns: остаются paramKeys и prevResults
     const paramKeys = props.paramKeys || []
     const prevResults = props.prevResults || {}
+    const tables = props.tables || []
 
     const provider = monaco.languages.registerCompletionItemProvider('sql', {
       triggerCharacters: [' ', '.', '(', '{'],
@@ -37,7 +37,6 @@ export function SqlEditor(props: SqlEditorProps) {
           endColumn: word.endColumn,
         }
 
-        // Подсказки для параметров: {param.name}
         const paramSuggestions = paramKeys.map((p, i) => ({
           label: `{param.${p}}`,
           kind: monaco.languages.CompletionItemKind.Snippet,
@@ -49,7 +48,6 @@ export function SqlEditor(props: SqlEditorProps) {
           preselect: i === 0,
         }))
 
-        // Подсказки для результатов предыдущих запросов: {sqlAlias.column}
         const prevResultSuggestions = Object.entries(prevResults).flatMap(([alias, cols]) =>
           (cols || []).map((c, i) => ({
             label: `{${alias}.${c}}`,
@@ -83,6 +81,14 @@ export function SqlEditor(props: SqlEditorProps) {
             detail: 'Ключевое слово',
             sortText: `2${i}`,
           })),
+          ...tables.map((t, i) => ({
+            label: t,
+            kind: monaco.languages.CompletionItemKind.Keyword,
+            insertText: t,
+            range,
+            detail: 'Таблица',
+            sortText: `3${i}`,
+          })),
         ]
 
         return { suggestions }
@@ -90,7 +96,7 @@ export function SqlEditor(props: SqlEditorProps) {
     })
 
     return () => provider.dispose()
-  }, [monaco, props.paramKeys, props.prevResults])
+  }, [monaco, props.paramKeys, props.prevResults, props.tables])
 
   useEffect(() => {
     if (!mounted) return
