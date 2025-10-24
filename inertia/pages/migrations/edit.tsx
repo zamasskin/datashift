@@ -45,7 +45,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const [params, setParams] = useState(migration.params || [])
   const [isActive, setIsActive] = useState(migration.isActive || false)
   const [addType, setAddType] = useState('sql')
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
   const [saveLoading, setSaveLoading] = useState(false)
@@ -170,7 +170,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                     </ItemGroup>
 
                     <div className="flex gap-2">
-                      <SqlDataset />
+                      <SqlDataset isLoading={isLoading} />
 
                       <Select value={addType} onValueChange={setAddType}>
                         <SelectTrigger>
