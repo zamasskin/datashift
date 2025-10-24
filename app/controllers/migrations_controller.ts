@@ -41,6 +41,8 @@ export default class MigrationsController {
       vine.object({
         name: vine.string().trim().minLength(3).maxLength(64),
         cronExpression: vine.string().optional(),
+        isActive: vine.boolean(),
+        // fetchConfigs: vine.object(),
       })
     )
 
@@ -50,11 +52,11 @@ export default class MigrationsController {
     }
 
     try {
-      const { name, cronExpression } = await schema.validate(
-        request.only(['name', 'cronExpression'])
+      const { name, cronExpression, isActive } = await schema.validate(
+        request.only(['name', 'cronExpression', 'isActive'])
       )
 
-      migration.merge({ name, cronExpression })
+      migration.merge({ name, cronExpression, isActive })
       await migration.save()
 
       return response.redirect(`/migrations/${migration.id}`)
@@ -77,6 +79,9 @@ export default class MigrationsController {
         switch (fieldName) {
           case 'name':
             fieldErrors[fieldName] = 'Укажите корректное имя'
+            break
+          case 'isActive':
+            fieldErrors[fieldName] = 'Укажите корректную активность'
             break
           default:
             fieldErrors[fieldName] = 'Укажите корректное значение'

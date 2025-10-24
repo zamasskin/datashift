@@ -25,6 +25,7 @@ import {
 } from '~/components/ui/item'
 import { Label } from '~/components/ui/label'
 import { Spinner } from '~/components/ui/spinner'
+import { Switch } from '~/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 
 const MigrationEdit = ({ migration }: { migration: Migration }) => {
@@ -32,6 +33,8 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const [name, setName] = useState(migration.name)
   const [cronExpression, setCronExpression] = useState(migration.cronExpression || '')
   const [fetchConfigs, setFetchConfigs] = useState(migration.fetchConfigs || [])
+  const [saveMappings, setSaveMappings] = useState(migration.saveMappings || [])
+  const [isActive, setIsActive] = useState(migration.isActive || false)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -43,7 +46,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
     setSaveErrors({})
     router.put(
       `/migrations/${migration.id}`,
-      { name, cronExpression },
+      { name, cronExpression, isActive, fetchConfigs, saveMappings },
       {
         preserveScroll: true,
         headers: props.csrfToken ? { 'X-CSRF-TOKEN': props.csrfToken } : undefined,
@@ -80,16 +83,24 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
         </div>
 
         <Tabs defaultValue="config" className="mt-8">
-          <TabsList>
-            <TabsTrigger value="config">
-              <Settings />
-              Настройки
-            </TabsTrigger>
-            <TabsTrigger value="migrations">
-              <ArrowDownUp />
-              Миграции
-            </TabsTrigger>
-          </TabsList>
+          <div className="flex gap-4 items-center">
+            <TabsList>
+              <TabsTrigger value="config">
+                <Settings />
+                Настройки
+              </TabsTrigger>
+              <TabsTrigger value="migrations">
+                <ArrowDownUp />
+                Миграции
+              </TabsTrigger>
+            </TabsList>
+
+            <div className="flex items-center space-x-2">
+              <Switch id="airplane-mode" checked={isActive} onCheckedChange={setIsActive} />
+              <Label htmlFor="airplane-mode">Активно</Label>
+            </div>
+          </div>
+
           <TabsContent value="config" className="mt-4 max-w-xl">
             <div className="space-y-4">
               <Card>
