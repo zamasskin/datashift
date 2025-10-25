@@ -15,6 +15,16 @@ import {
   DialogTrigger,
 } from '~/components/ui/dialog'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card'
+import { Input } from '~/components/ui/input'
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from '~/components/ui/select'
+import { Field, FieldLabel } from '~/components/ui/field'
+import { Badge } from '~/components/ui/badge'
 
 type WhereRawValue = string | number | Date
 type WhereValue = WhereRawValue | { $in: WhereRawValue[] } | { $nin: WhereRawValue[] }
@@ -53,20 +63,91 @@ export function SqlBuilderDataset(props: SqlBuilderProps) {
   const [open, setOpen] = useState(false)
   const [sourceId, setSourceId] = useState(0)
   const [table, setTable] = useState('')
+  const [where, setWhere] = useState<Where[]>(props?.config?.params?.where || [])
 
   useEffect(() => {
     setSourceId(getDefaultSourceId(dataSources, props?.config?.params?.sourceId))
   }, [props?.config?.params?.sourceId])
 
+  // GroupBlock nested UI component for $and/$or
+  function GroupBlock({ items, type, onChange }: { items: Where[]; type: 'and' | 'or'; onChange: (items: Where[]) => void }) {
+    const addLeaf = () => onChange([...(items || []), { key: '', value: '' }])
+    const addGroup = (t: 'and' | 'or') => onChange([...(items || []), t === 'and' ? { $and: [] } : { $or: [] }])
+    const removeItem = (index: number) => onChange((items || []).filter((_, i) => i !== index))
+    const updateItem = (index: number, next: Where) => onChange((items || []).map((it, i) => (i === index ? next : it)))
+  
+    const getType = (item: Where): 'and' | 'or' | null => (item.$and ? 'and' : item.$or ? 'or' : null)
+    const getChildren = (item: Where): Where[] => (item.$and ? item.$and : item.$or ? item.$or : [])
+    const setChildren = (item: Where, t: 'and' | 'or', children: Where[]): Where => (t === 'and' ? { $and: children } : { $or: children })
+  
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary">Группа: {type.toUpperCase()}</Badge>
+          <Button size="sm" variant="outline" onClick={addLeaf}>Добавить условие</Button>
+          <Button size="sm" variant="outline" onClick={() => addGroup('and')}>Добавить группу AND</Button>
+          <Button size="sm" variant="outline" onClick={() => addGroup('or')}>Добавить группу OR</Button>
+        </div>
+  
+        <div className="space-y-3">
+          {(items || []).map((item, idx) => {
+            const t = getType(item)
+            if (t) {
+              const children = getChildren(item)
+              return (
+                <div key={idx} className="rounded-md border p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge variant="outline">Подгруппа: {t.toUpperCase()}</Badge>
+                    <Button size="sm" variant="ghost" onClick={() => updateItem(idx, setChildren(item, t === 'and' ? 'or' : 'and', children))}>
+                      Поменять на {t === 'and' ? 'OR' : 'AND'}
+                    </Button>
+                    <Button size="sm" variant="destructive" onClick={() => removeItem(idx)}>Удалить группу</Button>
+                  </div>
+                  <GroupBlock
+                    items={children}
+                    type={t}
+                    onChange={(newChildren) => updateItem(idx, setChildren(item, t, newChildren))}
+                  />
+                </div>
+              )
+            }
+  
+            return (
+              <div key={idx} className="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
+                <Field>
+                  <FieldLabel>Поле</FieldLabel>
+                  <Input
+                    placeholder="например: users.status"
+                    value={item.key ?? ''}
+                    onChange={(e) => updateItem(idx, { ...item, key: e.target.value })}
+                  />
+                </Field>
+                <Field className="sm:col-span-2">
+                  <FieldLabel>Значение</FieldLabel>
+                  <Input
+                    placeholder="значение"
+                    value={typeof item.value === 'string' || typeof item.value === 'number' ? String(item.value ?? '') : ''}
+                    onChange={(e) => updateItem(idx, { ...item, value: e.target.value })}
+                  />
+                </Field>
+                <Button size="sm" variant="destructive" onClick={() => removeItem(idx)}>Удалить</Button>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    )
+  }
+
   const handleSave = async () => {
     if (props.onSave) {
       if (props?.config) {
-        props.onSave({ ...props?.config, params: { sourceId, table } })
+        props.onSave({ ...props?.config, params: { sourceId, table, where } })
       } else {
         props.onSave({
           type: 'sql_builder',
           id: Date.now().toString(36),
-          params: { sourceId, table },
+          params: { sourceId, table, where },
         })
       }
     }
@@ -126,7 +207,9 @@ export function SqlBuilderDataset(props: SqlBuilderProps) {
                   <CardTitle>Where</CardTitle>
                   <CardDescription>Настройка фильтров</CardDescription>
                 </CardHeader>
-                <CardContent></CardContent>
+                <CardContent>
+                  <GroupBlock items={where} type="and" onChange={setWhere} />
+                </CardContent>
               </Card>
             </TabsContent>
             <TabsContent value="group">
@@ -170,4 +253,4 @@ function getDefaultSourceId(dataSources: DataSource[], selectSourceId?: number) 
   }
 
   return sourcesId[0] || 0
-}
+ }
