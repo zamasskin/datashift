@@ -180,7 +180,15 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                     <ItemGroup className="gap-2">
                       {fetchConfigs.map((conf) => (
                         <div key={conf?.id}>
-                          {conf?.type == 'sql' && <SqlCard config={conf} onRemove={handleRemove} />}
+                          {conf?.type == 'sql' && (
+                            <SqlCard
+                              paramKeys={paramKeys}
+                              isLoading={isLoading}
+                              prevResults={undefined}
+                              config={conf}
+                              onRemove={handleRemove}
+                            />
+                          )}
                         </div>
                       ))}
                       <MyItem name="sql1" icon="/icons/sql-edit.png" />

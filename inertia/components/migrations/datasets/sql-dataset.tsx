@@ -31,6 +31,7 @@ export type SqlEditorProps = {
   config?: Config
   prevResults?: Record<string, string[]>
   children?: React.ReactNode
+  saveBtnName?: string
   onSave?: (config: Config) => void
 }
 
@@ -135,7 +136,7 @@ export function SqlDataset(props: SqlEditorProps) {
               <Button variant="outline">Закрыть</Button>
             </DialogClose>
             <Button type="submit" onClick={handleAdd}>
-              Добавить
+              {props.saveBtnName || 'Добавить'}
             </Button>
           </DialogFooter>
         </DialogHeader>

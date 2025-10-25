@@ -57,6 +57,7 @@ export function SqlCard({
               paramKeys={paramKeys}
               isLoading={isLoading}
               config={config}
+              saveBtnName="Сохранить"
             >
               <Button size="icon" variant="outline">
                 <Settings />
