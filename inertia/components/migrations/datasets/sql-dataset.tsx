@@ -91,7 +91,6 @@ export function SqlDataset(props: SqlEditorProps) {
   const handleSave = async () => {
     if (props.onSave) {
       if (props?.config) {
-        console.log('update config', { ...props?.config, params: { query, sourceId } })
         props.onSave({ ...props?.config, params: { query, sourceId } })
       } else {
         setQuery('')
@@ -107,10 +106,10 @@ export function SqlDataset(props: SqlEditorProps) {
       <DialogContent className="max-w-[92vw] sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl max-h-[75vh] overflow-y-auto p-4">
         <DialogHeader>
           <DialogTitle>Sql запрос</DialogTitle>
-          <DialogDescription>
-            <DataSourceSelect value={sourceId} onChange={setSourceId} />
-          </DialogDescription>
+          <DialogDescription></DialogDescription>
         </DialogHeader>
+
+        <DataSourceSelect value={sourceId} onChange={setSourceId} />
 
         <div className="relative">
           <SqlEditor

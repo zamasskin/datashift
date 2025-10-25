@@ -3,6 +3,7 @@ import { Head, router, usePage } from '@inertiajs/react'
 import { ArrowDownUp, FileWarning, Pencil, Save, Settings, Trash } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { SqlCard } from '~/components/migrations/cards/sql-card'
+import { SqlBuilderDataset } from '~/components/migrations/datasets/sql-builder-dataset'
 import { SqlDataset } from '~/components/migrations/datasets/sql-dataset'
 import { RootLayout } from '~/components/root-layout'
 import { Alert, AlertTitle } from '~/components/ui/alert'
@@ -223,6 +224,10 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                           <SelectItem value="modification">Модификация</SelectItem>
                         </SelectContent>
                       </Select>
+
+                      <SqlBuilderDataset>
+                        <Button>Редактор запроса</Button>
+                      </SqlBuilderDataset>
                     </div>
                   </div>
                 </CardContent>
