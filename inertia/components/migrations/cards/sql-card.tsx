@@ -45,25 +45,23 @@ export function SqlCard({
         <ItemDescription>Источник данных № {config?.params?.sourceId}</ItemDescription>
       </ItemContent>
       <ItemContent className="flex-none text-center">
-        <ItemDescription>
-          <div className="flex gap-2">
-            <Button size="icon" variant="outline" onClick={handleRemove}>
-              <Trash />
-            </Button>
+        <ItemDescription className="space-x-2">
+          <Button size="icon" variant="outline" onClick={handleRemove}>
+            <Trash />
+          </Button>
 
-            <SqlDataset
-              onSave={onUpdate}
-              prevResults={prevResults}
-              paramKeys={paramKeys}
-              isLoading={isLoading}
-              config={config}
-              saveBtnName="Сохранить"
-            >
-              <Button size="icon" variant="outline">
-                <Settings />
-              </Button>
-            </SqlDataset>
-          </div>
+          <SqlDataset
+            onSave={onUpdate}
+            prevResults={prevResults}
+            paramKeys={paramKeys}
+            isLoading={isLoading}
+            config={config}
+            saveBtnName="Сохранить"
+          >
+            <Button size="icon" variant="outline">
+              <Settings />
+            </Button>
+          </SqlDataset>
         </ItemDescription>
       </ItemContent>
     </Item>

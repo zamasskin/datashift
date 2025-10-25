@@ -284,28 +284,26 @@ export function MyItem({ name, icon }: { name: string; icon: string }) {
         </ItemDescription>
       </ItemContent>
       <ItemContent className="flex-none text-center">
-        <ItemDescription>
-          <div className="flex gap-2">
-            <Button size="icon" variant="outline">
-              <Trash />
-            </Button>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button size="icon" variant="outline">
-                  <Pencil />
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Are you absolutely sure?</DialogTitle>
-                  <DialogDescription>
-                    This action cannot be undone. This will permanently delete your account and
-                    remove your data from our servers.
-                  </DialogDescription>
-                </DialogHeader>
-              </DialogContent>
-            </Dialog>
-          </div>
+        <ItemDescription className="space-x-2">
+          <Button size="icon" variant="outline">
+            <Trash />
+          </Button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button size="icon" variant="outline">
+                <Pencil />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Are you absolutely sure?</DialogTitle>
+                <DialogDescription>
+                  This action cannot be undone. This will permanently delete your account and remove
+                  your data from our servers.
+                </DialogDescription>
+              </DialogHeader>
+            </DialogContent>
+          </Dialog>
         </ItemDescription>
       </ItemContent>
     </Item>
