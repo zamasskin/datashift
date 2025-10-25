@@ -14,6 +14,7 @@ import {
 import { SqlEditor } from '../sql-editor'
 import { Spinner } from '~/components/ui/spinner'
 import { usePage } from '@inertiajs/react'
+import DataSource from '#models/data_source'
 
 export type Config = {
   type: 'sql'
@@ -27,7 +28,7 @@ export type Config = {
 export type SqlEditorProps = {
   isLoading?: boolean
   paramKeys?: string[]
-  query?: string
+  config?: Config
   prevResults?: Record<string, string[]>
   children?: React.ReactNode
   onSave?: (config: Config) => void
@@ -36,7 +37,7 @@ export type SqlEditorProps = {
 export function SqlDataset(props: SqlEditorProps) {
   const { csrfToken, dataSources } = usePage().props as any
   const [sourceId, setSourceId] = useState(dataSources[0]?.id || 0)
-  const [query, setQuery] = useState(props.query || '')
+  const [query, setQuery] = useState(props?.config?.params?.query || '')
   const [isLoading, setIsLoading] = useState(false)
   const [tables, setTables] = useState<string[]>([])
   const [open, setOpen] = useState(false)
@@ -79,12 +80,26 @@ export function SqlDataset(props: SqlEditorProps) {
   }, [sourceId])
 
   useEffect(() => {
-    setQuery(props.query || '')
-  }, [props.query])
+    setQuery(props?.config?.params?.query || '')
+  }, [props?.config?.params?.query])
+
+  useEffect(() => {
+    const sourcesId: number[] = dataSources.map((source: DataSource) => source.id)
+    if (props?.config?.params?.sourceId && sourcesId.includes(props?.config?.params?.sourceId)) {
+      setSourceId(props.config.params.sourceId)
+    } else {
+      setSourceId(sourcesId[0])
+    }
+  }, [props?.config?.params?.sourceId])
 
   const handleAdd = async () => {
     if (props.onSave) {
-      props.onSave({ type: 'sql', id: Date.now().toString(36), params: { query, sourceId } })
+      if (props?.config) {
+        props.onSave({ ...props?.config, params: { query, sourceId } })
+      } else {
+        setQuery('')
+        props.onSave({ type: 'sql', id: Date.now().toString(36), params: { query, sourceId } })
+      }
     }
     setOpen(false)
   }

@@ -1,32 +1,26 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-  DialogTrigger,
-} from '@radix-ui/react-dialog'
 import { Settings, Trash } from 'lucide-react'
 import { Button } from '~/components/ui/button'
-import { DialogHeader } from '~/components/ui/dialog'
 import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '~/components/ui/item'
-
-export type Config = {
-  type: 'sql'
-  id: string
-  params: {
-    sourceId: number
-    query: string
-  }
-}
+import { Config, SqlDataset } from './sql-dataset'
 
 export type SqlCardProps = {
+  isLoading?: boolean
+  paramKeys?: string[]
   config?: Config
+  prevResults?: Record<string, string[]>
 
   onRemove?: (id: string) => void
   onUpdate?: (config: Config) => void
 }
 
-export function SqlCard({ config, onRemove: onRemove, onUpdate }: SqlCardProps) {
+export function SqlCard({
+  config,
+  paramKeys,
+  prevResults,
+  isLoading,
+  onRemove: onRemove,
+  onUpdate,
+}: SqlCardProps) {
   const handleRemove = () => {
     if (onRemove) {
       onRemove(config?.id || '')
@@ -56,22 +50,18 @@ export function SqlCard({ config, onRemove: onRemove, onUpdate }: SqlCardProps) 
             <Button size="icon" variant="outline" onClick={handleRemove}>
               <Trash />
             </Button>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button size="icon" variant="outline">
-                  <Settings />
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Are you absolutely sure?</DialogTitle>
-                  <DialogDescription>
-                    This action cannot be undone. This will permanently delete your account and
-                    remove your data from our servers.
-                  </DialogDescription>
-                </DialogHeader>
-              </DialogContent>
-            </Dialog>
+
+            <SqlDataset
+              onSave={onUpdate}
+              prevResults={prevResults}
+              paramKeys={paramKeys}
+              isLoading={isLoading}
+              config={config}
+            >
+              <Button size="icon" variant="outline">
+                <Settings />
+              </Button>
+            </SqlDataset>
           </div>
         </ItemDescription>
       </ItemContent>
