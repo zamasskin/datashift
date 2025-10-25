@@ -27,6 +27,7 @@ export type Config = {
 export type SqlEditorProps = {
   isLoading?: boolean
   paramKeys?: string[]
+  query?: string
   prevResults?: Record<string, string[]>
   onAdd?: (config: Config) => void
 }
@@ -34,7 +35,7 @@ export type SqlEditorProps = {
 export function SqlDataset(props: SqlEditorProps) {
   const { csrfToken, dataSources } = usePage().props as any
   const [sourceId, setSourceId] = useState(dataSources[0]?.id || 0)
-  const [query, setQuery] = useState('')
+  const [query, setQuery] = useState(props.query || '')
   const [isLoading, setIsLoading] = useState(false)
   const [tables, setTables] = useState<string[]>([])
   const [open, setOpen] = useState(false)
@@ -75,6 +76,10 @@ export function SqlDataset(props: SqlEditorProps) {
   useEffect(() => {
     onSelectSourceId(sourceId)
   }, [sourceId])
+
+  useEffect(() => {
+    setQuery(props.query || '')
+  }, [props.query])
 
   const handleAdd = async () => {
     if (props.onAdd) {
