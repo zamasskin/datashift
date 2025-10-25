@@ -114,32 +114,32 @@ export function SqlDataset(props: SqlEditorProps) {
           <DialogDescription>
             <DataSourceSelect value={sourceId} onChange={setSourceId} />
           </DialogDescription>
-
-          <div className="relative">
-            <SqlEditor
-              value={query}
-              onChange={setQuery}
-              tables={tables}
-              paramKeys={props.paramKeys}
-              prevResults={props.prevResults}
-            />
-
-            {isShowLoading && (
-              <div className="absolute bottom-4 right-2">
-                <Spinner className="text-muted-foreground" />
-              </div>
-            )}
-          </div>
-
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Закрыть</Button>
-            </DialogClose>
-            <Button type="submit" onClick={handleAdd}>
-              {props.saveBtnName || 'Добавить'}
-            </Button>
-          </DialogFooter>
         </DialogHeader>
+
+        <div className="relative">
+          <SqlEditor
+            value={query}
+            onChange={setQuery}
+            tables={tables}
+            paramKeys={props.paramKeys}
+            prevResults={props.prevResults}
+          />
+
+          {isShowLoading && (
+            <div className="absolute bottom-4 right-2">
+              <Spinner className="text-muted-foreground" />
+            </div>
+          )}
+        </div>
+
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline">Закрыть</Button>
+          </DialogClose>
+          <Button type="submit" onClick={handleAdd}>
+            {props.saveBtnName || 'Добавить'}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

@@ -107,7 +107,7 @@ export function SqlEditor(props: SqlEditorProps) {
   }, [theme, mounted])
 
   return mounted ? (
-    <div className="rounded-md border  text-sm bg-background my-2">
+    <div className="rounded-md border  text-sm bg-background">
       <Editor
         height="300px"
         defaultLanguage="sql"
