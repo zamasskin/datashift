@@ -29,7 +29,7 @@ export type SqlEditorProps = {
   paramKeys?: string[]
   query?: string
   prevResults?: Record<string, string[]>
-  onAdd?: (config: Config) => void
+  onSave?: (config: Config) => void
 }
 
 export function SqlDataset(props: SqlEditorProps) {
@@ -82,8 +82,8 @@ export function SqlDataset(props: SqlEditorProps) {
   }, [props.query])
 
   const handleAdd = async () => {
-    if (props.onAdd) {
-      props.onAdd({ type: 'sql', id: Date.now().toString(36), params: { query, sourceId } })
+    if (props.onSave) {
+      props.onSave({ type: 'sql', id: Date.now().toString(36), params: { query, sourceId } })
     }
     setOpen(false)
   }

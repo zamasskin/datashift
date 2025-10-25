@@ -191,7 +191,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
 
                     <div className="flex gap-2">
                       <SqlDataset
-                        onAdd={(config) => setFetchConfigs([...fetchConfigs, config])}
+                        onSave={(config) => setFetchConfigs([...fetchConfigs, config])}
                         prevResults={prevResults}
                         paramKeys={paramKeys}
                         isLoading={isLoading}
