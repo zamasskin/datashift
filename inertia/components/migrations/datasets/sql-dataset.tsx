@@ -29,6 +29,7 @@ export type SqlEditorProps = {
   paramKeys?: string[]
   query?: string
   prevResults?: Record<string, string[]>
+  children?: React.ReactNode
   onSave?: (config: Config) => void
 }
 
@@ -90,9 +91,7 @@ export function SqlDataset(props: SqlEditorProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>Добавить</Button>
-      </DialogTrigger>
+      <DialogTrigger asChild>{props.children}</DialogTrigger>
       <DialogContent className="max-w-[92vw] sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl max-h-[75vh] overflow-y-auto p-4">
         <DialogHeader>
           <DialogTitle>Sql запрос</DialogTitle>

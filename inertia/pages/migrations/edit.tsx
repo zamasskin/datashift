@@ -195,7 +195,9 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                         prevResults={prevResults}
                         paramKeys={paramKeys}
                         isLoading={isLoading}
-                      />
+                      >
+                        <Button>Добавить</Button>
+                      </SqlDataset>
 
                       <Select value={addType} onValueChange={setAddType}>
                         <SelectTrigger>
