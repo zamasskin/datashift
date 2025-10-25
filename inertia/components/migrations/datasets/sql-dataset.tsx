@@ -37,7 +37,9 @@ export type SqlEditorProps = {
 
 export function SqlDataset(props: SqlEditorProps) {
   const { csrfToken, dataSources } = usePage().props as any
-  const [sourceId, setSourceId] = useState(dataSources[0]?.id || 0)
+  const [sourceId, setSourceId] = useState(
+    getDefaultSourceId(dataSources, props?.config?.params?.sourceId)
+  )
   const [query, setQuery] = useState(props?.config?.params?.query || '')
   const [isLoading, setIsLoading] = useState(false)
   const [tables, setTables] = useState<string[]>([])
@@ -85,17 +87,13 @@ export function SqlDataset(props: SqlEditorProps) {
   }, [props?.config?.params?.query])
 
   useEffect(() => {
-    const sourcesId: number[] = dataSources.map((source: DataSource) => source.id)
-    if (props?.config?.params?.sourceId && sourcesId.includes(props?.config?.params?.sourceId)) {
-      setSourceId(props.config.params.sourceId)
-    } else {
-      setSourceId(sourcesId[0])
-    }
+    setSourceId(getDefaultSourceId(dataSources, props?.config?.params?.sourceId))
   }, [props?.config?.params?.sourceId])
 
-  const handleAdd = async () => {
+  const handleSave = async () => {
     if (props.onSave) {
       if (props?.config) {
+        console.log('update config', { ...props?.config, params: { query, sourceId } })
         props.onSave({ ...props?.config, params: { query, sourceId } })
       } else {
         setQuery('')
@@ -136,11 +134,20 @@ export function SqlDataset(props: SqlEditorProps) {
           <DialogClose asChild>
             <Button variant="outline">Закрыть</Button>
           </DialogClose>
-          <Button type="submit" onClick={handleAdd}>
+          <Button type="submit" onClick={handleSave}>
             {props.saveBtnName || 'Добавить'}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   )
+}
+
+function getDefaultSourceId(dataSources: DataSource[], selectSourceId?: number) {
+  const sourcesId: number[] = dataSources.map((source: DataSource) => source.id)
+  if (selectSourceId && sourcesId.includes(selectSourceId)) {
+    return selectSourceId
+  }
+
+  return sourcesId[0] || 0
 }

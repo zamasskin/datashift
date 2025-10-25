@@ -91,6 +91,10 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
     setFetchConfigs((old) => old.filter((cfg) => cfg.id !== id))
   }
 
+  const handleSave = (config: { id: string }) => {
+    setFetchConfigs((old) => old.map((item) => (item.id == config.id ? config : item)))
+  }
+
   return (
     <>
       <Head title="Миграции" />
@@ -187,6 +191,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                               prevResults={undefined}
                               config={conf}
                               onRemove={handleRemove}
+                              onUpdate={handleSave}
                             />
                           )}
                         </div>
