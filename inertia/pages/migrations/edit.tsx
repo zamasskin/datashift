@@ -1,6 +1,6 @@
 import Migration from '#models/migration'
 import { Head, router, usePage } from '@inertiajs/react'
-import { ArrowDownUp, FileWarning, Save, Settings, Trash } from 'lucide-react'
+import { ArrowDownUp, FileWarning, Pencil, Save, Settings, Trash } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { SqlCard } from '~/components/migrations/datasets/sql-card'
 import { SqlDataset } from '~/components/migrations/datasets/sql-dataset'
@@ -277,7 +277,7 @@ export function MyItem({ name, icon }: { name: string; icon: string }) {
             <Dialog>
               <DialogTrigger asChild>
                 <Button size="icon" variant="outline">
-                  <Settings />
+                  <Pencil />
                 </Button>
               </DialogTrigger>
               <DialogContent>
