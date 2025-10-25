@@ -2,6 +2,7 @@ import Migration from '#models/migration'
 import { Head, router, usePage } from '@inertiajs/react'
 import { ArrowDownUp, FileWarning, Save, Settings, Trash } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { SqlCard } from '~/components/migrations/datasets/sql-card'
 import { SqlDataset } from '~/components/migrations/datasets/sql-dataset'
 import { RootLayout } from '~/components/root-layout'
 import { Alert, AlertTitle } from '~/components/ui/alert'
@@ -35,6 +36,13 @@ import {
 import { Spinner } from '~/components/ui/spinner'
 import { Switch } from '~/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
+
+const fcSettings: Record<string, { name: string; icon: string }> = {
+  sql: { name: 'SQL Запрос', icon: '/icons/sql-edit.png' },
+  sqlBuilder: { name: 'Редактор запроса', icon: '/icons/sql-build.png"' },
+  merge: { name: 'Объединение', icon: '/icons/merge.png' },
+  modification: { name: 'Модификация', icon: '/icons/modify.png' },
+}
 
 const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const { props } = usePage<{ csrfToken?: string }>()
@@ -77,6 +85,10 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
         },
       }
     )
+  }
+
+  const handleRemove = (id: string) => {
+    setFetchConfigs((old) => old.filter((cfg) => cfg.id !== id))
   }
 
   return (
@@ -166,7 +178,11 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                 <CardContent>
                   <div className="flex w-full max-w-xl flex-col gap-4">
                     <ItemGroup className="gap-2">
-                      {/* TODO:Тут надо мапить fetchConfigs */}
+                      {fetchConfigs.map((conf) => (
+                        <div key={conf?.id}>
+                          {conf?.type == 'sql' && <SqlCard config={conf} onRemove={handleRemove} />}
+                        </div>
+                      ))}
                       <MyItem name="sql1" icon="/icons/sql-edit.png" />
                       <MyItem name="sql2" icon="/icons/sql-build.png" />
                       <MyItem name="sql3" icon="/icons/merge.png" />
