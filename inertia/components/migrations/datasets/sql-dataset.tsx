@@ -37,9 +37,7 @@ export type SqlEditorProps = {
 
 export function SqlDataset(props: SqlEditorProps) {
   const { csrfToken, dataSources } = usePage().props as any
-  const [sourceId, setSourceId] = useState(
-    getDefaultSourceId(dataSources, props?.config?.params?.sourceId)
-  )
+  const [sourceId, setSourceId] = useState(0)
   const [query, setQuery] = useState(props?.config?.params?.query || '')
   const [isLoading, setIsLoading] = useState(false)
   const [tables, setTables] = useState<string[]>([])
