@@ -17,7 +17,6 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card'
 import { WhereContent } from './sql-builder-dataset/where'
 import { WhereData } from './sql-builder-dataset/where-editor'
-import { ScrollArea } from '~/components/ui/scroll-area'
 
 export type SqlBuilderConfig = {
   type: 'sql_builder'
