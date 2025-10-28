@@ -15,26 +15,9 @@ import {
   DialogTrigger,
 } from '~/components/ui/dialog'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card'
-import { Input } from '~/components/ui/input'
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from '~/components/ui/select'
-import { Field, FieldLabel } from '~/components/ui/field'
-import { Badge } from '~/components/ui/badge'
-
-type WhereRawValue = string | number | Date
-type WhereValue = WhereRawValue | { $in: WhereRawValue[] } | { $nin: WhereRawValue[] }
-type Where = {
-  key?: string
-  value?: WhereValue
-  cond?: 'and' | 'or'
-  $and?: Where[]
-  $or?: Where[]
-}
+import { WhereContent } from './sql-builder-dataset/where'
+import { WhereData } from './sql-builder-dataset/where-editor'
+import { ScrollArea } from '~/components/ui/scroll-area'
 
 export type SqlBuilderConfig = {
   type: 'sql_builder'
@@ -44,8 +27,8 @@ export type SqlBuilderConfig = {
     table: string
     selects?: string[]
     orders?: Record<string, 'asc' | 'desc'>[]
-    where?: Where[]
-    hawing?: Where[]
+    where?: WhereData
+    hawing?: WhereData
     group?: string[]
   }
 }
@@ -63,81 +46,13 @@ export function SqlBuilderDataset(props: SqlBuilderProps) {
   const [open, setOpen] = useState(false)
   const [sourceId, setSourceId] = useState(0)
   const [table, setTable] = useState('')
-  const [where, setWhere] = useState<Where[]>(props?.config?.params?.where || [])
+  const [where, setWhere] = useState<WhereData>({})
 
   useEffect(() => {
     setSourceId(getDefaultSourceId(dataSources, props?.config?.params?.sourceId))
   }, [props?.config?.params?.sourceId])
 
   // GroupBlock nested UI component for $and/$or
-  function GroupBlock({ items, type, onChange }: { items: Where[]; type: 'and' | 'or'; onChange: (items: Where[]) => void }) {
-    const addLeaf = () => onChange([...(items || []), { key: '', value: '' }])
-    const addGroup = (t: 'and' | 'or') => onChange([...(items || []), t === 'and' ? { $and: [] } : { $or: [] }])
-    const removeItem = (index: number) => onChange((items || []).filter((_, i) => i !== index))
-    const updateItem = (index: number, next: Where) => onChange((items || []).map((it, i) => (i === index ? next : it)))
-  
-    const getType = (item: Where): 'and' | 'or' | null => (item.$and ? 'and' : item.$or ? 'or' : null)
-    const getChildren = (item: Where): Where[] => (item.$and ? item.$and : item.$or ? item.$or : [])
-    const setChildren = (item: Where, t: 'and' | 'or', children: Where[]): Where => (t === 'and' ? { $and: children } : { $or: children })
-  
-    return (
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary">Группа: {type.toUpperCase()}</Badge>
-          <Button size="sm" variant="outline" onClick={addLeaf}>Добавить условие</Button>
-          <Button size="sm" variant="outline" onClick={() => addGroup('and')}>Добавить группу AND</Button>
-          <Button size="sm" variant="outline" onClick={() => addGroup('or')}>Добавить группу OR</Button>
-        </div>
-  
-        <div className="space-y-3">
-          {(items || []).map((item, idx) => {
-            const t = getType(item)
-            if (t) {
-              const children = getChildren(item)
-              return (
-                <div key={idx} className="rounded-md border p-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge variant="outline">Подгруппа: {t.toUpperCase()}</Badge>
-                    <Button size="sm" variant="ghost" onClick={() => updateItem(idx, setChildren(item, t === 'and' ? 'or' : 'and', children))}>
-                      Поменять на {t === 'and' ? 'OR' : 'AND'}
-                    </Button>
-                    <Button size="sm" variant="destructive" onClick={() => removeItem(idx)}>Удалить группу</Button>
-                  </div>
-                  <GroupBlock
-                    items={children}
-                    type={t}
-                    onChange={(newChildren) => updateItem(idx, setChildren(item, t, newChildren))}
-                  />
-                </div>
-              )
-            }
-  
-            return (
-              <div key={idx} className="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
-                <Field>
-                  <FieldLabel>Поле</FieldLabel>
-                  <Input
-                    placeholder="например: users.status"
-                    value={item.key ?? ''}
-                    onChange={(e) => updateItem(idx, { ...item, key: e.target.value })}
-                  />
-                </Field>
-                <Field className="sm:col-span-2">
-                  <FieldLabel>Значение</FieldLabel>
-                  <Input
-                    placeholder="значение"
-                    value={typeof item.value === 'string' || typeof item.value === 'number' ? String(item.value ?? '') : ''}
-                    onChange={(e) => updateItem(idx, { ...item, value: e.target.value })}
-                  />
-                </Field>
-                <Button size="sm" variant="destructive" onClick={() => removeItem(idx)}>Удалить</Button>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-    )
-  }
 
   const handleSave = async () => {
     if (props.onSave) {
@@ -157,15 +72,15 @@ export function SqlBuilderDataset(props: SqlBuilderProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{props.children}</DialogTrigger>
-      <DialogContent className="max-w-[92vw] sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl max-h-[75vh] overflow-y-auto p-4">
+      <DialogContent className="w-[95vw] sm:max-w-xl md:max-w-2xl lg:max-w-3xl xl:max-w-4xl max-h-[85vh] overflow-hidden p-4">
         <DialogHeader>
           <DialogTitle>Редактор запроса</DialogTitle>
           <DialogDescription></DialogDescription>
         </DialogHeader>
         <DataSourceSelect value={sourceId} onChange={setSourceId} />
 
-        <div>
-          <Tabs defaultValue="selects" className="mt-8">
+        <div className="mt-4 max-h-[68vh] overflow-y-auto pr-1">
+          <Tabs defaultValue="selects">
             <TabsList>
               <TabsTrigger value="selects">select</TabsTrigger>
               <TabsTrigger value="order">order</TabsTrigger>
@@ -202,16 +117,9 @@ export function SqlBuilderDataset(props: SqlBuilderProps) {
               </Card>
             </TabsContent>
             <TabsContent value="where">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Where</CardTitle>
-                  <CardDescription>Настройка фильтров</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <GroupBlock items={where} type="and" onChange={setWhere} />
-                </CardContent>
-              </Card>
+              <WhereContent data={where} onChange={setWhere} />
             </TabsContent>
+
             <TabsContent value="group">
               <Card>
                 <CardHeader>
@@ -253,4 +161,4 @@ function getDefaultSourceId(dataSources: DataSource[], selectSourceId?: number) 
   }
 
   return sourcesId[0] || 0
- }
+}
