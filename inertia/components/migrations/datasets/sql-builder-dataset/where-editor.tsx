@@ -107,6 +107,8 @@ export function WhereEditor({
           <Badge className="px-4">And</Badge>
           <div className="ml-1 pl-2 border-l border-l-border">
             <WhereEditor
+              suggestionKeys={suggestionKeys}
+              suggestionValues={suggestionValues}
               data={data.$and}
               onChange={(newData) => {
                 if (onChange) {
@@ -123,6 +125,8 @@ export function WhereEditor({
           <Badge className="px-4">Or</Badge>
           <div className="ml-1 pl-2 border-l border-l-border">
             <WhereEditor
+              suggestionKeys={suggestionKeys}
+              suggestionValues={suggestionValues}
               data={data.$or}
               onChange={(newData) => {
                 if (onChange) {
