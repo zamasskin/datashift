@@ -20,8 +20,12 @@ export function Autocomplete({
     .slice(0, 8)
 
   const handleChange: React.ChangeEventHandler<HTMLInputElement> = (ev) => {
+    const next = ev.target.value
     props.onChange?.(ev)
-    onValueChange?.(ev.target.value)
+    onValueChange?.(next)
+    if (suggestions.some((opt) => opt.toLowerCase().includes(String(next).toLowerCase()))) {
+      setIsFocused(true)
+    }
   }
 
   return (
