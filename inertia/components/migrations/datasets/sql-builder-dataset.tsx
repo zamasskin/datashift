@@ -15,8 +15,7 @@ import {
   DialogTrigger,
 } from '~/components/ui/dialog'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card'
-import { WhereContent } from './sql-builder-dataset/where'
-import { WhereData } from './sql-builder-dataset/where-editor'
+import { WhereData, WhereEditor } from './sql-builder-dataset/where-editor'
 
 export type SqlBuilderConfig = {
   type: 'sql_builder'
@@ -26,6 +25,7 @@ export type SqlBuilderConfig = {
     table: string
     selects?: string[]
     orders?: Record<string, 'asc' | 'desc'>[]
+    joins?: any
     where?: WhereData
     hawing?: WhereData
     group?: string[]
@@ -46,6 +46,15 @@ export function SqlBuilderDataset(props: SqlBuilderProps) {
   const [sourceId, setSourceId] = useState(0)
   const [table, setTable] = useState('')
   const [where, setWhere] = useState<WhereData>({})
+  const [hawing, setHawing] = useState<WhereData>({})
+
+  const [tables, setTabes] = useState([])
+  const [suggestionKeys, setSuggestionKeys] = useState([])
+
+  useEffect(() => {
+    setSuggestionKeys([])
+    // TODO Тут получать колонки всех выбранных таблиц
+  }, [props?.config?.params?.table, props?.config?.params?.joins])
 
   useEffect(() => {
     setSourceId(getDefaultSourceId(dataSources, props?.config?.params?.sourceId))
@@ -116,12 +125,22 @@ export function SqlBuilderDataset(props: SqlBuilderProps) {
               </Card>
             </TabsContent>
             <TabsContent value="where">
-              <WhereContent
-                suggestionValues={props.suggestions}
-                suggestionKeys={['hello', 'world']}
-                data={where}
-                onChange={setWhere}
-              />
+              <Card>
+                <CardHeader>
+                  <CardTitle>Where</CardTitle>
+                  <CardDescription>Настройка фильтров</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="max-h-72 max-w-full overflow-scroll">
+                    <WhereEditor
+                      suggestionKeys={suggestionKeys}
+                      suggestionValues={['hello', 'world']}
+                      data={where}
+                      onChange={setWhere}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
 
             <TabsContent value="group">
@@ -137,9 +156,18 @@ export function SqlBuilderDataset(props: SqlBuilderProps) {
               <Card>
                 <CardHeader>
                   <CardTitle>Hawing</CardTitle>
-                  <CardDescription>Настройка условий группировки</CardDescription>
+                  <CardDescription>Настройка условий группировок</CardDescription>
                 </CardHeader>
-                <CardContent></CardContent>
+                <CardContent>
+                  <div className="max-h-72 max-w-full overflow-scroll">
+                    <WhereEditor
+                      suggestionKeys={suggestionKeys}
+                      suggestionValues={['hello', 'world']}
+                      data={hawing}
+                      onChange={setHawing}
+                    />
+                  </div>
+                </CardContent>
               </Card>
             </TabsContent>
           </Tabs>
