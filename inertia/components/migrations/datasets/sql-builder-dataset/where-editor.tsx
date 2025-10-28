@@ -1,4 +1,4 @@
-import { BrushCleaning, Plus, Trash, X } from 'lucide-react'
+import { Plus, Trash, X } from 'lucide-react'
 import { useState } from 'react'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
@@ -193,7 +193,7 @@ export function FieldWhere({ field, onDelete, onChange }: FieldProps) {
             {field.op == 'in' || field.op == 'nin' ? (
               <div className="space-y-2">
                 {field.values?.map((value, idx) => (
-                  <ButtonGroup key={idx}>
+                  <div key={idx} className="flex gap-1">
                     <Input
                       id="field"
                       value={value}
@@ -205,20 +205,6 @@ export function FieldWhere({ field, onDelete, onChange }: FieldProps) {
                         }
                       }}
                     />
-
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        if (onChange) {
-                          const values = field.values || []
-                          values[idx] = ''
-                          onChange({ ...field, values })
-                        }
-                      }}
-                    >
-                      <BrushCleaning />
-                    </Button>
 
                     {field?.values && field?.values.length > 1 && (
                       <Button
@@ -234,7 +220,7 @@ export function FieldWhere({ field, onDelete, onChange }: FieldProps) {
                         <X />
                       </Button>
                     )}
-                  </ButtonGroup>
+                  </div>
                 ))}
                 <Button
                   onClick={() => {
@@ -355,7 +341,7 @@ export function ActionsWhere({
               {newCondOp == 'in' || newCondOp == 'nin' ? (
                 <div className="flex flex-col gap-2 justify-end">
                   {newCondValues.map((v, idx) => (
-                    <ButtonGroup key={idx}>
+                    <div className="flex gap-1" key={idx}>
                       <Input
                         value={v}
                         onChange={(ev) => {
@@ -365,18 +351,6 @@ export function ActionsWhere({
                         }}
                         className="col-span-2 h-8"
                       />
-
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          const updated = [...newCondValues]
-                          updated[idx] = ''
-                          setNewCondValues(updated)
-                        }}
-                      >
-                        <BrushCleaning />
-                      </Button>
 
                       {newCondValues.length > 1 && (
                         <Button
@@ -390,7 +364,7 @@ export function ActionsWhere({
                           <X />
                         </Button>
                       )}
-                    </ButtonGroup>
+                    </div>
                   ))}
 
                   <Button onClick={() => setNewCondValues((old) => [...old, ''])}>
