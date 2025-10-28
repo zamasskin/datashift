@@ -16,13 +16,12 @@ import {
 } from '~/components/ui/select'
 
 const whereOperators = ['=', '!=', '<>', '>', '>=', '<', '<=', 'in', 'nin'] as const
-type WhereRawValue = string | number | Date
 
 type Operators = (typeof whereOperators)[number]
 type WhereField = {
   key: string
-  value?: WhereRawValue
-  values?: WhereRawValue[]
+  value?: string
+  values?: string[]
   op?: Operators
 }
 
@@ -54,6 +53,13 @@ export function WhereEditor({ data, onChange }: WhereEditorProps) {
           onDelete={() => {
             if (onChange) {
               const fields = data?.fields?.filter((_, i) => i !== idx)
+              onChange({ ...data, fields })
+            }
+          }}
+          onChange={(newField) => {
+            if (onChange) {
+              const fields = data?.fields || []
+              fields[idx] = newField
               onChange({ ...data, fields })
             }
           }}
@@ -122,24 +128,139 @@ export function WhereEditor({ data, onChange }: WhereEditorProps) {
 export type FieldProps = {
   field: WhereField
   onDelete?: () => void
+  onChange?: (data: WhereField) => void
 }
 
-export function FieldWhere({ field, onDelete }: FieldProps) {
+export function FieldWhere({ field, onDelete, onChange }: FieldProps) {
+  const [opPopoverOpened, handleOpPopoverOpened] = useState(false)
   return (
     <div className="flex gap-1">
       <ButtonGroup>
-        <Button variant="secondary" size="sm">
-          {field.key}
-        </Button>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="secondary" size="sm">
+              {field.key}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="rounded-xl text-sm">
+            <Input
+              id="field"
+              value={field.key}
+              onChange={(ev) => {
+                if (onChange) {
+                  onChange({ ...field, key: ev.target.value })
+                }
+              }}
+            />
+          </PopoverContent>
+        </Popover>
 
-        <Button variant="secondary" size="sm">
-          {field.op || '='}
-        </Button>
-        <Button variant="secondary" size="sm">
-          {field.op == 'in' || field.op == 'nin'
-            ? field.values?.join(',')
-            : field.value?.toString()}
-        </Button>
+        <Popover open={opPopoverOpened} onOpenChange={handleOpPopoverOpened}>
+          <PopoverTrigger asChild>
+            <Button variant="secondary" size="sm">
+              {field.op || '='}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="rounded-xl text-sm w-16 p-0">
+            <div className="flex flex-col gap-1">
+              {whereOperators.map((op) => (
+                <Button
+                  key={op}
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    if (onChange) {
+                      onChange({ ...field, op: op })
+                      handleOpPopoverOpened(false)
+                    }
+                  }}
+                >
+                  {op}
+                </Button>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="secondary" size="sm" className="truncate">
+              {field.op == 'in' || field.op == 'nin'
+                ? field.values?.join(',')
+                : field.value?.toString()}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="rounded-xl text-sm">
+            {field.op == 'in' || field.op == 'nin' ? (
+              <div className="space-y-2">
+                {field.values?.map((value, idx) => (
+                  <ButtonGroup key={idx}>
+                    <Input
+                      id="field"
+                      value={value}
+                      onChange={(ev) => {
+                        if (onChange) {
+                          const values = field.values || []
+                          values[idx] = ev.target.value
+                          onChange({ ...field, values })
+                        }
+                      }}
+                    />
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (onChange) {
+                          const values = field.values || []
+                          values[idx] = ''
+                          onChange({ ...field, values })
+                        }
+                      }}
+                    >
+                      <BrushCleaning />
+                    </Button>
+
+                    {field?.values && field?.values.length > 1 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (onChange) {
+                            const values = field?.values?.filter((_, i) => i !== idx) || []
+                            onChange({ ...field, values })
+                          }
+                        }}
+                      >
+                        <X />
+                      </Button>
+                    )}
+                  </ButtonGroup>
+                ))}
+                <Button
+                  onClick={() => {
+                    if (onChange) {
+                      const values = field.values || []
+                      onChange({ ...field, values: [...values, ''] })
+                    }
+                  }}
+                >
+                  <Plus />
+                  Добавить
+                </Button>
+              </div>
+            ) : (
+              <Input
+                id="field"
+                value={field.value}
+                onChange={(ev) => {
+                  if (onChange) {
+                    onChange({ ...field, value: ev.target.value })
+                  }
+                }}
+              />
+            )}
+          </PopoverContent>
+        </Popover>
       </ButtonGroup>
 
       <Button size="sm" variant="destructive" onClick={onDelete}>
