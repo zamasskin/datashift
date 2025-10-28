@@ -37,7 +37,7 @@ export type SqlBuilderProps = {
   children?: React.ReactNode
   saveBtnName?: string
   config?: SqlBuilderConfig
-
+  suggestions?: string[]
   onSave?: (config: SqlBuilderConfig) => void
 }
 
@@ -117,7 +117,12 @@ export function SqlBuilderDataset(props: SqlBuilderProps) {
               </Card>
             </TabsContent>
             <TabsContent value="where">
-              <WhereContent data={where} onChange={setWhere} />
+              <WhereContent
+                suggestionValues={props.suggestions}
+                suggestionKeys={['hello', 'world']}
+                data={where}
+                onChange={setWhere}
+              />
             </TabsContent>
 
             <TabsContent value="group">

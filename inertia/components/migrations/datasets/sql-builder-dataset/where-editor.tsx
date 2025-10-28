@@ -1,5 +1,6 @@
 import { Plus, Trash, X } from 'lucide-react'
 import { useState } from 'react'
+import { Autocomplete } from '~/components/ui/autocomplete'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { ButtonGroup } from '~/components/ui/button-group'
@@ -33,10 +34,17 @@ export type WhereData = {
 
 export type WhereEditorProps = {
   data?: WhereData
+  suggestionKeys?: string[]
+  suggestionValues?: string[]
   onChange?: (newData: WhereData) => void
 }
 
-export function WhereEditor({ data, onChange }: WhereEditorProps) {
+export function WhereEditor({
+  data,
+  suggestionKeys,
+  suggestionValues,
+  onChange,
+}: WhereEditorProps) {
   const handleAddCondition = (newField: WhereField) => {
     if (onChange) {
       const fields = data?.fields || []
@@ -49,6 +57,8 @@ export function WhereEditor({ data, onChange }: WhereEditorProps) {
       {data?.fields?.map((field, idx) => (
         <FieldWhere
           key={idx}
+          suggestionKeys={suggestionKeys}
+          suggestionValues={suggestionValues}
           field={field}
           onDelete={() => {
             if (onChange) {
@@ -69,6 +79,8 @@ export function WhereEditor({ data, onChange }: WhereEditorProps) {
       <ActionsWhere
         openedAnd={!!data?.$and}
         openedOr={!!data?.$or}
+        suggestionKeys={suggestionKeys}
+        suggestionValues={suggestionValues}
         onChangeOpenedAnd={(opened) => {
           if (onChange) {
             if (opened) {
@@ -127,11 +139,19 @@ export function WhereEditor({ data, onChange }: WhereEditorProps) {
 
 export type FieldProps = {
   field: WhereField
+  suggestionKeys?: string[]
+  suggestionValues?: string[]
   onDelete?: () => void
   onChange?: (data: WhereField) => void
 }
 
-export function FieldWhere({ field, onDelete, onChange }: FieldProps) {
+export function FieldWhere({
+  field,
+  suggestionKeys,
+  suggestionValues,
+  onDelete,
+  onChange,
+}: FieldProps) {
   const [opPopoverOpened, handleOpPopoverOpened] = useState(false)
   return (
     <div className="flex gap-1">
@@ -143,12 +163,13 @@ export function FieldWhere({ field, onDelete, onChange }: FieldProps) {
             </Button>
           </PopoverTrigger>
           <PopoverContent align="start" className="rounded-xl text-sm">
-            <Input
+            <Autocomplete
+              suggestions={suggestionKeys}
               id="field"
               value={field.key}
-              onChange={(ev) => {
+              onValueChange={(value) => {
                 if (onChange) {
-                  onChange({ ...field, key: ev.target.value })
+                  onChange({ ...field, key: value })
                 }
               }}
             />
@@ -194,13 +215,14 @@ export function FieldWhere({ field, onDelete, onChange }: FieldProps) {
               <div className="space-y-2">
                 {field.values?.map((value, idx) => (
                   <div key={idx} className="flex gap-1">
-                    <Input
+                    <Autocomplete
+                      suggestions={suggestionValues}
                       id="field"
                       value={value}
-                      onChange={(ev) => {
+                      onValueChange={(value) => {
                         if (onChange) {
                           const values = field.values || []
-                          values[idx] = ev.target.value
+                          values[idx] = value
                           onChange({ ...field, values })
                         }
                       }}
@@ -235,12 +257,13 @@ export function FieldWhere({ field, onDelete, onChange }: FieldProps) {
                 </Button>
               </div>
             ) : (
-              <Input
+              <Autocomplete
+                suggestions={suggestionValues}
                 id="field"
                 value={field.value}
-                onChange={(ev) => {
+                onValueChange={(value) => {
                   if (onChange) {
-                    onChange({ ...field, value: ev.target.value })
+                    onChange({ ...field, value })
                   }
                 }}
               />
@@ -259,6 +282,8 @@ export function FieldWhere({ field, onDelete, onChange }: FieldProps) {
 export type ActionsWhereProps = {
   openedAnd?: boolean
   openedOr?: boolean
+  suggestionKeys?: string[]
+  suggestionValues?: string[]
   onAddCondition?: (newItem: WhereField) => void
   onChangeOpenedAnd?: (open: boolean) => void
   onChangeOpenedOr?: (open: boolean) => void
@@ -267,6 +292,8 @@ export type ActionsWhereProps = {
 export function ActionsWhere({
   openedAnd,
   openedOr,
+  suggestionKeys,
+  suggestionValues,
   onAddCondition,
   onChangeOpenedAnd,
   onChangeOpenedOr,
@@ -314,10 +341,11 @@ export function ActionsWhere({
           <div className="space-y-4">
             <Field>
               <FieldLabel htmlFor="input-id">Поле</FieldLabel>
-              <Input
+              <Autocomplete
                 id="field"
+                suggestions={suggestionKeys}
                 value={newCondKey}
-                onChange={(ev) => seNewtCondKey(ev.target.value)}
+                onValueChange={(value) => seNewtCondKey(value)}
                 className="col-span-2 h-8"
               />
             </Field>
@@ -342,11 +370,12 @@ export function ActionsWhere({
                 <div className="flex flex-col gap-2 justify-end">
                   {newCondValues.map((v, idx) => (
                     <div className="flex gap-1" key={idx}>
-                      <Input
+                      <Autocomplete
                         value={v}
-                        onChange={(ev) => {
+                        suggestions={suggestionValues}
+                        onValueChange={(value) => {
                           const updated = [...newCondValues]
-                          updated[idx] = ev.target.value as string
+                          updated[idx] = value
                           setNewCondValues(updated)
                         }}
                         className="col-span-2 h-8"
@@ -372,9 +401,10 @@ export function ActionsWhere({
                   </Button>
                 </div>
               ) : (
-                <Input
+                <Autocomplete
+                  suggestions={suggestionValues}
                   value={newCondValue.toString()}
-                  onChange={(ev) => setNewCondValue(ev.target.value)}
+                  onValueChange={(value) => setNewCondValue(value)}
                   id="value"
                   className="col-span-2 h-8"
                 />
