@@ -14,7 +14,7 @@ export function Autocomplete({
   onValueChange,
   ...props
 }: AutocompleteProps) {
-  const [isFocused, setIsFocused] = useState(false)
+  const [open, setOpen] = useState(false)
   const filteredValueSuggestions = suggestions
     .filter((opt) => opt.toLowerCase().includes(String(value).toLowerCase()))
     .slice(0, 8)
@@ -24,20 +24,14 @@ export function Autocomplete({
     props.onChange?.(ev)
     onValueChange?.(next)
     if (suggestions.some((opt) => opt.toLowerCase().includes(String(next).toLowerCase()))) {
-      setIsFocused(true)
+      setOpen(true)
     }
   }
 
   return (
-    <Popover open={isFocused && filteredValueSuggestions.length > 0}>
+    <Popover open={open && filteredValueSuggestions.length > 0} onOpenChange={setOpen}>
       <PopoverAnchor asChild>
-        <Input
-          {...props}
-          value={value}
-          onChange={handleChange}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-        />
+        <Input {...props} value={value} onChange={handleChange} onClick={() => setOpen(true)} />
       </PopoverAnchor>
       <PopoverContent
         align="start"
@@ -54,7 +48,7 @@ export function Autocomplete({
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => {
               onValueChange && onValueChange(s)
-              setIsFocused(false)
+              setOpen(false)
             }}
           >
             {s}
