@@ -1,4 +1,4 @@
-import { BrushCleaning, Plus, X } from 'lucide-react'
+import { BrushCleaning, Plus, Trash, X } from 'lucide-react'
 import { useState } from 'react'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
@@ -28,8 +28,8 @@ type WhereField = {
 
 export type WhereData = {
   fields?: WhereField[]
-  $and?: WhereData[]
-  $or?: WhereData[]
+  $and?: WhereData
+  $or?: WhereData
 }
 
 export type WhereEditorProps = {
@@ -42,38 +42,6 @@ export function WhereEditor({ data, onChange }: WhereEditorProps) {
     if (onChange) {
       const fields = data?.fields || []
       onChange({ ...data, fields: [...fields, newField] })
-    }
-  }
-
-  const handleAddAnd = () => {
-    if (onChange) {
-      onChange({ ...data, $and: [{}] })
-    }
-  }
-
-  const handleAddOr = () => {
-    if (onChange) {
-      onChange({ ...data, $or: [{}] })
-    }
-  }
-
-  const handleChangeAnd = (newItems: WhereData[] | undefined) => {
-    if (onChange) {
-      if (newItems && newItems.length > 0) {
-        onChange({ ...data, $and: newItems })
-      } else {
-        onChange({ ...data, $and: undefined })
-      }
-    }
-  }
-
-  const handleChangeOr = (newItems: WhereData[] | undefined) => {
-    if (onChange) {
-      if (newItems && newItems.length > 0) {
-        onChange({ ...data, $or: newItems })
-      } else {
-        onChange({ ...data, $or: undefined })
-      }
     }
   }
 
@@ -93,15 +61,60 @@ export function WhereEditor({ data, onChange }: WhereEditorProps) {
       ))}
 
       <ActionsWhere
-        showNewAnd={!data?.$and}
-        showNewOr={!data?.$or}
-        onAddAnd={handleAddAnd}
-        onAddOr={handleAddOr}
+        openedAnd={!!data?.$and}
+        openedOr={!!data?.$or}
+        onChangeOpenedAnd={(opened) => {
+          if (onChange) {
+            if (opened) {
+              onChange({ ...data, $and: undefined })
+            } else {
+              onChange({ ...data, $and: {} })
+            }
+          }
+        }}
+        onChangeOpenedOr={(opened) => {
+          if (onChange) {
+            if (opened) {
+              onChange({ ...data, $or: undefined })
+            } else {
+              onChange({ ...data, $or: {} })
+            }
+          }
+        }}
         onAddCondition={handleAddCondition}
       />
 
-      {data?.$and && <SubWhere label="And" items={data.$and} onChange={handleChangeAnd} />}
-      {data?.$or && <SubWhere label="Or" items={data.$or} onChange={handleChangeOr} />}
+      {data?.$and && (
+        <div className="space-y-2">
+          <Badge className="px-4">And</Badge>
+          <div className="ml-1 pl-2 border-l border-l-border">
+            <WhereEditor
+              data={data.$and}
+              onChange={(newData) => {
+                if (onChange) {
+                  onChange({ ...data, $and: newData })
+                }
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {data?.$or && (
+        <div className="space-y-2">
+          <Badge className="px-4">Or</Badge>
+          <div className="ml-1 pl-2 border-l border-l-border">
+            <WhereEditor
+              data={data.$or}
+              onChange={(newData) => {
+                if (onChange) {
+                  onChange({ ...data, $or: newData })
+                }
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -137,19 +150,19 @@ export function FieldWhere({ field, onDelete }: FieldProps) {
 }
 
 export type ActionsWhereProps = {
-  showNewAnd?: boolean
-  showNewOr?: boolean
+  openedAnd?: boolean
+  openedOr?: boolean
   onAddCondition?: (newItem: WhereField) => void
-  onAddAnd?: () => void
-  onAddOr?: () => void
+  onChangeOpenedAnd?: (open: boolean) => void
+  onChangeOpenedOr?: (open: boolean) => void
 }
 
 export function ActionsWhere({
-  showNewAnd,
-  showNewOr,
+  openedAnd,
+  openedOr,
   onAddCondition,
-  onAddAnd,
-  onAddOr,
+  onChangeOpenedAnd,
+  onChangeOpenedOr,
 }: ActionsWhereProps) {
   const [newCondOpen, changeNewCondOpen] = useState(false)
   const [newCondKey, seNewtCondKey] = useState('')
@@ -185,7 +198,7 @@ export function ActionsWhere({
     <div className="flex gap-1">
       <Popover open={newCondOpen} onOpenChange={changeNewCondOpen}>
         <PopoverTrigger asChild>
-          <Button size="sm" variant="outline">
+          <Button size="sm">
             <Plus />
             Условие
           </Button>
@@ -285,85 +298,37 @@ export function ActionsWhere({
         </PopoverContent>
       </Popover>
 
-      {showNewAnd && (
-        <Button size="sm" variant="outline" onClick={onAddAnd}>
+      {openedAnd ? (
+        <Button
+          size="sm"
+          variant="destructive"
+          onClick={() => onChangeOpenedAnd && onChangeOpenedAnd(true)}
+        >
+          <Trash />
+          And
+        </Button>
+      ) : (
+        <Button size="sm" onClick={() => onChangeOpenedAnd && onChangeOpenedAnd(false)}>
           <Plus />
           And
         </Button>
       )}
-      {showNewOr && (
-        <Button size="sm" variant="outline" onClick={onAddOr}>
+
+      {openedOr ? (
+        <Button
+          size="sm"
+          variant="destructive"
+          onClick={() => onChangeOpenedOr && onChangeOpenedOr(true)}
+        >
+          <Trash />
+          Or
+        </Button>
+      ) : (
+        <Button size="sm" onClick={() => onChangeOpenedOr && onChangeOpenedOr(false)}>
           <Plus />
           Or
         </Button>
       )}
     </div>
-  )
-}
-
-export type SubWhereProps = {
-  items?: WhereData[]
-  label?: string
-  onChange?: (items?: WhereData[]) => void
-}
-
-export function SubWhere({ items, label, onChange }: SubWhereProps) {
-  return (
-    <>
-      <div className="flex gap-1">
-        <Badge variant="outline" className="px-4">
-          {label}
-        </Badge>
-
-        <Button
-          size="icon-sm"
-          variant="outline"
-          onClick={() => {
-            if (onChange) {
-              const lastItems = items || []
-              onChange([...lastItems, {}])
-            }
-          }}
-        >
-          <Plus />
-        </Button>
-
-        <Button size="icon-sm" variant="destructive">
-          <X />
-        </Button>
-      </div>
-      <div className="flex gap-2">
-        <div className="space-y-3  ">
-          {items?.map((subData, idx) => (
-            <div key={idx} className="flex gap-2">
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() => {
-                  if (onChange) {
-                    const updated = items?.filter((_, i) => i !== idx) || []
-                    onChange(updated)
-                  }
-                }}
-              >
-                <X />
-              </Button>
-              <div className="border-l-border border-l pl-2">
-                <WhereEditor
-                  data={subData}
-                  onChange={(newValue) => {
-                    if (onChange) {
-                      const lastItems = items || []
-                      lastItems[idx] = newValue
-                      onChange(lastItems)
-                    }
-                  }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </>
   )
 }
