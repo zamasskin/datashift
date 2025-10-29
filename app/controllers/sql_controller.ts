@@ -118,11 +118,17 @@ export default class SqlController {
   async listColumns({ request, response }: HttpContext) {
     const payload = {
       dataSourceId: Number(request.input('dataSourceId')),
-      table: String(request.input('table') || ''),
+      table: request.input('table') as string | string[] | undefined,
       schema: String(request.input('schema') || ''),
     }
 
-    if (!payload.table) {
+    // Normalize tables to array
+    const tables = Array.isArray(payload.table)
+      ? payload.table
+      : payload.table
+        ? [payload.table]
+        : []
+    if (tables.length === 0) {
       return response.status(422).send({ error: 'Параметр table обязателен' })
     }
 
@@ -151,20 +157,23 @@ export default class SqlController {
           db.close()
         })
 
-        const escaped = payload.table.replace(/"/g, '""')
-        const rows = await new Promise<Array<{ name: string }>>((resolve, reject) => {
-          const db = new sqlite3.Database(absFile, sqlite3.OPEN_READWRITE)
-          db.all(`PRAGMA table_info("${escaped}")`, [], (err: any, res: any[]) => {
-            if (err) {
+        const columnsMap: Record<string, string[]> = {}
+        for (const table of tables) {
+          const escaped = table.replace(/"/g, '""')
+          const rows = await new Promise<Array<{ name: string }>>((resolve, reject) => {
+            const db = new sqlite3.Database(absFile, sqlite3.OPEN_READWRITE)
+            db.all(`PRAGMA table_info("${escaped}")`, [], (err: any, res: any[]) => {
+              if (err) {
+                db.close()
+                return reject(err)
+              }
               db.close()
-              return reject(err)
-            }
-            db.close()
-            resolve(res || [])
+              resolve(res || [])
+            })
           })
-        })
-        const columns = rows.map((r: any) => r.name).filter(Boolean)
-        return response.send({ columns })
+          columnsMap[table] = rows.map((r: any) => r.name).filter(Boolean)
+        }
+        return response.send({ columns: columnsMap })
       }
 
       if (ds.type === 'mysql') {
@@ -178,12 +187,15 @@ export default class SqlController {
           connectTimeout: 3000,
         })
         try {
-          const [rows] = await connection.execute(
-            'SELECT COLUMN_NAME AS column_name FROM information_schema.columns WHERE table_schema = ? AND table_name = ? ORDER BY ORDINAL_POSITION',
-            [String(ds.config?.database), payload.table]
-          )
-          const columns = (rows as any[]).map((r) => r.column_name).filter(Boolean)
-          return response.send({ columns })
+          const columnsMap: Record<string, string[]> = {}
+          for (const table of tables) {
+            const [rows] = await connection.execute(
+              'SELECT COLUMN_NAME AS column_name FROM information_schema.columns WHERE table_schema = ? AND table_name = ? ORDER BY ORDINAL_POSITION',
+              [String(ds.config?.database), table]
+            )
+            columnsMap[table] = (rows as any[]).map((r) => r.column_name).filter(Boolean)
+          }
+          return response.send({ columns: columnsMap })
         } finally {
           await connection.end()
         }
@@ -202,12 +214,15 @@ export default class SqlController {
         await client.connect()
         try {
           const schema = payload.schema || 'public'
-          const res = await client.query(
-            'SELECT column_name FROM information_schema.columns WHERE table_schema = $1 AND table_name = $2 ORDER BY ordinal_position',
-            [schema, payload.table]
-          )
-          const columns = (res.rows as any[]).map((r) => r.column_name).filter(Boolean)
-          return response.send({ columns })
+          const columnsMap: Record<string, string[]> = {}
+          for (const table of tables) {
+            const res = await client.query(
+              'SELECT column_name FROM information_schema.columns WHERE table_schema = $1 AND table_name = $2 ORDER BY ordinal_position',
+              [schema, table]
+            )
+            columnsMap[table] = (res.rows as any[]).map((r) => r.column_name).filter(Boolean)
+          }
+          return response.send({ columns: columnsMap })
         } finally {
           await client.end()
         }

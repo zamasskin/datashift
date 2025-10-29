@@ -1,7 +1,7 @@
 import DataSource from '#models/data_source'
 import { usePage } from '@inertiajs/react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { DataSourceSelect } from '~/components/datasource/data-source-select'
 import { Button } from '~/components/ui/button'
 import {
@@ -16,6 +16,10 @@ import {
 } from '~/components/ui/dialog'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card'
 import { WhereData, WhereEditor } from './sql-builder-dataset/where-editor'
+import { TableSelect } from '../table-select'
+import { Field, FieldContent, FieldLabel } from '~/components/ui/field'
+import { Spinner } from '~/components/ui/spinner'
+import { Input } from '~/components/ui/input'
 
 export type SqlBuilderConfig = {
   type: 'sql_builder'
@@ -37,10 +41,12 @@ export type SqlBuilderProps = {
   saveBtnName?: string
   config?: SqlBuilderConfig
   suggestions?: string[]
+  isLoading?: boolean
   onSave?: (config: SqlBuilderConfig) => void
 }
 
 export function SqlBuilderDataset(props: SqlBuilderProps) {
+  const [loading, setLoading] = useState(false)
   const { csrfToken, dataSources } = usePage().props as any
   const [open, setOpen] = useState(false)
   const [sourceId, setSourceId] = useState(0)
@@ -48,8 +54,45 @@ export function SqlBuilderDataset(props: SqlBuilderProps) {
   const [where, setWhere] = useState<WhereData>({})
   const [hawing, setHawing] = useState<WhereData>({})
 
-  const [tables, setTabes] = useState([])
+  const [tables, setTables] = useState([])
   const [suggestionKeys, setSuggestionKeys] = useState([])
+
+  const isLoading = useMemo(() => loading || props.isLoading, [loading, props.isLoading])
+
+  const onSelectSourceId = async (value: number) => {
+    setSourceId(value)
+    // TODO: Подгрузить таблицы из источника данных
+    if (!value) {
+      setTables([])
+      return
+    }
+    try {
+      setLoading(true)
+      const res = await fetch('/sql/tables', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}),
+        },
+        body: JSON.stringify({ dataSourceId: value /*, schema: 'public' для Postgres */ }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err?.error || `HTTP ${res.status}`)
+      }
+      const data = await res.json()
+      setTables(Array.isArray(data?.tables) ? data.tables : [])
+    } catch (e) {
+      console.error('Не удалось загрузить таблицы', e)
+      setTables([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    onSelectSourceId(sourceId)
+  }, [sourceId])
 
   useEffect(() => {
     setSuggestionKeys([])
@@ -86,6 +129,19 @@ export function SqlBuilderDataset(props: SqlBuilderProps) {
           <DialogDescription></DialogDescription>
         </DialogHeader>
         <DataSourceSelect value={sourceId} onChange={setSourceId} />
+        <div className="grid md:grid-cols-2 gap-2">
+          <Field>
+            <FieldLabel>Таблица</FieldLabel>
+            <FieldContent className="w-full">
+              <TableSelect tables={tables} selectedTable={table} onSelectTable={setTable} />
+            </FieldContent>
+          </Field>
+
+          <Field>
+            <FieldLabel>Алиас</FieldLabel>
+            <Input />
+          </Field>
+        </div>
 
         <div className="mt-4 max-h-[68vh] overflow-y-auto pr-1">
           <Tabs defaultValue="selects">
@@ -173,7 +229,8 @@ export function SqlBuilderDataset(props: SqlBuilderProps) {
           </Tabs>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="items-center">
+          {isLoading && <Spinner />}
           <DialogClose asChild>
             <Button variant="outline">Закрыть</Button>
           </DialogClose>

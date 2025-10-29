@@ -225,7 +225,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                         </SelectContent>
                       </Select>
 
-                      <SqlBuilderDataset suggestions={['main', 'database']}>
+                      <SqlBuilderDataset isLoading={isLoading} suggestions={['main', 'database']}>
                         <Button>Редактор запроса</Button>
                       </SqlBuilderDataset>
                     </div>
