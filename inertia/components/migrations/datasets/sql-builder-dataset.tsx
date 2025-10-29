@@ -20,6 +20,8 @@ import { TableSelect } from '../table-select'
 import { Field, FieldContent, FieldLabel } from '~/components/ui/field'
 import { Spinner } from '~/components/ui/spinner'
 import { Input } from '~/components/ui/input'
+import { JoinEditor, JoinItem } from './sql-builder-dataset/join-editor'
+import { ScrollArea } from '~/components/ui/scroll-area'
 
 export type SqlBuilderConfig = {
   type: 'sql_builder'
@@ -30,7 +32,7 @@ export type SqlBuilderConfig = {
     alias?: string
     selects?: string[]
     orders?: Record<string, 'asc' | 'desc'>[]
-    joins?: any
+    joins?: JoinItem[]
     where?: WhereData
     hawing?: WhereData
     group?: string[]
@@ -55,6 +57,7 @@ export function SqlBuilderDataset(props: SqlBuilderProps) {
   const [alias, setAlias] = useState('')
   const [where, setWhere] = useState<WhereData>({})
   const [hawing, setHawing] = useState<WhereData>({})
+  const [joins, setJoins] = useState<JoinItem[]>([])
 
   const [tables, setTables] = useState([])
   const [suggestionKeys, setSuggestionKeys] = useState([])
@@ -131,19 +134,23 @@ export function SqlBuilderDataset(props: SqlBuilderProps) {
           <DialogDescription></DialogDescription>
         </DialogHeader>
         <DataSourceSelect value={sourceId} onChange={setSourceId} />
-        <div className="grid md:grid-cols-2 gap-2">
-          <Field>
-            <FieldLabel>Таблица</FieldLabel>
-            <FieldContent className="w-full">
-              <TableSelect tables={tables} selectedTable={table} onSelectTable={setTable} />
-            </FieldContent>
-          </Field>
+        {tables.length > 0 && (
+          <div className="grid md:grid-cols-2 gap-2">
+            <Field>
+              <FieldLabel>Таблица</FieldLabel>
+              <FieldContent className="w-full">
+                <TableSelect tables={tables} selectedTable={table} onSelectTable={setTable} />
+              </FieldContent>
+            </Field>
 
-          <Field>
-            <FieldLabel>Алиас</FieldLabel>
-            <Input value={alias} onChange={(ev) => setAlias(ev.target.value)} />
-          </Field>
-        </div>
+            <Field>
+              <FieldLabel>Алиас</FieldLabel>
+              <Input value={alias} onChange={(ev) => setAlias(ev.target.value)} />
+            </Field>
+          </div>
+        )}
+
+        {tables.length == 0 && <div>Для выбранных источников данных таблицы не найдены.</div>}
 
         <div className="mt-4 max-h-[68vh] overflow-y-auto pr-1">
           <Tabs defaultValue="selects">
@@ -179,7 +186,9 @@ export function SqlBuilderDataset(props: SqlBuilderProps) {
                   <CardTitle>Joins</CardTitle>
                   <CardDescription>Настройка связанных таблиц</CardDescription>
                 </CardHeader>
-                <CardContent></CardContent>
+                <CardContent>
+                  <JoinEditor tables={tables} data={joins} onChange={setJoins} />
+                </CardContent>
               </Card>
             </TabsContent>
             <TabsContent value="where">
@@ -190,12 +199,14 @@ export function SqlBuilderDataset(props: SqlBuilderProps) {
                 </CardHeader>
                 <CardContent>
                   <div className="max-h-72 max-w-full overflow-scroll">
-                    <WhereEditor
-                      suggestionKeys={suggestionKeys}
-                      suggestionValues={['hello', 'world']}
-                      data={where}
-                      onChange={setWhere}
-                    />
+                    <ScrollArea>
+                      <WhereEditor
+                        suggestionKeys={suggestionKeys}
+                        suggestionValues={['hello', 'world']}
+                        data={where}
+                        onChange={setWhere}
+                      />
+                    </ScrollArea>
                   </div>
                 </CardContent>
               </Card>
