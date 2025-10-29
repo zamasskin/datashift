@@ -43,6 +43,9 @@ export function JoinEditor({ data, tables, onChange }: JoinEditorProps) {
     return <div>Для выбранных источников данных таблицы не найдены.</div>
   }
 
+  const operators = ['=', '!=', '<', '<=', '>', '>='] as const
+  const conds = ['and', 'or'] as const
+
   const bottomRef = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
@@ -118,7 +121,114 @@ export function JoinEditor({ data, tables, onChange }: JoinEditorProps) {
                   {item.on.map((on, onIdx) => {
                     return (
                       <Item key={onIdx} variant="outline">
-                        Тут букава настройка условия
+                        <div className="flex flex-wrap items-center gap-2">
+                          {onIdx === 0 ? (
+                            <div className="text-muted-foreground text-xs font-medium">ON</div>
+                          ) : (
+                            <Select
+                              value={on.cond || 'and'}
+                              onValueChange={(v) => {
+                                if (onChange) {
+                                  const updated = data || []
+                                  const join = updated[idx]
+                                  join.on[onIdx] = { ...join.on[onIdx], cond: v as 'and' | 'or' }
+                                  onChange([...updated])
+                                }
+                              }}
+                            >
+                              <SelectTrigger className="h-8 min-w-20" title="Логика">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {conds.map((c) => (
+                                  <SelectItem key={c} value={c}>
+                                    {c.toUpperCase()}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+
+                          <InputGroup className="flex-1 min-w-[200px]">
+                            <InputGroupAddon>
+                              <SearchIcon className="size-4" />
+                            </InputGroupAddon>
+                            <InputGroupInput
+                              placeholder="таблица.колонка"
+                              value={on.tableColumn}
+                              onChange={(ev) => {
+                                if (onChange) {
+                                  const updated = data || []
+                                  const join = updated[idx]
+                                  join.on[onIdx] = {
+                                    ...join.on[onIdx],
+                                    tableColumn: ev.target.value,
+                                  }
+                                  onChange([...updated])
+                                }
+                              }}
+                            />
+                          </InputGroup>
+
+                          <Select
+                            value={on.operator}
+                            onValueChange={(v) => {
+                              if (onChange) {
+                                const updated = data || []
+                                const join = updated[idx]
+                                join.on[onIdx] = { ...join.on[onIdx], operator: v as JoinItem['on'][number]['operator'] }
+                                onChange([...updated])
+                              }
+                            }}
+                          >
+                            <SelectTrigger className="h-8 min-w-20" title="Оператор">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {operators.map((op) => (
+                                <SelectItem key={op} value={op}>
+                                  {op}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+
+                          <InputGroup className="flex-1 min-w-[200px]">
+                            <InputGroupAddon>
+                              <SearchIcon className="size-4" />
+                            </InputGroupAddon>
+                            <InputGroupInput
+                              placeholder="алиас.колонка"
+                              value={on.aliasColumn}
+                              onChange={(ev) => {
+                                if (onChange) {
+                                  const updated = data || []
+                                  const join = updated[idx]
+                                  join.on[onIdx] = {
+                                    ...join.on[onIdx],
+                                    aliasColumn: ev.target.value,
+                                  }
+                                  onChange([...updated])
+                                }
+                              }}
+                            />
+                          </InputGroup>
+
+                          <Button
+                            variant="secondary"
+                            className="h-8"
+                            onClick={() => {
+                              if (onChange) {
+                                const updated = data || []
+                                updated[idx].on = updated[idx].on.filter((_, i) => i !== onIdx)
+                                onChange([...updated])
+                              }
+                            }}
+                          >
+                            <TrashIcon className="size-4" />
+                            Удалить
+                          </Button>
+                        </div>
                       </Item>
                     )
                   })}
@@ -126,7 +236,18 @@ export function JoinEditor({ data, tables, onChange }: JoinEditorProps) {
                 <div className="mt-2 flex justify-end gap-2">
                   <Button
                     onClick={() => {
-                      // TODO: Добавить условие
+                      if (onChange) {
+                        const updated = data || []
+                        const join = updated[idx]
+                        const nextCond: JoinItem['on'][number] = {
+                          tableColumn: '',
+                          aliasColumn: '',
+                          operator: '=',
+                          cond: (join.on.length > 0 ? 'and' : undefined) as any,
+                        }
+                        join.on = [...join.on, nextCond]
+                        onChange([...updated])
+                      }
                     }}
                   >
                     <PlusIcon /> Добавить условие
