@@ -27,6 +27,7 @@ export type SqlBuilderConfig = {
   params: {
     sourceId: number
     table: string
+    alias?: string
     selects?: string[]
     orders?: Record<string, 'asc' | 'desc'>[]
     joins?: any
@@ -51,6 +52,7 @@ export function SqlBuilderDataset(props: SqlBuilderProps) {
   const [open, setOpen] = useState(false)
   const [sourceId, setSourceId] = useState(0)
   const [table, setTable] = useState('')
+  const [alias, setAlias] = useState('')
   const [where, setWhere] = useState<WhereData>({})
   const [hawing, setHawing] = useState<WhereData>({})
 
@@ -139,7 +141,7 @@ export function SqlBuilderDataset(props: SqlBuilderProps) {
 
           <Field>
             <FieldLabel>Алиас</FieldLabel>
-            <Input />
+            <Input value={alias} onChange={(ev) => setAlias(ev.target.value)} />
           </Field>
         </div>
 
