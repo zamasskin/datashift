@@ -1,4 +1,4 @@
-import { Popover, PopoverContent, PopoverTrigger } from '@radix-ui/react-popover'
+import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover'
 import { useState } from 'react'
 import { Button } from '../ui/button'
 import { Check, ChevronsUpDown } from 'lucide-react'
@@ -27,13 +27,13 @@ export function TableSelect({ tables = [], selectedTable, onSelectTable }: Table
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] justify-between"
+          className="w-full justify-between"
         >
           {selectedTable ? tables.find((table) => table === selectedTable) : 'Выберите таблицу...'}
           <ChevronsUpDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
         <Command>
           <CommandInput placeholder="Поиск таблицы..." className="h-9" />
           <CommandList>
