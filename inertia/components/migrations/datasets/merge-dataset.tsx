@@ -76,14 +76,23 @@ export function MergeDataset(props: MergeDatasetType) {
 
   const [open, setOpen] = useState(false)
   const initialConfig = props.config
-  const [id] = useState(initialConfig?.id || Date.now().toString(36))
   const [datasetLeftId, setDatasetLeftId] = useState(initialConfig?.params?.datasetLeftId || '')
   const [datasetRightId, setDatasetRightId] = useState(initialConfig?.params?.datasetRightId || '')
   const [rules, setRules] = useState<MergeOn[]>(
-    initialConfig?.params?.on?.length
-      ? initialConfig.params.on
-      : [{ tableColumn: '', aliasColumn: '', operator: '=' }]
+    initialConfig?.params?.on?.length ? initialConfig.params.on : []
   )
+
+  useEffect(() => {
+    setDatasetLeftId(initialConfig?.params?.datasetLeftId || '')
+  }, [initialConfig?.params?.datasetLeftId])
+
+  useEffect(() => {
+    setDatasetRightId(initialConfig?.params?.datasetRightId || '')
+  }, [initialConfig?.params?.datasetRightId])
+
+  useEffect(() => {
+    setRules(initialConfig?.params?.on?.length ? initialConfig.params.on : [])
+  }, [initialConfig?.params?.on])
 
   const bottomRef = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
@@ -91,10 +100,8 @@ export function MergeDataset(props: MergeDatasetType) {
   }, [rules.length])
 
   const handleSave = () => {
-    const config: MergeConfig = {
-      type: 'merge',
-      id,
-      params: {
+    if (props.onSave) {
+      const params = {
         datasetLeftId: datasetLeftId.trim(),
         datasetRightId: datasetRightId.trim(),
         on: rules.map((r) => ({
@@ -103,9 +110,22 @@ export function MergeDataset(props: MergeDatasetType) {
           operator: r.operator,
           cond: r.cond,
         })),
-      },
+      }
+
+      if (props.config) {
+        props.onSave({
+          ...props.config,
+          params,
+        })
+      } else {
+        setDatasetLeftId('')
+        setDatasetRightId('')
+        setRules([])
+        props.onSave({ type: 'merge', id: Date.now().toString(36), params })
+      }
     }
-    props.onSave?.(config)
+
+    setOpen(false)
   }
 
   const suggestionsCombined = useMemo(() => {
