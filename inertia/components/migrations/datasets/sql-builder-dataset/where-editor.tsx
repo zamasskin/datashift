@@ -7,7 +7,6 @@ import { Field, FieldError, FieldLabel } from '~/components/ui/field'
 import { Label } from '~/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover'
 import { Item, ItemContent } from '~/components/ui/item'
-import { ScrollArea } from '~/components/ui/scroll-area'
 import {
   Select,
   SelectContent,
@@ -54,34 +53,32 @@ export function WhereEditor({
 
   return (
     <div className="space-y-4">
-      <ScrollArea className="max-h-72 max-w-full overflow-scroll">
-        <div className="space-y-2">
-          {data?.fields?.map((field, idx) => (
-            <Item key={idx} variant="outline">
-              <ItemContent>
-                <FieldWhere
-                  suggestionKeys={suggestionKeys}
-                  suggestionValues={suggestionValues}
-                  field={field}
-                  onDelete={() => {
-                    if (onChange) {
-                      const fields = data?.fields?.filter((_, i) => i !== idx)
-                      onChange({ ...data, fields })
-                    }
-                  }}
-                  onChange={(newField) => {
-                    if (onChange) {
-                      const fields = data?.fields || []
-                      fields[idx] = newField
-                      onChange({ ...data, fields })
-                    }
-                  }}
-                />
-              </ItemContent>
-            </Item>
-          ))}
-        </div>
-      </ScrollArea>
+      <div className="space-y-2">
+        {data?.fields?.map((field, idx) => (
+          <Item key={idx} variant="outline">
+            <ItemContent>
+              <FieldWhere
+                suggestionKeys={suggestionKeys}
+                suggestionValues={suggestionValues}
+                field={field}
+                onDelete={() => {
+                  if (onChange) {
+                    const fields = data?.fields?.filter((_, i) => i !== idx)
+                    onChange({ ...data, fields })
+                  }
+                }}
+                onChange={(newField) => {
+                  if (onChange) {
+                    const fields = data?.fields || []
+                    fields[idx] = newField
+                    onChange({ ...data, fields })
+                  }
+                }}
+              />
+            </ItemContent>
+          </Item>
+        ))}
+      </div>
 
       <ActionsWhere
         openedAnd={!!data?.$and}
@@ -110,39 +107,53 @@ export function WhereEditor({
       />
 
       {data?.$and && (
-        <div className="space-y-2">
-          <Badge className="px-4">And</Badge>
-          <div className="ml-1 pl-2 border-l border-l-border">
-            <WhereEditor
-              suggestionKeys={suggestionKeys}
-              suggestionValues={suggestionValues}
-              data={data.$and}
-              onChange={(newData) => {
-                if (onChange) {
-                  onChange({ ...data, $and: newData })
-                }
-              }}
-            />
-          </div>
-        </div>
+        <Item variant="outline">
+          <ItemContent>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Badge className="px-4">AND</Badge>
+                <div className="text-xs text-muted-foreground">Все условия должны выполниться</div>
+              </div>
+              <div className="rounded-md bg-muted/40 p-2 border border-border">
+                <WhereEditor
+                  suggestionKeys={suggestionKeys}
+                  suggestionValues={suggestionValues}
+                  data={data.$and}
+                  onChange={(newData) => {
+                    if (onChange) {
+                      onChange({ ...data, $and: newData })
+                    }
+                  }}
+                />
+              </div>
+            </div>
+          </ItemContent>
+        </Item>
       )}
 
       {data?.$or && (
-        <div className="space-y-2">
-          <Badge className="px-4">Or</Badge>
-          <div className="ml-1 pl-2 border-l border-l-border">
-            <WhereEditor
-              suggestionKeys={suggestionKeys}
-              suggestionValues={suggestionValues}
-              data={data.$or}
-              onChange={(newData) => {
-                if (onChange) {
-                  onChange({ ...data, $or: newData })
-                }
-              }}
-            />
-          </div>
-        </div>
+        <Item variant="outline">
+          <ItemContent>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Badge className="px-4">OR</Badge>
+                <div className="text-xs text-muted-foreground">Должно выполниться хотя бы одно</div>
+              </div>
+              <div className="rounded-md bg-muted/40 p-2 border border-border">
+                <WhereEditor
+                  suggestionKeys={suggestionKeys}
+                  suggestionValues={suggestionValues}
+                  data={data.$or}
+                  onChange={(newData) => {
+                    if (onChange) {
+                      onChange({ ...data, $or: newData })
+                    }
+                  }}
+                />
+              </div>
+            </div>
+          </ItemContent>
+        </Item>
       )}
     </div>
   )
