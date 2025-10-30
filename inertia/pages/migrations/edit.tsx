@@ -188,7 +188,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
           </TabsContent>
 
           <TabsContent value="migrations" className="mt-4">
-            <div className="grid md:grid-cols-2 gap-6 auto-rows-fr">
+            <div className="grid md:grid-cols-2 gap-6 md:auto-rows-fr">
               <Card className="h-full flex flex-col">
                 <CardHeader>
                   <CardTitle>Датасеты</CardTitle>
@@ -284,15 +284,15 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                   </div>
                 </CardContent>
               </Card>
-
-              <Card className="h-full flex flex-col md:col-span-2">
-                <CardHeader>
-                  <CardTitle>Результат</CardTitle>
-                  <CardDescription></CardDescription>
-                </CardHeader>
-                <CardContent className="flex-1">Тут будет результат</CardContent>
-              </Card>
             </div>
+
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle>Результат</CardTitle>
+                <CardDescription></CardDescription>
+              </CardHeader>
+              <CardContent>Тут будет результат</CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
