@@ -1,35 +1,3 @@
-export type MergeOn = {
-  tableColumn: string
-  aliasColumn: string
-  operator: '=' | '!=' | '<' | '<=' | '>' | '>='
-  cond?: 'and' | 'or'
-}
-
-export type MergeConfig = {
-  type: 'merge'
-  id: string
-  params: {
-    datasetLeftId: string
-    datasetRightId: string
-    on: MergeOn[]
-  }
-}
-
-type DatasetConfig = {
-  id: string
-  title: string
-  columns: string[]
-}
-
-export type MergeDatasetType = {
-  children?: React.ReactNode
-  saveBtnName?: string
-  config?: MergeConfig
-  datasetsConfigs?: DatasetConfig[]
-  isLoading?: boolean
-  onSave?: (config: MergeConfig) => void
-}
-
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { PlusIcon, TrashIcon } from 'lucide-react'
 import { Button } from '~/components/ui/button'
@@ -54,7 +22,39 @@ import {
   DialogTrigger,
 } from '~/components/ui/dialog'
 
-export function MergeDataset(props: MergeDatasetType) {
+export type MergeOn = {
+  tableColumn: string
+  aliasColumn: string
+  operator: '=' | '!=' | '<' | '<=' | '>' | '>='
+  cond?: 'and' | 'or'
+}
+
+export type MergeConfig = {
+  type: 'merge'
+  id: string
+  params: {
+    datasetLeftId: string
+    datasetRightId: string
+    on: MergeOn[]
+  }
+}
+
+export type DatasetConfig = {
+  id: string
+  title: string
+  columns: string[]
+}
+
+export type MergeDatasetProps = {
+  children?: React.ReactNode
+  saveBtnName?: string
+  config?: MergeConfig
+  datasetsConfigs?: DatasetConfig[]
+  isLoading?: boolean
+  onSave?: (config: MergeConfig) => void
+}
+
+export function MergeDataset(props: MergeDatasetProps) {
   const operators = ['=', '!=', '<', '<=', '>', '>='] as const
   const conds = ['and', 'or'] as const
 

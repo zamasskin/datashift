@@ -2,6 +2,7 @@ import Migration from '#models/migration'
 import { Head, router, usePage } from '@inertiajs/react'
 import { ArrowDownUp, FileWarning, Pencil, Save, Settings, Trash } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { MergeCard } from '~/components/migrations/cards/merge-card'
 import { SqlBuilderCard } from '~/components/migrations/cards/sql-builder-card'
 import { SqlCard } from '~/components/migrations/cards/sql-card'
 import { MergeConfig, MergeDataset } from '~/components/migrations/datasets/merge-dataset'
@@ -219,6 +220,19 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                               config={conf}
                               onRemove={handleRemove}
                               onSave={handleSave}
+                            />
+                          )}
+                          {conf?.type == 'merge' && (
+                            <MergeCard
+                              config={conf}
+                              isLoading={isLoading}
+                              onRemove={handleRemove}
+                              onSave={handleSave}
+                              datasetsConfigs={[
+                                { id: 'aa', title: 'sql', columns: ['aa1', 'aa2'] },
+                                { id: 'bb', title: 'dataset1', columns: ['bb1', 'bb2'] },
+                                { id: 'cc', title: 'custom', columns: ['cc1', 'cc2'] },
+                              ]}
                             />
                           )}
                         </div>
