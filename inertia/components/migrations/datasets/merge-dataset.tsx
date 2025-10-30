@@ -93,14 +93,14 @@ export function MergeDataset(props: MergeDatasetType) {
     props.onSave?.(config)
   }
 
-  const suggestionsLeft = useMemo(
-    () => (props.datasetsColumns?.[datasetLeftId] || []).map((c) => `${datasetLeftId}.${c}`),
-    [props.datasetsColumns, datasetLeftId]
-  )
-  const suggestionsRight = useMemo(
-    () => (props.datasetsColumns?.[datasetRightId] || []).map((c) => `${datasetRightId}.${c}`),
-    [props.datasetsColumns, datasetRightId]
-  )
+  const suggestionsCombined = useMemo(() => {
+    const left = (props.datasetsColumns?.[datasetLeftId] || []).map((c) => `${datasetLeftId}.${c}`)
+    const right = (props.datasetsColumns?.[datasetRightId] || []).map(
+      (c) => `${datasetRightId}.${c}`
+    )
+    const merged = [...left, ...right].filter((s) => s && !s.startsWith('.'))
+    return Array.from(new Set(merged))
+  }, [props.datasetsColumns, datasetLeftId, datasetRightId])
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -161,7 +161,7 @@ export function MergeDataset(props: MergeDatasetType) {
                     <ItemContent>
                       <div className="grid md:grid-cols-[1fr_min-content_1fr_min-content] gap-2 items-center">
                         <Autocomplete
-                          suggestions={suggestionsLeft}
+                          suggestions={suggestionsCombined}
                           value={rule.tableColumn}
                           onValueChange={(value) => {
                             const next = [...rules]
@@ -195,7 +195,7 @@ export function MergeDataset(props: MergeDatasetType) {
                         </Select>
 
                         <Autocomplete
-                          suggestions={suggestionsRight}
+                          suggestions={suggestionsCombined}
                           value={rule.aliasColumn}
                           onValueChange={(value) => {
                             const next = [...rules]
