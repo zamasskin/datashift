@@ -246,7 +246,11 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
 
                       <MergeDataset
                         isLoading={isLoading}
-                        datasets={{ aa: ['aa1', 'aa2'], bb: ['bb1', 'bb2'], cc: ['cc1', 'cc2'] }}
+                        datasetsColumns={{
+                          aa: ['aa1', 'aa2'],
+                          bb: ['bb1', 'bb2'],
+                          cc: ['cc1', 'cc2'],
+                        }}
                         onSave={(config) => setFetchConfigs([...fetchConfigs, config])}
                       >
                         <Button>Объединение</Button>

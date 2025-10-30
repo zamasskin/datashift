@@ -19,7 +19,7 @@ export type MergeDatasetType = {
   children?: React.ReactNode
   saveBtnName?: string
   config?: MergeConfig
-  datasets?: Record<string, string[]>
+  datasetsColumns?: Record<string, string[]>
   isLoading?: boolean
   onSave?: (config: MergeConfig) => void
 }
@@ -51,11 +51,7 @@ export function MergeDataset(props: MergeDatasetType) {
   const operators = ['=', '!=', '<', '<=', '>', '>='] as const
   const conds = ['and', 'or'] as const
 
-  const datasets = useMemo(() => Object.keys(props.datasets || {}), [props.datasets])
-  const suggestions = useMemo(
-    () => datasets.flatMap((d) => props.datasets?.[d] || []),
-    [datasets, props.datasets]
-  )
+  const datasets = useMemo(() => Object.keys(props.datasetsColumns || {}), [props.datasetsColumns])
 
   const [open, setOpen] = useState(false)
   const initialConfig = props.config
@@ -96,6 +92,15 @@ export function MergeDataset(props: MergeDatasetType) {
     }
     props.onSave?.(config)
   }
+
+  const suggestionsLeft = useMemo(
+    () => (props.datasetsColumns?.[datasetLeftId] || []).map((c) => `${datasetLeftId}.${c}`),
+    [props.datasetsColumns, datasetLeftId]
+  )
+  const suggestionsRight = useMemo(
+    () => (props.datasetsColumns?.[datasetRightId] || []).map((c) => `${datasetRightId}.${c}`),
+    [props.datasetsColumns, datasetRightId]
+  )
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -156,7 +161,7 @@ export function MergeDataset(props: MergeDatasetType) {
                     <ItemContent>
                       <div className="grid md:grid-cols-[1fr_min-content_1fr_min-content] gap-2 items-center">
                         <Autocomplete
-                          suggestions={suggestions}
+                          suggestions={suggestionsLeft}
                           value={rule.tableColumn}
                           onValueChange={(value) => {
                             const next = [...rules]
@@ -190,7 +195,7 @@ export function MergeDataset(props: MergeDatasetType) {
                         </Select>
 
                         <Autocomplete
-                          suggestions={suggestions}
+                          suggestions={suggestionsRight}
                           value={rule.aliasColumn}
                           onValueChange={(value) => {
                             const next = [...rules]
