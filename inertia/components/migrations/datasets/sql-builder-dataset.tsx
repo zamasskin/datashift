@@ -59,13 +59,17 @@ export function SqlBuilderDataset(props: SqlBuilderProps) {
   const [hawing, setHawing] = useState<WhereData>({})
   const [joins, setJoins] = useState<JoinItem[]>([])
 
-  const [tables, setTables] = useState([])
-  const [suggestionKeys, setSuggestionKeys] = useState([])
+  const [tables, setTables] = useState<string[]>([])
+  const [suggestionKeys, setSuggestionKeys] = useState<string[]>([])
+  const [columnsMap, setColumnsMap] = useState<Record<string, string[]>>({})
 
   const isLoading = useMemo(() => loading || props.isLoading, [loading, props.isLoading])
 
   const onSelectSourceId = async (value: number) => {
     setSourceId(value)
+    // Сбросим кэш колонок и подсказок при смене источника
+    setColumnsMap({})
+    setSuggestionKeys([])
     // TODO: Подгрузить таблицы из источника данных
     if (!value) {
       setTables([])
@@ -99,10 +103,68 @@ export function SqlBuilderDataset(props: SqlBuilderProps) {
     onSelectSourceId(sourceId)
   }, [sourceId])
 
+  // Загрузка колонок для указанного набора таблиц
+  const fetchColumnsForTables = async (tablesToFetch: string[]) => {
+    const unique = Array.from(new Set((tablesToFetch || []).filter(Boolean)))
+    if (!sourceId || unique.length === 0) return
+    try {
+      setLoading(true)
+      const res = await fetch('/sql/columns', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}),
+        },
+        body: JSON.stringify({ dataSourceId: sourceId, table: unique /*, schema: 'public' */ }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err?.error || `HTTP ${res.status}`)
+      }
+      const data = await res.json()
+      const incoming: Record<string, string[]> = data?.columns || {}
+      if (incoming && typeof incoming === 'object') {
+        setColumnsMap((prev) => ({ ...prev, ...incoming }))
+      }
+    } catch (e) {
+      console.error('Не удалось загрузить колонки', e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // При выборе основной таблицы — подгружаем её колонки
   useEffect(() => {
-    setSuggestionKeys([])
-    // TODO Тут получать колонки всех выбранных таблиц
-  }, [props?.config?.params?.table, props?.config?.params?.joins])
+    if (!table) return
+    if (!columnsMap[table]) {
+      fetchColumnsForTables([table])
+    }
+  }, [table, sourceId])
+
+  // При изменении joins — подгружаем колонки всех упомянутых таблиц
+  useEffect(() => {
+    const joinTables = (joins || []).map((j) => j.table).filter(Boolean)
+    const needFetch = joinTables.filter((t) => !columnsMap[t])
+    if (needFetch.length > 0) {
+      fetchColumnsForTables(needFetch)
+    }
+  }, [joins, sourceId])
+
+  // Формируем подсказки ключей для WhereEditor из загруженных колонок
+  useEffect(() => {
+    const keys: string[] = []
+    const basePrefix = alias || table
+    if (basePrefix && columnsMap[table]?.length) {
+      keys.push(...columnsMap[table].map((c) => `${basePrefix}.${c}`))
+    }
+    for (const j of joins || []) {
+      const joinPrefix = j.alias || j.table
+      if (joinPrefix && columnsMap[j.table]?.length) {
+        keys.push(...columnsMap[j.table].map((c) => `${joinPrefix}.${c}`))
+      }
+    }
+    setSuggestionKeys(keys)
+  }, [columnsMap, table, alias, joins])
 
   useEffect(() => {
     setSourceId(getDefaultSourceId(dataSources, props?.config?.params?.sourceId))
@@ -187,7 +249,14 @@ export function SqlBuilderDataset(props: SqlBuilderProps) {
                   <CardDescription>Настройка связанных таблиц</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <JoinEditor tables={tables} data={joins} onChange={setJoins} />
+                  <JoinEditor
+                    tables={tables}
+                    data={joins}
+                    onChange={setJoins}
+                    columnsMap={columnsMap}
+                    baseTable={table}
+                    baseAlias={alias}
+                  />
                 </CardContent>
               </Card>
             </TabsContent>

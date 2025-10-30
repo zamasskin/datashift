@@ -6,7 +6,7 @@ import { useEffect, useRef } from 'react'
 import { Field, FieldContent, FieldLabel } from '~/components/ui/field'
 import { TableSelect } from '../../table-select'
 import { Input } from '~/components/ui/input'
-import { InputGroup, InputGroupAddon, InputGroupInput } from '~/components/ui/input-group'
+import { Autocomplete } from '~/components/ui/autocomplete'
 import {
   Select,
   SelectContent,
@@ -30,10 +30,13 @@ export type JoinItem = {
 export type JoinEditorProps = {
   data?: JoinItem[]
   tables?: string[]
+  columnsMap?: Record<string, string[]>
+  baseTable?: string
+  baseAlias?: string
   onChange?: (data: JoinItem[]) => void
 }
 
-export function JoinEditor({ data, tables, onChange }: JoinEditorProps) {
+export function JoinEditor({ data, tables, columnsMap, baseTable, baseAlias, onChange }: JoinEditorProps) {
   if (!tables || tables.length === 0) {
     return <div>Для выбранных источников данных таблицы не найдены.</div>
   }
@@ -144,26 +147,26 @@ export function JoinEditor({ data, tables, onChange }: JoinEditorProps) {
                             </Select>
                           )}
 
-                          <InputGroup className="flex-1 min-w-[200px]">
-                            <InputGroupAddon>
-                              <SearchIcon className="size-4" />
-                            </InputGroupAddon>
-                            <InputGroupInput
-                              placeholder="таблица.колонка"
+                          <div className="flex-1 min-w-[220px]">
+                            <Autocomplete
+                              suggestions={(columnsMap?.[item.table] || []).map(
+                                (c) => `${item.alias || item.table}.${c}`
+                              )}
                               value={on.tableColumn}
-                              onChange={(ev) => {
+                              onValueChange={(value) => {
                                 if (onChange) {
                                   const updated = data || []
                                   const join = updated[idx]
                                   join.on[onIdx] = {
                                     ...join.on[onIdx],
-                                    tableColumn: ev.target.value,
+                                    tableColumn: value,
                                   }
                                   onChange([...updated])
                                 }
                               }}
+                              placeholder="таблица.колонка"
                             />
-                          </InputGroup>
+                          </div>
 
                           <Select
                             value={on.operator}
@@ -191,26 +194,26 @@ export function JoinEditor({ data, tables, onChange }: JoinEditorProps) {
                             </SelectContent>
                           </Select>
 
-                          <InputGroup className="flex-1 min-w-[200px]">
-                            <InputGroupAddon>
-                              <SearchIcon className="size-4" />
-                            </InputGroupAddon>
-                            <InputGroupInput
-                              placeholder="алиас.колонка"
+                          <div className="flex-1 min-w-[220px]">
+                            <Autocomplete
+                              suggestions={(columnsMap?.[baseTable || ''] || []).map(
+                                (c) => `${baseAlias || baseTable}.${c}`
+                              )}
                               value={on.aliasColumn}
-                              onChange={(ev) => {
+                              onValueChange={(value) => {
                                 if (onChange) {
                                   const updated = data || []
                                   const join = updated[idx]
                                   join.on[onIdx] = {
                                     ...join.on[onIdx],
-                                    aliasColumn: ev.target.value,
+                                    aliasColumn: value,
                                   }
                                   onChange([...updated])
                                 }
                               }}
+                              placeholder="алиас.колонка"
                             />
-                          </InputGroup>
+                          </div>
 
                           <Button
                             variant="secondary"
