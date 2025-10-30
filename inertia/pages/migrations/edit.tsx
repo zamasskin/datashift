@@ -2,6 +2,7 @@ import Migration from '#models/migration'
 import { Head, router, usePage } from '@inertiajs/react'
 import { ArrowDownUp, FileWarning, Pencil, Save, Settings, Trash } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { SqlBuilderCard } from '~/components/migrations/cards/sql-builder-card'
 import { SqlCard } from '~/components/migrations/cards/sql-card'
 import { SqlBuilderDataset } from '~/components/migrations/datasets/sql-builder-dataset'
 import { SqlDataset } from '~/components/migrations/datasets/sql-dataset'
@@ -60,6 +61,8 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
 
   const [saveLoading, setSaveLoading] = useState(false)
   const [saveErrors, setSaveErrors] = useState<Record<string, string>>({})
+
+  const suggestions = ['main', 'database']
 
   const paramKeys = useMemo(() => params.map((p) => p.key as string), [params])
 
@@ -195,6 +198,15 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                               onUpdate={handleSave}
                             />
                           )}
+                          {conf?.type == 'sql_builder' && (
+                            <SqlBuilderCard
+                              suggestions={suggestions}
+                              isLoading={isLoading}
+                              config={conf}
+                              onRemove={handleRemove}
+                              onSave={handleSave}
+                            />
+                          )}
                         </div>
                       ))}
                       <MyItem name="sql1" icon="/icons/sql-edit.png" />
@@ -225,7 +237,11 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                         </SelectContent>
                       </Select>
 
-                      <SqlBuilderDataset isLoading={isLoading} suggestions={['main', 'database']}>
+                      <SqlBuilderDataset
+                        isLoading={isLoading}
+                        suggestions={suggestions}
+                        onSave={(config) => setFetchConfigs([...fetchConfigs, config])}
+                      >
                         <Button>Редактор запроса</Button>
                       </SqlBuilderDataset>
                     </div>
