@@ -188,7 +188,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
           </TabsContent>
 
           <TabsContent value="migrations" className="mt-4">
-            <div className="grid md:grid-cols-2 gap-6 md:auto-rows-fr">
+            <div className="grid gap-4 lg:grid-cols-2 lg:gap-6 lg:auto-rows-fr">
               <Card className="h-full flex flex-col">
                 <CardHeader>
                   <CardTitle>Датасеты</CardTitle>
@@ -197,7 +197,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="flex-1">
-                  <div className="flex w-full max-w-xl flex-col gap-6">
+                  <div className="flex w-full flex-col gap-6">
                     <ItemGroup className="gap-2">
                       {fetchConfigs.map((conf) => (
                         <div key={conf?.id}>
