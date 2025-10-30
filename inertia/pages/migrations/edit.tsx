@@ -187,17 +187,17 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
             </div>
           </TabsContent>
 
-          <TabsContent value="migrations" className="mt-4 max-w-xl">
-            <div className="space-y-4">
-              <Card>
+          <TabsContent value="migrations" className="mt-4">
+            <div className="grid md:grid-cols-2 gap-6 auto-rows-fr">
+              <Card className="h-full flex flex-col">
                 <CardHeader>
                   <CardTitle>Датасеты</CardTitle>
                   <CardDescription>
                     Добавьте датасеты, которые будут использоваться в миграции.
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="flex w-full max-w-xl flex-col gap-4">
+                <CardContent className="flex-1">
+                  <div className="flex w-full max-w-xl flex-col gap-6">
                     <ItemGroup className="gap-2">
                       {fetchConfigs.map((conf) => (
                         <div key={conf?.id}>
@@ -262,14 +262,14 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="h-full flex flex-col">
                 <CardHeader>
                   <CardTitle>Выгрузки</CardTitle>
                   <CardDescription>
                     Укажите выгрузки, которые будут использоваться в миграции.
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="flex-1">
                   <div className="flex w-full max-w-xl flex-col gap-6">
                     {fetchConfigs.length == 0 && (
                       <Alert>
@@ -283,6 +283,14 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                     {fetchConfigs.length > 0 && <Button>Добавить</Button>}
                   </div>
                 </CardContent>
+              </Card>
+
+              <Card className="h-full flex flex-col md:col-span-2">
+                <CardHeader>
+                  <CardTitle>Результат</CardTitle>
+                  <CardDescription></CardDescription>
+                </CardHeader>
+                <CardContent className="flex-1">Тут будет результат</CardContent>
               </Card>
             </div>
           </TabsContent>
