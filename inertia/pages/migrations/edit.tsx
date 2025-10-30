@@ -148,8 +148,8 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
               Миграции
             </TabsTrigger>
           </TabsList>
-          <TabsContent value="config" className="mt-4 max-w-xl">
-            <div className="space-y-4">
+          <TabsContent value="config" className="mt-4">
+            <div className="grid gap-4 lg:grid-cols-2 lg:auto-rows-fr">
               <Card>
                 <CardHeader>
                   <CardTitle>Параметры</CardTitle>
@@ -188,7 +188,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
           </TabsContent>
 
           <TabsContent value="migrations" className="mt-4">
-            <div className="grid gap-4 lg:grid-cols-2 lg:gap-6 lg:auto-rows-fr">
+            <div className="grid gap-4 lg:grid-cols-2 lg:auto-rows-fr">
               <Card className="h-full flex flex-col">
                 <CardHeader>
                   <CardTitle>Датасеты</CardTitle>
