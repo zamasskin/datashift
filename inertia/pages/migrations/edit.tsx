@@ -4,6 +4,7 @@ import { ArrowDownUp, FileWarning, Pencil, Save, Settings, Trash } from 'lucide-
 import { useMemo, useState } from 'react'
 import { SqlBuilderCard } from '~/components/migrations/cards/sql-builder-card'
 import { SqlCard } from '~/components/migrations/cards/sql-card'
+import { MergeDataset } from '~/components/migrations/datasets/merge-dataset'
 import { SqlBuilderDataset } from '~/components/migrations/datasets/sql-builder-dataset'
 import { SqlDataset } from '~/components/migrations/datasets/sql-dataset'
 import { RootLayout } from '~/components/root-layout'
@@ -244,6 +245,14 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                       >
                         <Button>Редактор запроса</Button>
                       </SqlBuilderDataset>
+
+                      <MergeDataset
+                        isLoading={isLoading}
+                        suggestions={suggestions}
+                        onSave={(config) => setFetchConfigs([...fetchConfigs, config])}
+                      >
+                        <Button>Объединение</Button>
+                      </MergeDataset>
                     </div>
                   </div>
                 </CardContent>
