@@ -51,17 +51,17 @@ export type SqlBuilderProps = {
   onSave?: (config: SqlBuilderConfig) => void
 }
 
-export function SqlBuilderDataset(props: SqlBuilderProps) {
+export function SqlBuilderDataset({ config, ...props }: SqlBuilderProps) {
   const [loading, setLoading] = useState(false)
   const { csrfToken, dataSources } = usePage().props as any
   const [open, setOpen] = useState(false)
-  const [sourceId, setSourceId] = useState(0)
-  const [table, setTable] = useState('')
-  const [alias, setAlias] = useState('')
-  const [where, setWhere] = useState<WhereData>({})
-  const [hawing, setHawing] = useState<WhereData>({})
-  const [joins, setJoins] = useState<JoinItem[]>([])
-  const [selects, setSelects] = useState<string[]>([])
+  const [sourceId, setSourceId] = useState(config?.params?.sourceId || 0)
+  const [table, setTable] = useState(config?.params?.table || '')
+  const [alias, setAlias] = useState(config?.params?.alias || '')
+  const [where, setWhere] = useState<WhereData>(config?.params?.where || {})
+  const [hawing, setHawing] = useState<WhereData>(config?.params?.hawing || {})
+  const [joins, setJoins] = useState<JoinItem[]>(config?.params?.joins || [])
+  const [selects, setSelects] = useState<string[]>(config?.params?.selects || [])
   const [orders, setOrders] = useState<Record<string, 'asc' | 'desc'>[]>([])
   const [group, setGroup] = useState<string[]>([])
 
@@ -173,16 +173,16 @@ export function SqlBuilderDataset(props: SqlBuilderProps) {
   }, [columnsMap, table, alias, joins])
 
   useEffect(() => {
-    setSourceId(getDefaultSourceId(dataSources, props?.config?.params?.sourceId))
-  }, [props?.config?.params?.sourceId])
+    setSourceId(getDefaultSourceId(dataSources, config?.params?.sourceId))
+  }, [config?.params?.sourceId])
 
   // GroupBlock nested UI component for $and/$or
 
   const handleSave = async () => {
     if (props.onSave) {
-      if (props?.config) {
+      if (config) {
         props.onSave({
-          ...props?.config,
+          ...config,
           params: { sourceId, table, alias, selects, orders, joins, where, hawing, group },
         })
       } else {

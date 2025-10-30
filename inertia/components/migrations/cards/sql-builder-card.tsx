@@ -52,6 +52,7 @@ export function SqlBuilderCard({
             suggestions={suggestions}
             onSave={onSave}
             saveBtnName="Сохранить"
+            config={config}
           >
             <Button size="icon" variant="outline">
               <Settings />
