@@ -40,6 +40,7 @@ import {
 import { ScrollArea } from '~/components/ui/scroll-area'
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -68,12 +69,6 @@ export function MergeDataset(props: MergeDatasetType) {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
   }, [rules.length])
-
-  const canSave = useMemo(() => {
-    if (!datasetLeftId.trim() || !datasetRightId.trim()) return false
-    if (rules.length === 0) return false
-    return rules.every((r) => r.tableColumn.trim() && r.aliasColumn.trim())
-  }, [datasetLeftId, datasetRightId, rules])
 
   const handleSave = () => {
     const config: MergeConfig = {
@@ -260,10 +255,10 @@ export function MergeDataset(props: MergeDatasetType) {
 
           {/* Действия */}
           <div className="flex gap-2">
-            <Button disabled={!canSave || props.isLoading} onClick={handleSave}>
-              {props.saveBtnName || 'Сохранить'}
-            </Button>
-            {props.children}
+            <DialogClose asChild>
+              <Button variant="outline">Закрыть</Button>
+            </DialogClose>
+            <Button onClick={handleSave}>{props.saveBtnName || 'Сохранить'}</Button>
           </div>
         </div>
       </DialogContent>
