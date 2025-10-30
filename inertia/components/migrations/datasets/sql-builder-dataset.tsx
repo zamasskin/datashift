@@ -22,6 +22,7 @@ import { Spinner } from '~/components/ui/spinner'
 import { Input } from '~/components/ui/input'
 import { JoinEditor, JoinItem } from './sql-builder-dataset/join-editor'
 import { ScrollArea } from '~/components/ui/scroll-area'
+import { SelectsEditor } from './sql-builder-dataset/selects-editor'
 
 export type SqlBuilderConfig = {
   type: 'sql_builder'
@@ -58,6 +59,7 @@ export function SqlBuilderDataset(props: SqlBuilderProps) {
   const [where, setWhere] = useState<WhereData>({})
   const [hawing, setHawing] = useState<WhereData>({})
   const [joins, setJoins] = useState<JoinItem[]>([])
+  const [selects, setSelects] = useState<string[]>([])
 
   const [tables, setTables] = useState<string[]>([])
   const [suggestionKeys, setSuggestionKeys] = useState<string[]>([])
@@ -175,12 +177,15 @@ export function SqlBuilderDataset(props: SqlBuilderProps) {
   const handleSave = async () => {
     if (props.onSave) {
       if (props?.config) {
-        props.onSave({ ...props?.config, params: { sourceId, table, where } })
+        props.onSave({
+          ...props?.config,
+          params: { sourceId, table, alias, selects, joins, where, hawing },
+        })
       } else {
         props.onSave({
           type: 'sql_builder',
           id: Date.now().toString(36),
-          params: { sourceId, table, where },
+          params: { sourceId, table, alias, selects, joins, where, hawing },
         })
       }
     }
@@ -230,7 +235,13 @@ export function SqlBuilderDataset(props: SqlBuilderProps) {
                   <CardTitle>Select</CardTitle>
                   <CardDescription>Настройка выборки</CardDescription>
                 </CardHeader>
-                <CardContent></CardContent>
+                <CardContent>
+                  <SelectsEditor
+                    suggestions={suggestionKeys}
+                    value={selects}
+                    onChange={setSelects}
+                  />
+                </CardContent>
               </Card>
             </TabsContent>
             <TabsContent value="order">
