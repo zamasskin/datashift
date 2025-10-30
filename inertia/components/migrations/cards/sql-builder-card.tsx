@@ -47,7 +47,12 @@ export function SqlBuilderCard({
             <Trash />
           </Button>
 
-          <SqlBuilderDataset isLoading={isLoading} suggestions={suggestions} onSave={onSave}>
+          <SqlBuilderDataset
+            isLoading={isLoading}
+            suggestions={suggestions}
+            onSave={onSave}
+            saveBtnName="Сохранить"
+          >
             <Button size="icon" variant="outline">
               <Settings />
             </Button>
