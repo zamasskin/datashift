@@ -1,17 +1,12 @@
 import { PlusIcon, SearchIcon, TrashIcon } from 'lucide-react'
 import { Button } from '~/components/ui/button'
-import { Item, ItemActions, ItemContent } from '~/components/ui/item'
+import { Item, ItemContent } from '~/components/ui/item'
 import { ScrollArea } from '~/components/ui/scroll-area'
 import { useEffect, useRef } from 'react'
-import { Field, FieldContent, FieldGroup, FieldLabel, FieldSet } from '~/components/ui/field'
+import { Field, FieldContent, FieldLabel } from '~/components/ui/field'
 import { TableSelect } from '../../table-select'
 import { Input } from '~/components/ui/input'
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-} from '~/components/ui/input-group'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '~/components/ui/input-group'
 import {
   Select,
   SelectContent,
@@ -176,7 +171,10 @@ export function JoinEditor({ data, tables, onChange }: JoinEditorProps) {
                               if (onChange) {
                                 const updated = data || []
                                 const join = updated[idx]
-                                join.on[onIdx] = { ...join.on[onIdx], operator: v as JoinItem['on'][number]['operator'] }
+                                join.on[onIdx] = {
+                                  ...join.on[onIdx],
+                                  operator: v as JoinItem['on'][number]['operator'],
+                                }
                                 onChange([...updated])
                               }
                             }}
