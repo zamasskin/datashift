@@ -39,18 +39,92 @@ export default class MigrationsController {
       return response.status(404).send({ error: 'Migration not found' })
     }
 
+    // --- Detailed schemas for fetchConfigs params ---
+    const whereFieldSchema = vine.object({
+      key: vine.string(),
+      value: vine.any().optional(),
+      values: vine.array(vine.any()).optional(),
+      op: vine.enum(['=', '!=', '<>', '>', '>=', '<', '<=', 'in', 'nin']).optional(),
+    })
+
+    // Без рекурсии (vine.lazy отсутствует): допускаем поля и одноуровневые $and/$or,
+    // а для глубокой вложенности принимаем произвольную структуру.
+    const whereSchema = vine.object({
+      fields: vine.array(whereFieldSchema).optional(),
+      $and: vine.record(vine.any()).optional(),
+      $or: vine.record(vine.any()).optional(),
+    })
+
+    const joinOnSchema = vine.object({
+      tableColumn: vine.string(),
+      aliasColumn: vine.string(),
+      operator: vine.enum(['=', '!=', '<', '<=', '>', '>=']),
+      cond: vine.enum(['and', 'or']).optional(),
+    })
+
+    const joinSchema = vine.object({
+      table: vine.string(),
+      alias: vine.string().optional(),
+      type: vine.enum(['inner', 'left', 'right', 'full']),
+      on: vine.array(joinOnSchema),
+    })
+
+    const mergeOnSchema = vine.object({
+      tableColumn: vine.string(),
+      aliasColumn: vine.string(),
+      operator: vine.enum(['=', '!=', '<', '<=', '>', '>=']),
+      cond: vine.enum(['and', 'or']).optional(),
+    })
+
+    const sqlBuilderParamsSchema = vine.object({
+      sourceId: vine.number(),
+      table: vine.string(),
+      alias: vine.string().optional(),
+      selects: vine.array(vine.string()).optional(),
+      orders: vine.array(vine.record(vine.enum(['asc', 'desc']))).optional(),
+      joins: vine.array(joinSchema).optional(),
+      where: whereSchema.optional(),
+      hawing: whereSchema.optional(),
+      group: vine.array(vine.string()).optional(),
+    })
+
+    const sqlParamsSchema = vine.object({
+      sourceId: vine.number(),
+      query: vine.string(),
+    })
+
+    const mergeParamsSchema = vine.object({
+      datasetLeftId: vine.string(),
+      datasetRightId: vine.string(),
+      on: vine.array(mergeOnSchema),
+    })
+
+    // Дискретный union по полю type через vine.group
+    const fetchConfigSchema = vine
+      .object({
+        id: vine.string(),
+        type: vine.enum(['sql', 'sql_builder', 'merge']),
+      })
+      .merge(
+        vine.group([
+          vine.group.if((data) => data.type === 'sql', {
+            params: sqlParamsSchema,
+          }),
+          vine.group.if((data) => data.type === 'sql_builder', {
+            params: sqlBuilderParamsSchema,
+          }),
+          vine.group.if((data) => data.type === 'merge', {
+            params: mergeParamsSchema,
+          }),
+        ])
+      )
+
     const schema = vine.compile(
       vine.object({
         name: vine.string().trim().minLength(3).maxLength(64),
         cronExpression: vine.string().optional(),
         isActive: vine.boolean(),
-        fetchConfigs: vine.array(
-          vine.object({
-            type: vine.string(),
-            id: vine.string(),
-            params: vine.record(vine.any()).optional(),
-          })
-        ),
+        fetchConfigs: vine.array(fetchConfigSchema),
         saveMappings: vine.array(
           vine.object({
             datasetId: vine.number().withoutDecimals().positive(),
@@ -80,6 +154,7 @@ export default class MigrationsController {
 
       return response.redirect(`/migrations/${migration.id}`)
     } catch (error: any) {
+      console.log(error)
       const fieldErrors = this.mapVineErrors(error)
       return inertia.render('migrations/edit', { migration, errors: fieldErrors }, { status: 422 })
     }

@@ -76,6 +76,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
         preserveScroll: true,
         headers: props.csrfToken ? { 'X-CSRF-TOKEN': props.csrfToken } : undefined,
         onError: (errors: any) => {
+          console.log(errors)
           const map: Record<string, string> = {}
           Object.entries(errors || {}).forEach(([field, message]) => {
             map[field] = Array.isArray(message) ? String(message[0]) : String(message as any)
