@@ -24,6 +24,7 @@ import { JoinEditor, JoinItem } from './sql-builder-dataset/join-editor'
 import { ScrollArea } from '~/components/ui/scroll-area'
 import { SelectsEditor } from '~/components/migrations/datasets/sql-builder-dataset/selects-editor'
 import { OrdersEditor } from '~/components/migrations/datasets/sql-builder-dataset/order-editor'
+import { GroupEditor } from '~/components/migrations/datasets/sql-builder-dataset/group-editor'
 
 export type SqlBuilderConfig = {
   type: 'sql_builder'
@@ -62,6 +63,7 @@ export function SqlBuilderDataset(props: SqlBuilderProps) {
   const [joins, setJoins] = useState<JoinItem[]>([])
   const [selects, setSelects] = useState<string[]>([])
   const [orders, setOrders] = useState<Record<string, 'asc' | 'desc'>[]>([])
+  const [group, setGroup] = useState<string[]>([])
 
   const [tables, setTables] = useState<string[]>([])
   const [suggestionKeys, setSuggestionKeys] = useState<string[]>([])
@@ -181,13 +183,13 @@ export function SqlBuilderDataset(props: SqlBuilderProps) {
       if (props?.config) {
         props.onSave({
           ...props?.config,
-          params: { sourceId, table, alias, selects, orders, joins, where, hawing },
+          params: { sourceId, table, alias, selects, orders, joins, where, hawing, group },
         })
       } else {
         props.onSave({
           type: 'sql_builder',
           id: Date.now().toString(36),
-          params: { sourceId, table, alias, selects, orders, joins, where, hawing },
+          params: { sourceId, table, alias, selects, orders, joins, where, hawing, group },
         })
       }
     }
@@ -302,7 +304,9 @@ export function SqlBuilderDataset(props: SqlBuilderProps) {
                   <CardTitle>Group</CardTitle>
                   <CardDescription>Настройка группировки</CardDescription>
                 </CardHeader>
-                <CardContent></CardContent>
+                <CardContent>
+                  <GroupEditor suggestions={suggestionKeys} value={group} onChange={setGroup} />
+                </CardContent>
               </Card>
             </TabsContent>
             <TabsContent value="hawing">
