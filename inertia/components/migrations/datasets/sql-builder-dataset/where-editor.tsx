@@ -1,12 +1,13 @@
-import { Plus, Trash, X } from 'lucide-react'
+import { PlusIcon, TrashIcon, X } from 'lucide-react'
 import { useState } from 'react'
 import { Autocomplete } from '~/components/ui/autocomplete'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
-import { ButtonGroup } from '~/components/ui/button-group'
 import { Field, FieldError, FieldLabel } from '~/components/ui/field'
 import { Label } from '~/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover'
+import { Item, ItemContent } from '~/components/ui/item'
+import { ScrollArea } from '~/components/ui/scroll-area'
 import {
   Select,
   SelectContent,
@@ -52,28 +53,35 @@ export function WhereEditor({
   }
 
   return (
-    <div className="space-y-2">
-      {data?.fields?.map((field, idx) => (
-        <FieldWhere
-          key={idx}
-          suggestionKeys={suggestionKeys}
-          suggestionValues={suggestionValues}
-          field={field}
-          onDelete={() => {
-            if (onChange) {
-              const fields = data?.fields?.filter((_, i) => i !== idx)
-              onChange({ ...data, fields })
-            }
-          }}
-          onChange={(newField) => {
-            if (onChange) {
-              const fields = data?.fields || []
-              fields[idx] = newField
-              onChange({ ...data, fields })
-            }
-          }}
-        />
-      ))}
+    <div className="space-y-4">
+      <ScrollArea className="max-h-72 max-w-full overflow-scroll">
+        <div className="space-y-2">
+          {data?.fields?.map((field, idx) => (
+            <Item key={idx} variant="outline">
+              <ItemContent>
+                <FieldWhere
+                  suggestionKeys={suggestionKeys}
+                  suggestionValues={suggestionValues}
+                  field={field}
+                  onDelete={() => {
+                    if (onChange) {
+                      const fields = data?.fields?.filter((_, i) => i !== idx)
+                      onChange({ ...data, fields })
+                    }
+                  }}
+                  onChange={(newField) => {
+                    if (onChange) {
+                      const fields = data?.fields || []
+                      fields[idx] = newField
+                      onChange({ ...data, fields })
+                    }
+                  }}
+                />
+              </ItemContent>
+            </Item>
+          ))}
+        </div>
+      </ScrollArea>
 
       <ActionsWhere
         openedAnd={!!data?.$and}
@@ -155,128 +163,108 @@ export function FieldWhere({
   onDelete,
   onChange,
 }: FieldProps) {
-  const [opPopoverOpened, handleOpPopoverOpened] = useState(false)
+  const opValue = field.op || '='
   return (
-    <div className="flex gap-1">
-      <ButtonGroup>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="secondary" size="sm">
-              {field.key}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent align="start" className="rounded-xl text-sm">
-            <Autocomplete
-              suggestions={suggestionKeys}
-              id="field"
-              value={field.key}
-              onValueChange={(value) => {
-                if (onChange) {
-                  onChange({ ...field, key: value })
-                }
-              }}
-            />
-          </PopoverContent>
-        </Popover>
+    <div className="flex flex-wrap items-center gap-2">
+      <div className="flex-1 min-w-[220px]">
+        <Autocomplete
+          suggestions={suggestionKeys}
+          id="key"
+          value={field.key}
+          onValueChange={(value) => {
+            if (onChange) {
+              onChange({ ...field, key: value })
+            }
+          }}
+          placeholder="поле (таблица.колонка)"
+        />
+      </div>
 
-        <Popover open={opPopoverOpened} onOpenChange={handleOpPopoverOpened}>
-          <PopoverTrigger asChild>
-            <Button variant="secondary" size="sm">
-              {field.op || '='}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent align="start" className="rounded-xl text-sm w-16 p-0">
-            <div className="flex flex-col gap-1">
-              {whereOperators.map((op) => (
+      <Select
+        value={opValue as Operators}
+        onValueChange={(value: Operators) => {
+          if (onChange) {
+            onChange({ ...field, op: value })
+          }
+        }}
+      >
+        <SelectTrigger className="h-8 min-w-20" title="Оператор">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {whereOperators.map((op) => (
+            <SelectItem key={op} value={op}>
+              {op}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      {opValue === 'in' || opValue === 'nin' ? (
+        <div className="flex flex-wrap items-center gap-2">
+          {field.values?.map((value, idx) => (
+            <div key={idx} className="flex items-center gap-1">
+              <Autocomplete
+                suggestions={suggestionValues}
+                id={`value-${idx}`}
+                value={value}
+                onValueChange={(val) => {
+                  if (onChange) {
+                    const values = field.values || []
+                    values[idx] = val
+                    onChange({ ...field, values })
+                  }
+                }}
+                className="h-8 min-w-[180px]"
+                placeholder="значение"
+              />
+              {field?.values && field?.values.length > 1 && (
                 <Button
-                  key={op}
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
                   onClick={() => {
                     if (onChange) {
-                      onChange({ ...field, op: op })
-                      handleOpPopoverOpened(false)
+                      const values = (field.values || []).filter((_, i) => i !== idx)
+                      onChange({ ...field, values })
                     }
                   }}
                 >
-                  {op}
+                  <X />
                 </Button>
-              ))}
+              )}
             </div>
-          </PopoverContent>
-        </Popover>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="secondary" size="sm" className="truncate">
-              {field.op == 'in' || field.op == 'nin'
-                ? field.values?.join(',')
-                : field.value?.toString()}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent align="start" className="rounded-xl text-sm">
-            {field.op == 'in' || field.op == 'nin' ? (
-              <div className="space-y-2">
-                {field.values?.map((value, idx) => (
-                  <div key={idx} className="flex gap-1">
-                    <Autocomplete
-                      suggestions={suggestionValues}
-                      id="field"
-                      value={value}
-                      onValueChange={(value) => {
-                        if (onChange) {
-                          const values = field.values || []
-                          values[idx] = value
-                          onChange({ ...field, values })
-                        }
-                      }}
-                    />
+          ))}
 
-                    {field?.values && field?.values.length > 1 && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          if (onChange) {
-                            const values = field?.values?.filter((_, i) => i !== idx) || []
-                            onChange({ ...field, values })
-                          }
-                        }}
-                      >
-                        <X />
-                      </Button>
-                    )}
-                  </div>
-                ))}
-                <Button
-                  onClick={() => {
-                    if (onChange) {
-                      const values = field.values || []
-                      onChange({ ...field, values: [...values, ''] })
-                    }
-                  }}
-                >
-                  <Plus />
-                  Добавить
-                </Button>
-              </div>
-            ) : (
-              <Autocomplete
-                suggestions={suggestionValues}
-                id="field"
-                value={field.value}
-                onValueChange={(value) => {
-                  if (onChange) {
-                    onChange({ ...field, value })
-                  }
-                }}
-              />
-            )}
-          </PopoverContent>
-        </Popover>
-      </ButtonGroup>
+          <Button
+            size="sm"
+            onClick={() => {
+              if (onChange) {
+                const values = field.values || []
+                onChange({ ...field, values: [...values, ''] })
+              }
+            }}
+          >
+            <PlusIcon className="size-4" /> Добавить
+          </Button>
+        </div>
+      ) : (
+        <div className="flex-1 min-w-[220px]">
+          <Autocomplete
+            suggestions={suggestionValues}
+            id="value"
+            value={field.value}
+            onValueChange={(value) => {
+              if (onChange) {
+                onChange({ ...field, value })
+              }
+            }}
+            placeholder="значение"
+          />
+        </div>
+      )}
 
-      <Button size="sm" variant="destructive" onClick={onDelete}>
-        <X />
+      <Button variant="secondary" size="sm" className="h-8" onClick={onDelete}>
+        <TrashIcon className="size-4" /> Удалить
       </Button>
     </div>
   )
@@ -336,7 +324,7 @@ export function ActionsWhere({
       <Popover open={newCondOpen} onOpenChange={changeNewCondOpen}>
         <PopoverTrigger asChild>
           <Button size="sm">
-            <Plus />
+            <PlusIcon />
             Условие
           </Button>
         </PopoverTrigger>
@@ -400,7 +388,7 @@ export function ActionsWhere({
                   ))}
 
                   <Button onClick={() => setNewCondValues((old) => [...old, ''])}>
-                    <Plus /> Добавить
+                    <PlusIcon className="size-4" /> Добавить
                   </Button>
                 </div>
               ) : (
@@ -432,12 +420,12 @@ export function ActionsWhere({
           variant="destructive"
           onClick={() => onChangeOpenedAnd && onChangeOpenedAnd(true)}
         >
-          <Trash />
+          <TrashIcon />
           And
         </Button>
       ) : (
         <Button size="sm" onClick={() => onChangeOpenedAnd && onChangeOpenedAnd(false)}>
-          <Plus />
+          <PlusIcon />
           And
         </Button>
       )}
@@ -448,12 +436,12 @@ export function ActionsWhere({
           variant="destructive"
           onClick={() => onChangeOpenedOr && onChangeOpenedOr(true)}
         >
-          <Trash />
+          <TrashIcon />
           Or
         </Button>
       ) : (
         <Button size="sm" onClick={() => onChangeOpenedOr && onChangeOpenedOr(false)}>
-          <Plus />
+          <PlusIcon />
           Or
         </Button>
       )}
