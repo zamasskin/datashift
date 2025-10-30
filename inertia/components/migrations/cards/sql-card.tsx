@@ -1,16 +1,16 @@
 import { Settings, Trash } from 'lucide-react'
 import { Button } from '~/components/ui/button'
 import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '~/components/ui/item'
-import { Config, SqlDataset } from '../datasets/sql-dataset'
+import { SqlConfig, SqlDataset } from '../datasets/sql-dataset'
 
 export type SqlCardProps = {
   isLoading?: boolean
   paramKeys?: string[]
-  config?: Config
+  config?: SqlConfig
   prevResults?: Record<string, string[]>
 
   onRemove?: (id: string) => void
-  onUpdate?: (config: Config) => void
+  onUpdate?: (config: SqlConfig) => void
 }
 
 export function SqlCard({

@@ -4,9 +4,12 @@ import { ArrowDownUp, FileWarning, Pencil, Save, Settings, Trash } from 'lucide-
 import { useMemo, useState } from 'react'
 import { SqlBuilderCard } from '~/components/migrations/cards/sql-builder-card'
 import { SqlCard } from '~/components/migrations/cards/sql-card'
-import { MergeDataset } from '~/components/migrations/datasets/merge-dataset'
-import { SqlBuilderDataset } from '~/components/migrations/datasets/sql-builder-dataset'
-import { SqlDataset } from '~/components/migrations/datasets/sql-dataset'
+import { MergeConfig, MergeDataset } from '~/components/migrations/datasets/merge-dataset'
+import {
+  SqlBuilderConfig,
+  SqlBuilderDataset,
+} from '~/components/migrations/datasets/sql-builder-dataset'
+import { SqlConfig, SqlDataset } from '~/components/migrations/datasets/sql-dataset'
 import { RootLayout } from '~/components/root-layout'
 import { Alert, AlertTitle } from '~/components/ui/alert'
 import { Button } from '~/components/ui/button'
@@ -40,18 +43,13 @@ import { Spinner } from '~/components/ui/spinner'
 import { Switch } from '~/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 
-const fcSettings: Record<string, { name: string; icon: string }> = {
-  sql: { name: 'SQL Запрос', icon: '/icons/sql-edit.png' },
-  sqlBuilder: { name: 'Редактор запроса', icon: '/icons/sql-build.png"' },
-  merge: { name: 'Объединение', icon: '/icons/merge.png' },
-  modification: { name: 'Модификация', icon: '/icons/modify.png' },
-}
+type FetchMapping = SqlConfig | SqlBuilderConfig | MergeConfig
 
 const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const { props } = usePage<{ csrfToken?: string }>()
   const [name, setName] = useState(migration.name)
   const [cronExpression, setCronExpression] = useState(migration.cronExpression || '')
-  const [fetchConfigs, setFetchConfigs] = useState(migration.fetchConfigs || [])
+  const [fetchConfigs, setFetchConfigs] = useState<FetchMapping[]>(migration.fetchConfigs || [])
   const [saveMappings, setSaveMappings] = useState(migration.saveMappings || [])
   const [params, setParams] = useState(migration.params || [])
   const [isActive, setIsActive] = useState(migration.isActive || false)
@@ -96,7 +94,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
     setFetchConfigs((old) => old.filter((cfg) => cfg.id !== id))
   }
 
-  const handleSave = (config: { id: string }) => {
+  const handleSave = (config: FetchMapping) => {
     setFetchConfigs((old) => old.map((item) => (item.id == config.id ? config : item)))
   }
 
@@ -248,7 +246,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
 
                       <MergeDataset
                         isLoading={isLoading}
-                        suggestions={suggestions}
+                        datasets={{ aa: ['aa1', 'aa2'], bb: ['bb1', 'bb2'], cc: ['cc1', 'cc2'] }}
                         onSave={(config) => setFetchConfigs([...fetchConfigs, config])}
                       >
                         <Button>Объединение</Button>

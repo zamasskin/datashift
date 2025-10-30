@@ -19,7 +19,7 @@ export type MergeDatasetType = {
   children?: React.ReactNode
   saveBtnName?: string
   config?: MergeConfig
-  suggestions?: string[]
+  datasets?: Record<string, string[]>
   isLoading?: boolean
   onSave?: (config: MergeConfig) => void
 }
@@ -50,6 +50,12 @@ import {
 export function MergeDataset(props: MergeDatasetType) {
   const operators = ['=', '!=', '<', '<=', '>', '>='] as const
   const conds = ['and', 'or'] as const
+
+  const datasets = useMemo(() => Object.keys(props.datasets || {}), [props.datasets])
+  const suggestions = useMemo(
+    () => datasets.flatMap((d) => props.datasets?.[d] || []),
+    [datasets, props.datasets]
+  )
 
   const [open, setOpen] = useState(false)
   const initialConfig = props.config
@@ -108,22 +114,34 @@ export function MergeDataset(props: MergeDatasetType) {
               <div className="grid md:grid-cols-2 gap-2">
                 <Field>
                   <FieldLabel>Левый датасет</FieldLabel>
-                  <Autocomplete
-                    suggestions={props.suggestions || []}
-                    value={datasetLeftId}
-                    onValueChange={setDatasetLeftId}
-                    placeholder="например: users"
-                  />
+                  <Select value={datasetLeftId} onValueChange={setDatasetLeftId}>
+                    <SelectTrigger className="min-w-40 h-8" title="Левый датасет">
+                      <SelectValue placeholder="Выберите датасет" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {datasets.map((s) => (
+                        <SelectItem key={s} value={s}>
+                          {s}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </Field>
 
                 <Field>
                   <FieldLabel>Правый датасет</FieldLabel>
-                  <Autocomplete
-                    suggestions={props.suggestions || []}
-                    value={datasetRightId}
-                    onValueChange={setDatasetRightId}
-                    placeholder="например: orders"
-                  />
+                  <Select value={datasetRightId} onValueChange={setDatasetRightId}>
+                    <SelectTrigger className="min-w-40 h-8" title="Правый датасет">
+                      <SelectValue placeholder="Выберите датасет" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {datasets.map((s) => (
+                        <SelectItem key={s} value={s}>
+                          {s}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </Field>
               </div>
             </ItemContent>
@@ -138,7 +156,7 @@ export function MergeDataset(props: MergeDatasetType) {
                     <ItemContent>
                       <div className="grid md:grid-cols-[1fr_min-content_1fr_min-content] gap-2 items-center">
                         <Autocomplete
-                          suggestions={props.suggestions || []}
+                          suggestions={suggestions}
                           value={rule.tableColumn}
                           onValueChange={(value) => {
                             const next = [...rules]
@@ -172,7 +190,7 @@ export function MergeDataset(props: MergeDatasetType) {
                         </Select>
 
                         <Autocomplete
-                          suggestions={props.suggestions || []}
+                          suggestions={suggestions}
                           value={rule.aliasColumn}
                           onValueChange={(value) => {
                             const next = [...rules]

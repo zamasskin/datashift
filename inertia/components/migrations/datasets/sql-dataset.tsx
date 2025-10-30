@@ -16,7 +16,7 @@ import { Spinner } from '~/components/ui/spinner'
 import { usePage } from '@inertiajs/react'
 import DataSource from '#models/data_source'
 
-export type Config = {
+export type SqlConfig = {
   type: 'sql'
   id: string
   params: {
@@ -28,11 +28,11 @@ export type Config = {
 export type SqlEditorProps = {
   isLoading?: boolean
   paramKeys?: string[]
-  config?: Config
+  config?: SqlConfig
   prevResults?: Record<string, string[]>
   children?: React.ReactNode
   saveBtnName?: string
-  onSave?: (config: Config) => void
+  onSave?: (config: SqlConfig) => void
 }
 
 export function SqlDataset(props: SqlEditorProps) {
