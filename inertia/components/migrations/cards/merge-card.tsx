@@ -27,7 +27,7 @@ export function MergeCard({
     <Item variant="outline">
       <ItemMedia>
         <img
-          src="/icons/sql-edit.png"
+          src="/icons/merge.png"
           alt={config?.id}
           width={32}
           height={32}
