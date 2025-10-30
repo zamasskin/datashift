@@ -1,4 +1,4 @@
-import { PlusIcon, SearchIcon, TrashIcon } from 'lucide-react'
+import { PlusIcon, TrashIcon } from 'lucide-react'
 import { Button } from '~/components/ui/button'
 import { Item, ItemContent } from '~/components/ui/item'
 import { ScrollArea } from '~/components/ui/scroll-area'
@@ -36,7 +36,14 @@ export type JoinEditorProps = {
   onChange?: (data: JoinItem[]) => void
 }
 
-export function JoinEditor({ data, tables, columnsMap, baseTable, baseAlias, onChange }: JoinEditorProps) {
+export function JoinEditor({
+  data,
+  tables,
+  columnsMap,
+  baseTable,
+  baseAlias,
+  onChange,
+}: JoinEditorProps) {
   if (!tables || tables.length === 0) {
     return <div>Для выбранных источников данных таблицы не найдены.</div>
   }
