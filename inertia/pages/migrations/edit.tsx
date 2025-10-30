@@ -44,7 +44,6 @@ import { Switch } from '~/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 
 type FetchMapping = SqlConfig | SqlBuilderConfig | MergeConfig
-
 const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const { props } = usePage<{ csrfToken?: string }>()
   const [name, setName] = useState(migration.name)
@@ -113,6 +112,17 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
             />
             {saveErrors?.name && <p className="text-sm text-destructive">{saveErrors.name}</p>}
           </div>
+        </div>
+
+        <div className="flex gap-2 items-center">
+          <Button variant="outline">
+            <Trash />
+            Удалить
+          </Button>
+          <Button onClick={onSave} disabled={saveLoading}>
+            <Save />
+            {saveLoading ? 'Сохранение…' : 'Сохранить'}
+          </Button>
         </div>
 
         <Tabs defaultValue="config" className="mt-8">
@@ -221,20 +231,8 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                         paramKeys={paramKeys}
                         isLoading={isLoading}
                       >
-                        <Button>Добавить</Button>
+                        <Button>Sql</Button>
                       </SqlDataset>
-
-                      <Select value={addType} onValueChange={setAddType}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Тип датасета" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="sql">SQL</SelectItem>
-                          <SelectItem value="sqlBuilder">Редактор запроса</SelectItem>
-                          <SelectItem value="merge">Объединение</SelectItem>
-                          <SelectItem value="modification">Модификация</SelectItem>
-                        </SelectContent>
-                      </Select>
 
                       <SqlBuilderDataset
                         isLoading={isLoading}
@@ -246,11 +244,11 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
 
                       <MergeDataset
                         isLoading={isLoading}
-                        datasetsColumns={{
-                          aa: ['aa1', 'aa2'],
-                          bb: ['bb1', 'bb2'],
-                          cc: ['cc1', 'cc2'],
-                        }}
+                        datasetsConfigs={[
+                          { id: 'aa', title: 'sql', columns: ['aa1', 'aa2'] },
+                          { id: 'bb', title: 'dataset1', columns: ['bb1', 'bb2'] },
+                          { id: 'cc', title: 'custom', columns: ['cc1', 'cc2'] },
+                        ]}
                         onSave={(config) => setFetchConfigs([...fetchConfigs, config])}
                       >
                         <Button>Объединение</Button>
@@ -285,17 +283,6 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
             </div>
           </TabsContent>
         </Tabs>
-
-        <div className="flex gap-2 items-center">
-          <Button variant="outline">
-            <Trash />
-            Удалить
-          </Button>
-          <Button onClick={onSave} disabled={saveLoading}>
-            <Save />
-            {saveLoading ? 'Сохранение…' : 'Сохранить'}
-          </Button>
-        </div>
       </div>
     </>
   )

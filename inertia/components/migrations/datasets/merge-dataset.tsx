@@ -15,11 +15,17 @@ export type MergeConfig = {
   }
 }
 
+type DatasetConfig = {
+  id: string
+  title: string
+  columns: string[]
+}
+
 export type MergeDatasetType = {
   children?: React.ReactNode
   saveBtnName?: string
   config?: MergeConfig
-  datasetsColumns?: Record<string, string[]>
+  datasetsConfigs?: DatasetConfig[]
   isLoading?: boolean
   onSave?: (config: MergeConfig) => void
 }
@@ -52,11 +58,25 @@ export function MergeDataset(props: MergeDatasetType) {
   const operators = ['=', '!=', '<', '<=', '>', '>='] as const
   const conds = ['and', 'or'] as const
 
-  const datasets = useMemo(() => Object.keys(props.datasetsColumns || {}), [props.datasetsColumns])
+  const datasets = useMemo(
+    () => (props.datasetsConfigs || []).map((dc) => dc.id),
+    [props.datasetsConfigs]
+  )
+
+  const datasetTitleMap = useMemo(
+    () =>
+      Object.fromEntries(
+        (props.datasetsConfigs || []).map((dc) => [
+          dc.id,
+          dc.title ? `${dc.title} (${dc.id})` : dc.id,
+        ])
+      ),
+    [props.datasetsConfigs]
+  )
 
   const [open, setOpen] = useState(false)
   const initialConfig = props.config
-  const [id] = useState(initialConfig?.id || `merge-${Date.now()}`)
+  const [id] = useState(initialConfig?.id || Date.now().toString(36))
   const [datasetLeftId, setDatasetLeftId] = useState(initialConfig?.params?.datasetLeftId || '')
   const [datasetRightId, setDatasetRightId] = useState(initialConfig?.params?.datasetRightId || '')
   const [rules, setRules] = useState<MergeOn[]>(
@@ -89,13 +109,13 @@ export function MergeDataset(props: MergeDatasetType) {
   }
 
   const suggestionsCombined = useMemo(() => {
-    const left = (props.datasetsColumns?.[datasetLeftId] || []).map((c) => `${datasetLeftId}.${c}`)
-    const right = (props.datasetsColumns?.[datasetRightId] || []).map(
-      (c) => `${datasetRightId}.${c}`
-    )
+    const leftCfg = (props.datasetsConfigs || []).find((dc) => dc.id === datasetLeftId)
+    const rightCfg = (props.datasetsConfigs || []).find((dc) => dc.id === datasetRightId)
+    const left = (leftCfg?.columns || []).map((c) => `${datasetLeftId}.${c}`)
+    const right = (rightCfg?.columns || []).map((c) => `${datasetRightId}.${c}`)
     const merged = [...left, ...right].filter((s) => s && !s.startsWith('.'))
     return Array.from(new Set(merged))
-  }, [props.datasetsColumns, datasetLeftId, datasetRightId])
+  }, [props.datasetsConfigs, datasetLeftId, datasetRightId])
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -119,11 +139,17 @@ export function MergeDataset(props: MergeDatasetType) {
                       <SelectValue placeholder="Выберите датасет" />
                     </SelectTrigger>
                     <SelectContent>
-                      {datasets.map((s) => (
-                        <SelectItem key={s} value={s}>
-                          {s}
+                      {datasets.length > 0 ? (
+                        datasets.map((s) => (
+                          <SelectItem key={s} value={s}>
+                            {datasetTitleMap[s] || s}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="" disabled>
+                          Нет вариантов
                         </SelectItem>
-                      ))}
+                      )}
                     </SelectContent>
                   </Select>
                 </Field>
@@ -135,11 +161,17 @@ export function MergeDataset(props: MergeDatasetType) {
                       <SelectValue placeholder="Выберите датасет" />
                     </SelectTrigger>
                     <SelectContent>
-                      {datasets.map((s) => (
-                        <SelectItem key={s} value={s}>
-                          {s}
+                      {datasets.length > 0 ? (
+                        datasets.map((s) => (
+                          <SelectItem key={s} value={s}>
+                            {datasetTitleMap[s] || s}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="" disabled>
+                          Нет вариантов
                         </SelectItem>
-                      ))}
+                      )}
                     </SelectContent>
                   </Select>
                 </Field>
