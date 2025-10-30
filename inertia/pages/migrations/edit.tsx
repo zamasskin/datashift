@@ -22,6 +22,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '~/components/ui/dialog'
+import { Field } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
 import {
   ItemGroup,
@@ -100,7 +101,29 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
   return (
     <>
       <Head title="Миграции" />
-      <div className="px-4 lg:px-6 space-y-4">
+      <div className="px-4 lg:px-6 space-y-6">
+        <Item variant="outline">
+          <ItemContent>
+            <div className="flex items-center space-x-2">
+              <Switch id="airplane-mode" checked={isActive} onCheckedChange={setIsActive} />
+              <Label htmlFor="airplane-mode">Активно</Label>
+            </div>
+          </ItemContent>
+          <ItemContent>
+            <div className="flex gap-2">
+              <Button variant="outline">
+                <Trash />
+                Удалить
+              </Button>
+
+              <Button onClick={onSave} disabled={saveLoading}>
+                <Save />
+                {saveLoading ? 'Сохранение…' : 'Сохранить'}
+              </Button>
+            </div>
+          </ItemContent>
+        </Item>
+
         <div className="space-y-2">
           <div className="grid w-full max-w-sm items-center gap-3">
             <Label htmlFor="name">Название</Label>
@@ -114,36 +137,17 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
           </div>
         </div>
 
-        <div className="flex gap-2 items-center">
-          <Button variant="outline">
-            <Trash />
-            Удалить
-          </Button>
-          <Button onClick={onSave} disabled={saveLoading}>
-            <Save />
-            {saveLoading ? 'Сохранение…' : 'Сохранить'}
-          </Button>
-        </div>
-
-        <Tabs defaultValue="config" className="mt-8">
-          <div className="flex gap-4 items-center">
-            <TabsList>
-              <TabsTrigger value="config">
-                <Settings />
-                Настройки
-              </TabsTrigger>
-              <TabsTrigger value="migrations">
-                <ArrowDownUp />
-                Миграции
-              </TabsTrigger>
-            </TabsList>
-
-            <div className="flex items-center space-x-2">
-              <Switch id="airplane-mode" checked={isActive} onCheckedChange={setIsActive} />
-              <Label htmlFor="airplane-mode">Активно</Label>
-            </div>
-          </div>
-
+        <Tabs defaultValue="config" className="mt-6">
+          <TabsList>
+            <TabsTrigger value="config">
+              <Settings />
+              Настройки
+            </TabsTrigger>
+            <TabsTrigger value="migrations">
+              <ArrowDownUp />
+              Миграции
+            </TabsTrigger>
+          </TabsList>
           <TabsContent value="config" className="mt-4 max-w-xl">
             <div className="space-y-4">
               <Card>
