@@ -134,11 +134,18 @@ export type IntervalTimeEditorProps = {
 
 export function IntervalTimeEditor({ config, onChange }: IntervalTimeEditorProps) {
   const [timeUnits, setTimeUnits] = useState(config?.timeUnits || 1)
+  const [timeUnitsText, setTimeUnitsText] = useState(String(config?.timeUnits || 1))
   const [timeStart, setTimeStart] = useState(config?.timeStart || '00:00')
   const [timeEnd, setTimeEnd] = useState(config?.timeEnd || '01:00')
   const [days, setDays] = useState<CronDays[]>(
     config?.days || (Object.keys(cronDays) as CronDays[])
   )
+
+  useEffect(() => {
+    const next = config?.timeUnits || 1
+    setTimeUnits(next)
+    setTimeUnitsText(String(next))
+  }, [config?.timeUnits])
 
   return (
     <div className="space-y-4">
@@ -147,18 +154,34 @@ export function IntervalTimeEditor({ config, onChange }: IntervalTimeEditorProps
         <InputGroup>
           <InputGroupInput
             type="number"
-            value={timeUnits}
+            value={timeUnitsText}
+            min={1}
+            step={1}
+            inputMode="numeric"
             onChange={(ev) => {
-              const val = Number(ev.target.value)
-              setTimeUnits(val)
+              const raw = ev.target.value
+              setTimeUnitsText(raw)
+              const parsed = parseInt(raw, 10)
+              if (!Number.isNaN(parsed) && parsed > 0) {
+                setTimeUnits(parsed)
+                if (onChange) {
+                  onChange({
+                    type: 'interval-time',
+                    timeUnits: parsed,
+                    timeStart,
+                    timeEnd,
+                    days,
+                  })
+                }
+              }
+            }}
+            onBlur={(ev) => {
+              const parsed = parseInt(ev.target.value, 10)
+              const next = Number.isNaN(parsed) || parsed <= 0 ? 1 : parsed
+              setTimeUnits(next)
+              setTimeUnitsText(String(next))
               if (onChange) {
-                onChange({
-                  type: 'interval-time',
-                  timeUnits: val,
-                  timeStart,
-                  timeEnd,
-                  days,
-                })
+                onChange({ type: 'interval-time', timeUnits: next, timeStart, timeEnd, days })
               }
             }}
           />
