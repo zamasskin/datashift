@@ -7,6 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover
 import { Calendar } from '~/components/ui/calendar'
 import { Item } from '~/components/ui/item'
 import { ItemGroup } from '~/components/ui/item'
+import { ScrollArea } from '~/components/ui/scroll-area'
 import {
   Select,
   SelectContent,
@@ -85,7 +86,8 @@ export function ParamsEditor({
           Добавить параметр
         </Button>
       </div>
-      <ItemGroup className="gap-2">
+      <ScrollArea className="w-full h-72 overflow-hidden">
+        <ItemGroup className="gap-2">
         {items.map((item, idx) => {
           const keyTrim = (item.key || '').trim()
           const keyLower = keyTrim.toLowerCase()
@@ -206,7 +208,8 @@ export function ParamsEditor({
             </Item>
           )
         })}
-      </ItemGroup>
+        </ItemGroup>
+      </ScrollArea>
     </Field>
   )
 }
