@@ -90,12 +90,15 @@ export function ParamsEditor({
           const keyTrim = (item.key || '').trim()
           const keyLower = keyTrim.toLowerCase()
           const isEmpty = keyTrim.length === 0
-          const isDuplicate = !isEmpty && (keyCounts[keyLower] || 0) > 1
+          const isInvalidName = !isEmpty && !/^[A-Za-z_][A-Za-z0-9_]*$/.test(keyTrim)
+          const isDuplicate = !isEmpty && !isInvalidName && (keyCounts[keyLower] || 0) > 1
           const keyErrorMsg = isEmpty
             ? 'Заполните ключ'
-            : isDuplicate
-              ? 'Ключ должен быть уникальным'
-              : ''
+            : isInvalidName
+              ? 'Ключ должен соответствовать: [A-Za-z_][A-Za-z0-9_]*'
+              : isDuplicate
+                ? 'Ключ должен быть уникальным'
+                : ''
 
           return (
             <Item
@@ -108,24 +111,28 @@ export function ParamsEditor({
                 <div className="flex gap-2">
                   <div className="flex flex-col min-w-36">
                     <Input
-                      className={`${isEmpty || isDuplicate ? 'border-red-500' : ''}`}
-                      placeholder="ключ (латиница)"
-                      aria-invalid={isEmpty || isDuplicate}
+                      className={`${isEmpty || isInvalidName || isDuplicate ? 'border-red-500' : ''}`}
+                      placeholder="ключ (имя переменной)"
+                      aria-invalid={isEmpty || isInvalidName || isDuplicate}
                       title={
                         isEmpty
                           ? 'Заполните ключ'
-                          : isDuplicate
-                            ? 'Ключ должен быть уникальным'
-                            : 'Ключ параметра: только латиница, лишние символы удаляются'
+                          : isInvalidName
+                            ? 'Разрешены латиница, цифры и _, первый символ — буква или _'
+                            : isDuplicate
+                              ? 'Ключ должен быть уникальным'
+                              : 'Лишние символы удаляются: латиница, цифры и _; первый символ — буква или _'
                       }
                       value={item.key}
                       onChange={(e) => {
                         const raw = e.target.value
-                        const cleaned = raw.replace(/[^A-Za-z]/g, '')
+                        const cleaned = raw.replace(/[^A-Za-z0-9_]/g, '')
                         setItem(idx, { key: cleaned })
                       }}
                     />
-                    {(isEmpty || isDuplicate) && <FieldError errors={[{ message: keyErrorMsg }]} />}
+                    {(isEmpty || isInvalidName || isDuplicate) && (
+                      <FieldError errors={[{ message: keyErrorMsg }]} />
+                    )}
                   </div>
                   <Select
                     value={item.type}
