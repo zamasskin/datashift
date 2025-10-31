@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { DurationInputArg1, DurationInputArg2 } from 'moment'
 import { Button } from '~/components/ui/button'
-import { Field, FieldGroup, FieldError } from '~/components/ui/field'
+import { Field, FieldError } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover'
 import { Calendar } from '~/components/ui/calendar'
 import { Item } from '~/components/ui/item'
+import { ItemGroup } from '~/components/ui/item'
 import {
   Select,
   SelectContent,
@@ -84,7 +85,7 @@ export function ParamsEditor({
           Добавить параметр
         </Button>
       </div>
-      <FieldGroup>
+      <ItemGroup className="gap-2">
         {items.map((item, idx) => {
           const keyTrim = (item.key || '').trim()
           const keyLower = keyTrim.toLowerCase()
@@ -198,7 +199,7 @@ export function ParamsEditor({
             </Item>
           )
         })}
-      </FieldGroup>
+      </ItemGroup>
     </Field>
   )
 }
