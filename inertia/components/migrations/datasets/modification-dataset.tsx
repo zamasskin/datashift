@@ -201,56 +201,26 @@ export function ModificationDataset(props: ModificationDatasetProps) {
             </Select>
             {!datasetId.trim() && <FieldError>Укажите идентификатор датасета</FieldError>}
           </Field>
-
+          {/* Новые колонки */}
           <Field>
-            <FieldLabel>Удалить колонки</FieldLabel>
-            <div className="flex gap-2">
-              <Select value={newDropName} onValueChange={setNewDropName}>
-                <SelectTrigger className="min-w-40 h-8" title="Колонка">
-                  <SelectValue placeholder="Выберите колонку" />
-                </SelectTrigger>
-                <SelectContent>
-                  {dropOptions.length > 0 ? (
-                    dropOptions.map((c) => (
-                      <SelectItem key={c} value={c}>
-                        {c}
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <SelectItem value="__no_columns__" disabled>
-                      Нет колонок
-                    </SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
-              <Button type="button" variant="secondary" onClick={addDropColumn}>
-                Добавить
+            <FieldLabel>Новые колонки</FieldLabel>
+            <div className="space-y-2">
+              {newColumns.map((col, idx) => (
+                <ColumnValueEditor
+                  key={idx}
+                  value={col}
+                  onChange={(v) => patchNewColumn(idx, v)}
+                  onRemove={() => removeNewColumn(idx)}
+                  columns={availableColumns}
+                />
+              ))}
+              <Button type="button" variant="outline" onClick={addNewColumn}>
+                <PlusIcon className="mr-1" /> Добавить колонку
               </Button>
             </div>
-            <ScrollArea className="h-28 w-full">
-              <div className="flex flex-wrap gap-2 py-2">
-                {dropColumns.map((c, idx) => (
-                  <div
-                    key={`${c}-${idx}`}
-                    className="flex items-center gap-2 border rounded px-2 py-1"
-                  >
-                    <span className="text-sm font-mono">{c}</span>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => removeDropColumn(idx)}
-                      title="Удалить"
-                      className="h-7 w-7"
-                    >
-                      <TrashIcon className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
           </Field>
 
+          {/* Переименование */}
           <Field>
             <FieldLabel>Переименовать колонки</FieldLabel>
             <div className="space-y-2">
@@ -301,22 +271,54 @@ export function ModificationDataset(props: ModificationDatasetProps) {
             </div>
           </Field>
 
+          {/* Удаление */}
           <Field>
-            <FieldLabel>Новые колонки</FieldLabel>
-            <div className="space-y-2">
-              {newColumns.map((col, idx) => (
-                <ColumnValueEditor
-                  key={idx}
-                  value={col}
-                  onChange={(v) => patchNewColumn(idx, v)}
-                  onRemove={() => removeNewColumn(idx)}
-                  columns={availableColumns}
-                />
-              ))}
-              <Button type="button" variant="outline" onClick={addNewColumn}>
-                <PlusIcon className="mr-1" /> Добавить колонку
+            <FieldLabel>Удалить колонки</FieldLabel>
+            <div className="flex gap-2">
+              <Select value={newDropName} onValueChange={setNewDropName}>
+                <SelectTrigger className="min-w-40 h-8" title="Колонка">
+                  <SelectValue placeholder="Выберите колонку" />
+                </SelectTrigger>
+                <SelectContent>
+                  {dropOptions.length > 0 ? (
+                    dropOptions.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="__no_columns__" disabled>
+                      Нет колонок
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+              <Button type="button" variant="secondary" onClick={addDropColumn}>
+                Добавить
               </Button>
             </div>
+            <ScrollArea className="h-28 w-full">
+              <div className="flex flex-wrap gap-2 py-2">
+                {dropColumns.map((c, idx) => (
+                  <div
+                    key={`${c}-${idx}`}
+                    className="flex items-center gap-2 border rounded px-2 py-1"
+                  >
+                    <span className="text-sm font-mono">{c}</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeDropColumn(idx)}
+                      title="Удалить"
+                      className="h-7 w-7"
+                    >
+                      <TrashIcon className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
           </Field>
         </div>
         <DialogFooter>
