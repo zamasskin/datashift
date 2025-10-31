@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { DurationInputArg1, DurationInputArg2 } from 'moment'
 import { Button } from '~/components/ui/button'
 import { Field, FieldContent, FieldError, FieldLabel } from '~/components/ui/field'
@@ -52,17 +52,7 @@ export function ParamsEditor({
     onChange?.(toParams(next))
   }
 
-  const keyCounts = useMemo(() => {
-    return items.reduce(
-      (acc, i) => {
-        const k = (i.key || '').trim().toLowerCase()
-        if (!k) return acc
-        acc[k] = (acc[k] || 0) + 1
-        return acc
-      },
-      {} as Record<string, number>
-    )
-  }, [items])
+  // Удалены неиспользуемые вычисления дубликатов ключей (compact mode)
 
   const openAdd = () => {
     setEditingIndex(null)
@@ -71,11 +61,7 @@ export function ParamsEditor({
   }
   const removeItem = (idx: number) => update(items.filter((_, i) => i !== idx))
 
-  const setItem = (idx: number, patch: Partial<ParamItem>) => {
-    const next = items.slice()
-    next[idx] = { ...next[idx], ...patch }
-    update(next)
-  }
+  // Удалён неиспользуемый помощник setItem (редактирование переносится в модалку)
 
   const openEdit = (idx: number) => {
     setEditingIndex(idx)
