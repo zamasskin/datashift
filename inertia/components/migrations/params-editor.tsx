@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { DurationInputArg1, DurationInputArg2 } from 'moment'
 import { Button } from '~/components/ui/button'
-import { Field, FieldError } from '~/components/ui/field'
+import { Field, FieldError, FieldLabel } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover'
 import { Calendar } from '~/components/ui/calendar'
@@ -88,126 +88,134 @@ export function ParamsEditor({
       </div>
       <ScrollArea className="w-full h-72 overflow-hidden">
         <ItemGroup className="gap-2">
-        {items.map((item, idx) => {
-          const keyTrim = (item.key || '').trim()
-          const keyLower = keyTrim.toLowerCase()
-          const isEmpty = keyTrim.length === 0
-          const isInvalidName = !isEmpty && !/^[A-Za-z_][A-Za-z0-9_]*$/.test(keyTrim)
-          const isDuplicate = !isEmpty && !isInvalidName && (keyCounts[keyLower] || 0) > 1
-          const keyErrorMsg = isEmpty
-            ? 'Заполните ключ'
-            : isInvalidName
-              ? 'Ключ должен соответствовать: [A-Za-z_][A-Za-z0-9_]*'
-              : isDuplicate
-                ? 'Ключ должен быть уникальным'
-                : ''
+          {items.map((item, idx) => {
+            const keyTrim = (item.key || '').trim()
+            const keyLower = keyTrim.toLowerCase()
+            const isEmpty = keyTrim.length === 0
+            const isInvalidName = !isEmpty && !/^[A-Za-z_][A-Za-z0-9_]*$/.test(keyTrim)
+            const isDuplicate = !isEmpty && !isInvalidName && (keyCounts[keyLower] || 0) > 1
+            const keyErrorMsg = isEmpty
+              ? 'Заполните ключ'
+              : isInvalidName
+                ? 'Ключ должен соответствовать: [A-Za-z_][A-Za-z0-9_]*'
+                : isDuplicate
+                  ? 'Ключ должен быть уникальным'
+                  : ''
 
-          return (
-            <Item
-              key={idx}
-              variant="outline"
-              size="sm"
-              className="w-full items-start gap-1 py-3 px-3"
-            >
-              <div className="flex flex-wrap gap-1 items-start justify-between w-full">
-                <div className="flex gap-2">
-                  <div className="flex flex-col min-w-36">
-                    <Input
-                      className={`${isEmpty || isInvalidName || isDuplicate ? 'border-red-500' : ''}`}
-                      placeholder="ключ (имя переменной)"
-                      aria-invalid={isEmpty || isInvalidName || isDuplicate}
-                      title={
-                        isEmpty
-                          ? 'Заполните ключ'
-                          : isInvalidName
-                            ? 'Разрешены латиница, цифры и _, первый символ — буква или _'
-                            : isDuplicate
-                              ? 'Ключ должен быть уникальным'
-                              : 'Лишние символы удаляются: латиница, цифры и _; первый символ — буква или _'
-                      }
-                      value={item.key}
-                      onChange={(e) => {
-                        const raw = e.target.value
-                        const cleaned = raw.replace(/[^A-Za-z0-9_]/g, '')
-                        setItem(idx, { key: cleaned })
-                      }}
-                    />
-                    {(isEmpty || isInvalidName || isDuplicate) && (
-                      <FieldError errors={[{ message: keyErrorMsg }]} />
-                    )}
+            return (
+              <Item
+                key={idx}
+                variant="outline"
+                size="sm"
+                className="w-full items-start gap-1 py-3 px-3"
+              >
+                <div className="flex flex-wrap gap-1 items-start justify-between w-full">
+                  <div className="flex gap-2">
+                    <div className="flex flex-col min-w-36">
+                      <Field>
+                        <FieldLabel>Ключ</FieldLabel>
+                        <Input
+                          className={`${isEmpty || isInvalidName || isDuplicate ? 'border-red-500' : ''}`}
+                          placeholder="ключ (имя переменной)"
+                          aria-invalid={isEmpty || isInvalidName || isDuplicate}
+                          title={
+                            isEmpty
+                              ? 'Заполните ключ'
+                              : isInvalidName
+                                ? 'Разрешены латиница, цифры и _, первый символ — буква или _'
+                                : isDuplicate
+                                  ? 'Ключ должен быть уникальным'
+                                  : 'Лишние символы удаляются: латиница, цифры и _; первый символ — буква или _'
+                          }
+                          value={item.key}
+                          onChange={(e) => {
+                            const raw = e.target.value
+                            const cleaned = raw.replace(/[^A-Za-z0-9_]/g, '')
+                            setItem(idx, { key: cleaned })
+                          }}
+                        />
+                        {(isEmpty || isInvalidName || isDuplicate) && (
+                          <FieldError errors={[{ message: keyErrorMsg }]} />
+                        )}
+                      </Field>
+                    </div>
+                    <Field>
+                      <FieldLabel>Тип</FieldLabel>
+                      <Select
+                        value={item.type}
+                        onValueChange={(v) => setItem(idx, { type: v as ParamType })}
+                      >
+                        <SelectTrigger className="min-w-32 h-8" title="Тип параметра">
+                          <SelectValue placeholder="тип" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {typeOptions.map((t) => (
+                            <SelectItem key={t.value} value={t.value}>
+                              {t.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </Field>
                   </div>
-                  <Select
-                    value={item.type}
-                    onValueChange={(v) => setItem(idx, { type: v as ParamType })}
+
+                  <Button
+                    className="h-8 p-2"
+                    variant="ghost"
+                    size="sm"
+                    type="button"
+                    onClick={() => removeItem(idx)}
+                    aria-label="Удалить"
+                    title="Удалить параметр"
                   >
-                    <SelectTrigger className="min-w-32 h-8" title="Тип параметра">
-                      <SelectValue placeholder="тип" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {typeOptions.map((t) => (
-                        <SelectItem key={t.value} value={t.value}>
-                          {t.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    <Trash2Icon className="h-4 w-4" />
+                  </Button>
+
+                  {/* Value editor */}
+                  <Field className="mt-4">
+                    <FieldLabel>значение</FieldLabel>
+                    {item.type === 'string' && (
+                      <Input
+                        placeholder="значение"
+                        title="Строковое значение"
+                        value={String(item.value ?? '')}
+                        onChange={(e) => setItem(idx, { value: e.target.value })}
+                      />
+                    )}
+
+                    {item.type === 'number' && (
+                      <NumberValueEditor
+                        value={typeof item.value === 'number' ? item.value : undefined}
+                        onChange={(num) => setItem(idx, { value: num })}
+                      />
+                    )}
+
+                    {item.type === 'boolean' && (
+                      <Select
+                        value={String(Boolean(item.value))}
+                        onValueChange={(v) => setItem(idx, { value: v === 'true' })}
+                      >
+                        <SelectTrigger className="min-w-32" title="Булево значение">
+                          <SelectValue placeholder="значение" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="true">true</SelectItem>
+                          <SelectItem value="false">false</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+
+                    {item.type === 'date' && (
+                      <DateValueEditor
+                        value={isDateValue(item.value) ? (item.value as DateParamValue) : undefined}
+                        onChange={(val) => setItem(idx, { value: val })}
+                      />
+                    )}
+                  </Field>
                 </div>
-
-                <Button
-                  className="h-8 p-2"
-                  variant="ghost"
-                  size="sm"
-                  type="button"
-                  onClick={() => removeItem(idx)}
-                  aria-label="Удалить"
-                  title="Удалить параметр"
-                >
-                  <Trash2Icon className="h-4 w-4" />
-                </Button>
-
-                {/* Value editor */}
-                {item.type === 'string' && (
-                  <Input
-                    className="h-8"
-                    placeholder="значение"
-                    title="Строковое значение"
-                    value={String(item.value ?? '')}
-                    onChange={(e) => setItem(idx, { value: e.target.value })}
-                  />
-                )}
-
-                {item.type === 'number' && (
-                  <NumberValueEditor
-                    value={typeof item.value === 'number' ? item.value : undefined}
-                    onChange={(num) => setItem(idx, { value: num })}
-                  />
-                )}
-
-                {item.type === 'boolean' && (
-                  <Select
-                    value={String(Boolean(item.value))}
-                    onValueChange={(v) => setItem(idx, { value: v === 'true' })}
-                  >
-                    <SelectTrigger className="min-w-32 h-8" title="Булево значение">
-                      <SelectValue placeholder="значение" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="true">true</SelectItem>
-                      <SelectItem value="false">false</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-
-                {item.type === 'date' && (
-                  <DateValueEditor
-                    value={isDateValue(item.value) ? (item.value as DateParamValue) : undefined}
-                    onChange={(val) => setItem(idx, { value: val })}
-                  />
-                )}
-              </div>
-            </Item>
-          )
-        })}
+              </Item>
+            )
+          })}
         </ItemGroup>
       </ScrollArea>
     </Field>
@@ -352,7 +360,6 @@ function NumberValueEditor({ value, onChange }: { value?: number; onChange: (v: 
 
   return (
     <Input
-      className="h-8"
       inputMode="numeric"
       type="number"
       min={1}
@@ -482,7 +489,7 @@ function DateValueEditor({
   return (
     <div className="flex flex-wrap gap-1.5 items-start">
       <Select value={kind} onValueChange={(v) => setKind(v as DateParamValue['type'])}>
-        <SelectTrigger className="min-w-40 h-8" title="Операция даты">
+        <SelectTrigger className="min-w-40" title="Операция даты">
           <SelectValue placeholder="операция" />
         </SelectTrigger>
         <SelectContent>
@@ -514,7 +521,7 @@ function DateValueEditor({
                   setOps(next)
                 }}
               >
-                <SelectTrigger className="min-w-40 h-8" title="Единица измерения">
+                <SelectTrigger className="min-w-40" title="Единица измерения">
                   <SelectValue placeholder="единица" />
                 </SelectTrigger>
                 <SelectContent>
@@ -526,7 +533,7 @@ function DateValueEditor({
                 </SelectContent>
               </Select>
               <Button
-                className="ml-auto h-8 p-2"
+                className="ml-auto p-2"
                 variant="ghost"
                 size="sm"
                 type="button"
@@ -566,7 +573,7 @@ function DateValueEditor({
               setUnitBoundary(v as 'day' | 'week' | 'month' | 'quarter' | 'year')
             }
           >
-            <SelectTrigger className="min-w-40 h-8" title="Единица (граница)">
+            <SelectTrigger className="min-w-40" title="Единица (граница)">
               <SelectValue placeholder="единица" />
             </SelectTrigger>
             <SelectContent>
@@ -581,7 +588,7 @@ function DateValueEditor({
             value={position}
             onValueChange={(v) => setPosition(v as 'current' | 'next' | 'previous')}
           >
-            <SelectTrigger className="min-w-40 h-8" title="Период">
+            <SelectTrigger className="min-w-40" title="Период">
               <SelectValue placeholder="период" />
             </SelectTrigger>
             <SelectContent>
@@ -598,7 +605,7 @@ function DateValueEditor({
       {kind === 'exact' && (
         <Popover open={isOpen} onOpenChange={setIsOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="h-8 min-w-40 justify-start">
+            <Button variant="outline" className="min-w-40 justify-start">
               <CalendarIcon className="mr-2" />
               {exactDate || 'Выберите дату'}
             </Button>
