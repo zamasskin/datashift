@@ -84,14 +84,14 @@ export type IntervalEditorProps = {
 
 export function IntervalEditor({ config, onChange }: IntervalEditorProps) {
   const [count, setCount] = useState(config?.count || 1)
+  const [countText, setCountText] = useState(String(config?.count || 1))
   const [units, setUnits] = useState(config?.units || 's')
 
-  const handleChangeCount = (newCount: number) => {
-    setCount(newCount)
-    if (onChange) {
-      onChange({ type: 'interval', count: newCount, units })
-    }
-  }
+  useEffect(() => {
+    const next = config?.count || 1
+    setCount(next)
+    setCountText(String(next))
+  }, [config?.count])
 
   const handleChangeUnits = (newUnits: CronInterval['units']) => {
     setUnits(newUnits)
@@ -106,8 +106,30 @@ export function IntervalEditor({ config, onChange }: IntervalEditorProps) {
         <FieldLabel>Каждые</FieldLabel>
         <Input
           type="number"
-          value={count}
-          onChange={(ev) => handleChangeCount(Number(ev.target.value))}
+          value={countText}
+          min={1}
+          step={1}
+          inputMode="numeric"
+          onChange={(ev) => {
+            const raw = ev.target.value
+            setCountText(raw)
+            const parsed = parseInt(raw, 10)
+            if (!Number.isNaN(parsed) && parsed > 0) {
+              setCount(parsed)
+              if (onChange) {
+                onChange({ type: 'interval', count: parsed, units })
+              }
+            }
+          }}
+          onBlur={(ev) => {
+            const parsed = parseInt(ev.target.value, 10)
+            const next = Number.isNaN(parsed) || parsed <= 0 ? 1 : parsed
+            setCount(next)
+            setCountText(String(next))
+            if (onChange) {
+              onChange({ type: 'interval', count: next, units })
+            }
+          }}
         />
         <Select
           value={units}
@@ -223,7 +245,7 @@ export function IntervalTimeEditor({ config, onChange }: IntervalTimeEditorProps
       </Field>
 
       <Field>
-        <FieldLabel>по</FieldLabel>
+        <FieldLabel>Дни недели</FieldLabel>
         <div className="flex flex-wrap gap-3" data-slot="checkbox-group">
           {(Object.keys(cronDays) as CronDays[]).map((d) => (
             <label key={d} className="inline-flex items-center gap-2">
