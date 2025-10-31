@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { DurationInputArg1, DurationInputArg2 } from 'moment'
 import { Button } from '~/components/ui/button'
-import { Field, FieldError, FieldLabel } from '~/components/ui/field'
+import { Field, FieldContent, FieldError, FieldLabel } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover'
 import { Calendar } from '~/components/ui/calendar'
@@ -72,7 +72,7 @@ export function ParamsEditor({
 
   return (
     <Field className={className}>
-      <div className="flex items-center justify-between">
+      <FieldLabel className="flex items-center justify-between">
         <span className="text-sm font-medium">{label}</span>
         <Button
           variant="secondary"
@@ -85,139 +85,180 @@ export function ParamsEditor({
           <PlusIcon className="h-3.5 w-3.5" />
           Добавить параметр
         </Button>
-      </div>
-      <ScrollArea className="w-full h-72 overflow-hidden">
-        <ItemGroup className="gap-2">
-          {items.map((item, idx) => {
-            const keyTrim = (item.key || '').trim()
-            const keyLower = keyTrim.toLowerCase()
-            const isEmpty = keyTrim.length === 0
-            const isInvalidName = !isEmpty && !/^[A-Za-z_][A-Za-z0-9_]*$/.test(keyTrim)
-            const isDuplicate = !isEmpty && !isInvalidName && (keyCounts[keyLower] || 0) > 1
-            const keyErrorMsg = isEmpty
-              ? 'Заполните ключ'
-              : isInvalidName
-                ? 'Ключ должен соответствовать: [A-Za-z_][A-Za-z0-9_]*'
-                : isDuplicate
-                  ? 'Ключ должен быть уникальным'
-                  : ''
+      </FieldLabel>
+      <FieldContent>
+        <ScrollArea className="w-full h-72 overflow-hidden">
+          <ItemGroup className="gap-2">
+            {items.map((item, idx) => {
+              const keyTrim = (item.key || '').trim()
+              const keyLower = keyTrim.toLowerCase()
+              const isEmpty = keyTrim.length === 0
+              const isInvalidName = !isEmpty && !/^[A-Za-z_][A-Za-z0-9_]*$/.test(keyTrim)
+              const isDuplicate = !isEmpty && !isInvalidName && (keyCounts[keyLower] || 0) > 1
+              const keyErrorMsg = isEmpty
+                ? 'Заполните ключ'
+                : isInvalidName
+                  ? 'Ключ должен соответствовать: [A-Za-z_][A-Za-z0-9_]*'
+                  : isDuplicate
+                    ? 'Ключ должен быть уникальным'
+                    : ''
 
-            return (
-              <Item
-                key={idx}
-                variant="outline"
-                size="sm"
-                className="w-full items-start gap-1 py-3 px-3"
-              >
-                <div className="flex flex-wrap gap-1 items-start justify-between w-full">
-                  <div className="flex gap-2">
-                    <div className="flex flex-col min-w-36">
-                      <Field>
-                        <FieldLabel>Ключ</FieldLabel>
-                        <Input
-                          className={`${isEmpty || isInvalidName || isDuplicate ? 'border-red-500' : ''}`}
-                          placeholder="ключ (имя переменной)"
-                          aria-invalid={isEmpty || isInvalidName || isDuplicate}
-                          title={
-                            isEmpty
-                              ? 'Заполните ключ'
-                              : isInvalidName
-                                ? 'Разрешены латиница, цифры и _, первый символ — буква или _'
-                                : isDuplicate
-                                  ? 'Ключ должен быть уникальным'
-                                  : 'Лишние символы удаляются: латиница, цифры и _; первый символ — буква или _'
-                          }
-                          value={item.key}
-                          onChange={(e) => {
-                            const raw = e.target.value
-                            const cleaned = raw.replace(/[^A-Za-z0-9_]/g, '')
-                            setItem(idx, { key: cleaned })
-                          }}
-                        />
-                        {(isEmpty || isInvalidName || isDuplicate) && (
-                          <FieldError errors={[{ message: keyErrorMsg }]} />
-                        )}
-                      </Field>
+              return (
+                <Item
+                  key={idx}
+                  variant="outline"
+                  size="sm"
+                  className="w-full items-start gap-1 py-3 px-3"
+                >
+                  <div className="flex flex-col gap-2 w-full">
+                    <div className="flex flex-wrap gap-2 items-start justify-between">
+                      <div className="flex gap-2">
+                        <div className="flex flex-col min-w-36">
+                          {(() => {
+                            const keyId = `param-${idx}-key`
+                            return (
+                              <Field>
+                                <FieldLabel htmlFor={keyId}>Ключ</FieldLabel>
+                                <FieldContent>
+                                  <Input
+                                    id={keyId}
+                                    className={`${isEmpty || isInvalidName || isDuplicate ? 'border-red-500' : ''}`}
+                                    placeholder="ключ (имя переменной)"
+                                    aria-invalid={isEmpty || isInvalidName || isDuplicate}
+                                    title={
+                                      isEmpty
+                                        ? 'Заполните ключ'
+                                        : isInvalidName
+                                          ? 'Разрешены латиница, цифры и _, первый символ — буква или _'
+                                          : isDuplicate
+                                            ? 'Ключ должен быть уникальным'
+                                            : 'Лишние символы удаляются: латиница, цифры и _; первый символ — буква или _'
+                                    }
+                                    value={item.key}
+                                    onChange={(e) => {
+                                      const raw = e.target.value
+                                      const cleaned = raw.replace(/[^A-Za-z0-9_]/g, '')
+                                      setItem(idx, { key: cleaned })
+                                    }}
+                                  />
+                                </FieldContent>
+                                {(isEmpty || isInvalidName || isDuplicate) && (
+                                  <FieldError errors={[{ message: keyErrorMsg }]} />
+                                )}
+                              </Field>
+                            )
+                          })()}
+                        </div>
+                        {(() => {
+                          const typeId = `param-${idx}-type`
+                          return (
+                            <Field>
+                              <FieldLabel htmlFor={typeId}>Тип</FieldLabel>
+                              <FieldContent>
+                                <Select
+                                  value={item.type}
+                                  onValueChange={(v) => setItem(idx, { type: v as ParamType })}
+                                >
+                                  <SelectTrigger
+                                    id={typeId}
+                                    className="min-w-32 h-8"
+                                    title="Тип параметра"
+                                  >
+                                    <SelectValue placeholder="тип" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {typeOptions.map((t) => (
+                                      <SelectItem key={t.value} value={t.value}>
+                                        {t.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </FieldContent>
+                            </Field>
+                          )
+                        })()}
+                      </div>
+
+                      <Button
+                        className="h-8 p-2"
+                        variant="ghost"
+                        size="sm"
+                        type="button"
+                        onClick={() => removeItem(idx)}
+                        aria-label="Удалить"
+                        title="Удалить параметр"
+                      >
+                        <Trash2Icon className="h-4 w-4" />
+                      </Button>
                     </div>
-                    <Field>
-                      <FieldLabel>Тип</FieldLabel>
-                      <Select
-                        value={item.type}
-                        onValueChange={(v) => setItem(idx, { type: v as ParamType })}
-                      >
-                        <SelectTrigger className="min-w-32 h-8" title="Тип параметра">
-                          <SelectValue placeholder="тип" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {typeOptions.map((t) => (
-                            <SelectItem key={t.value} value={t.value}>
-                              {t.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </Field>
+
+                    {/* Value editor */}
+                    {(() => {
+                      const valueId = `param-${idx}-value`
+                      return (
+                        <Field>
+                          <FieldLabel htmlFor={valueId}>Значение</FieldLabel>
+                          <FieldContent>
+                            {item.type === 'string' && (
+                              <Input
+                                id={valueId}
+                                className="h-8 w-full"
+                                placeholder="значение"
+                                title="Строковое значение"
+                                value={String(item.value ?? '')}
+                                onChange={(e) => setItem(idx, { value: e.target.value })}
+                              />
+                            )}
+
+                            {item.type === 'number' && (
+                              <NumberValueEditor
+                                id={valueId}
+                                value={typeof item.value === 'number' ? item.value : undefined}
+                                onChange={(num) => setItem(idx, { value: num })}
+                              />
+                            )}
+
+                            {item.type === 'boolean' && (
+                              <Select
+                                value={String(Boolean(item.value))}
+                                onValueChange={(v) => setItem(idx, { value: v === 'true' })}
+                              >
+                                <SelectTrigger
+                                  id={valueId}
+                                  className="h-8 w-full"
+                                  title="Булево значение"
+                                >
+                                  <SelectValue placeholder="значение" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="true">true</SelectItem>
+                                  <SelectItem value="false">false</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            )}
+
+                            {item.type === 'date' && (
+                              <DateValueEditor
+                                value={
+                                  isDateValue(item.value)
+                                    ? (item.value as DateParamValue)
+                                    : undefined
+                                }
+                                onChange={(val) => setItem(idx, { value: val })}
+                              />
+                            )}
+                          </FieldContent>
+                        </Field>
+                      )
+                    })()}
                   </div>
-
-                  <Button
-                    className="h-8 p-2"
-                    variant="ghost"
-                    size="sm"
-                    type="button"
-                    onClick={() => removeItem(idx)}
-                    aria-label="Удалить"
-                    title="Удалить параметр"
-                  >
-                    <Trash2Icon className="h-4 w-4" />
-                  </Button>
-
-                  {/* Value editor */}
-                  <Field className="mt-4">
-                    <FieldLabel>значение</FieldLabel>
-                    {item.type === 'string' && (
-                      <Input
-                        placeholder="значение"
-                        title="Строковое значение"
-                        value={String(item.value ?? '')}
-                        onChange={(e) => setItem(idx, { value: e.target.value })}
-                      />
-                    )}
-
-                    {item.type === 'number' && (
-                      <NumberValueEditor
-                        value={typeof item.value === 'number' ? item.value : undefined}
-                        onChange={(num) => setItem(idx, { value: num })}
-                      />
-                    )}
-
-                    {item.type === 'boolean' && (
-                      <Select
-                        value={String(Boolean(item.value))}
-                        onValueChange={(v) => setItem(idx, { value: v === 'true' })}
-                      >
-                        <SelectTrigger className="min-w-32" title="Булево значение">
-                          <SelectValue placeholder="значение" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="true">true</SelectItem>
-                          <SelectItem value="false">false</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    )}
-
-                    {item.type === 'date' && (
-                      <DateValueEditor
-                        value={isDateValue(item.value) ? (item.value as DateParamValue) : undefined}
-                        onChange={(val) => setItem(idx, { value: val })}
-                      />
-                    )}
-                  </Field>
-                </div>
-              </Item>
-            )
-          })}
-        </ItemGroup>
-      </ScrollArea>
+                </Item>
+              )
+            })}
+          </ItemGroup>
+        </ScrollArea>
+      </FieldContent>
     </Field>
   )
 }
@@ -331,7 +372,15 @@ function deepEqualDateParamValue(a?: DateParamValue, b?: DateParamValue) {
   return false
 }
 
-function NumberValueEditor({ value, onChange }: { value?: number; onChange: (v: number) => void }) {
+function NumberValueEditor({
+  id,
+  value,
+  onChange,
+}: {
+  id?: string
+  value?: number
+  onChange: (v: number) => void
+}) {
   const [text, setText] = useState<string>(() => (typeof value === 'number' ? String(value) : ''))
 
   useEffect(() => {
@@ -360,6 +409,7 @@ function NumberValueEditor({ value, onChange }: { value?: number; onChange: (v: 
 
   return (
     <Input
+      id={id}
       inputMode="numeric"
       type="number"
       min={1}
@@ -605,7 +655,7 @@ function DateValueEditor({
       {kind === 'exact' && (
         <Popover open={isOpen} onOpenChange={setIsOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="min-w-40 justify-start">
+            <Button variant="outline" className="h-8 w-full justify-start">
               <CalendarIcon className="mr-2" />
               {exactDate || 'Выберите дату'}
             </Button>
