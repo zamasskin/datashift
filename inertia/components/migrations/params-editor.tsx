@@ -104,7 +104,7 @@ export function ParamsEditor({
               className="w-full items-start gap-1 py-3 px-3"
             >
               <div className="flex flex-wrap gap-1 items-start justify-between w-full">
-                <div className="flex gap-2 items-start">
+                <div className="flex gap-2">
                   <div className="flex flex-col min-w-36">
                     <Input
                       className={`${isEmpty || isDuplicate ? 'border-red-500' : ''}`}
