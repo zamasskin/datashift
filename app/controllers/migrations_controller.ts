@@ -173,9 +173,10 @@ export default class MigrationsController {
         ),
         params: vine.array(
           vine.object({
-            key: vine.string(),
-            type: vine.string(),
-            value: vine.any(),
+            key: vine.string().trim(),
+            type: vine.enum(['string', 'number', 'boolean', 'date']),
+            // Значение может отсутствовать в payload (undefined не сериализуется в JSON)
+            value: vine.any().optional(),
           })
         ),
       })
