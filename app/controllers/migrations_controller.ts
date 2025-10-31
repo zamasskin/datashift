@@ -191,7 +191,7 @@ export default class MigrationsController {
 
       // Дополнительная проверка cronExpression при наличии значения
       const rawCron = request.input('cronExpression')
-      if (rawCron !== undefined) {
+      if (rawCron !== null && rawCron !== undefined) {
         const cronSchema = vine.compile(
           vine.object({
             cronExpression: cronExprSchema,
