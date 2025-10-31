@@ -6,6 +6,7 @@ import { MergeCard } from '~/components/migrations/cards/merge-card'
 import { SqlBuilderCard } from '~/components/migrations/cards/sql-builder-card'
 import { SqlCard } from '~/components/migrations/cards/sql-card'
 import { CronExpressionEditor } from '~/components/migrations/cron-expression-editor'
+import { ParamsEditor as MigrationParamsEditor } from '~/components/migrations/params-editor'
 import { MergeConfig, MergeDataset } from '~/components/migrations/datasets/merge-dataset'
 import {
   SqlBuilderConfig,
@@ -161,7 +162,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p>Настройка прараметров</p>
+                  <MigrationParamsEditor params={params} onChange={setParams} />
                 </CardContent>
               </Card>
 

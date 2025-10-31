@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { Field, FieldLabel } from '../ui/field'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
 import { Input } from '../ui/input'
-import { Item } from '../ui/item'
 import { Checkbox } from '../ui/checkbox'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 
@@ -258,7 +257,13 @@ export function IntervalTimeEditor({ config, onChange }: IntervalTimeEditorProps
                   const normalized = formatHHMM(mins)
                   setTimeStart(normalized)
                   if (onChange) {
-                    onChange({ type: 'interval-time', timeUnits, timeStart: normalized, timeEnd, days })
+                    onChange({
+                      type: 'interval-time',
+                      timeUnits,
+                      timeStart: normalized,
+                      timeEnd,
+                      days,
+                    })
                   }
                 }
               }}
@@ -275,10 +280,22 @@ export function IntervalTimeEditor({ config, onChange }: IntervalTimeEditorProps
                   setTimeEnd(fixedEnd)
                   setTimeEndText(fixedEnd)
                   if (onChange) {
-                    onChange({ type: 'interval-time', timeUnits, timeStart: normalized, timeEnd: fixedEnd, days })
+                    onChange({
+                      type: 'interval-time',
+                      timeUnits,
+                      timeStart: normalized,
+                      timeEnd: fixedEnd,
+                      days,
+                    })
                   }
                 } else if (onChange) {
-                  onChange({ type: 'interval-time', timeUnits, timeStart: normalized, timeEnd, days })
+                  onChange({
+                    type: 'interval-time',
+                    timeUnits,
+                    timeStart: normalized,
+                    timeEnd,
+                    days,
+                  })
                 }
               }}
             />
@@ -299,7 +316,13 @@ export function IntervalTimeEditor({ config, onChange }: IntervalTimeEditorProps
                   const normalized = formatHHMM(mins)
                   setTimeEnd(normalized)
                   if (onChange) {
-                    onChange({ type: 'interval-time', timeUnits, timeStart, timeEnd: normalized, days })
+                    onChange({
+                      type: 'interval-time',
+                      timeUnits,
+                      timeStart,
+                      timeEnd: normalized,
+                      days,
+                    })
                   }
                 }
               }}
@@ -315,7 +338,13 @@ export function IntervalTimeEditor({ config, onChange }: IntervalTimeEditorProps
                 setTimeEnd(normalized)
                 setTimeEndText(normalized)
                 if (onChange) {
-                  onChange({ type: 'interval-time', timeUnits, timeStart, timeEnd: normalized, days })
+                  onChange({
+                    type: 'interval-time',
+                    timeUnits,
+                    timeStart,
+                    timeEnd: normalized,
+                    days,
+                  })
                 }
               }}
             />
