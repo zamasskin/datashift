@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react'
 import { Field, FieldLabel } from '../ui/field'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
 import { Input } from '../ui/input'
+import { Item } from '../ui/item'
+import { Checkbox } from '../ui/checkbox'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 
 export type CronExpressionEditorProps = {
   config?: CronConfig
@@ -65,11 +68,11 @@ export function CronExpressionEditor({ config, onChange }: CronExpressionEditorP
           </SelectContent>
         </Select>
       </Field>
-      {config?.type == 'interval' && (
-        <IntervalEditor config={config} onChange={(config) => handleChange(config)} />
+      {config?.type == 'interval' && <IntervalEditor config={config} onChange={handleChange} />}
+      {config?.type == 'interval-time' && (
+        <IntervalTimeEditor config={config} onChange={handleChange} />
       )}
-      {type == 'interval-time' && <div className="space-y-4">interval-time</div>}
-      {type == 'time' && <div className="space-y-4">time</div>}
+      {config?.type == 'time' && <TimeEditor config={config} onChange={handleChange} />}
     </div>
   )
 }
@@ -119,6 +122,158 @@ export function IntervalEditor({ config, onChange }: IntervalEditorProps) {
             <SelectItem value="h">Часов</SelectItem>
           </SelectContent>
         </Select>
+      </Field>
+    </div>
+  )
+}
+
+export type IntervalTimeEditorProps = {
+  config?: CronIntervalTime
+  onChange?: (config: CronIntervalTime) => void
+}
+
+export function IntervalTimeEditor({ config, onChange }: IntervalTimeEditorProps) {
+  const [timeUnits, setTimeUnits] = useState(config?.timeUnits || 1)
+  const [timeStart, setTimeStart] = useState(config?.timeStart || '00:00')
+  const [timeEnd, setTimeEnd] = useState(config?.timeEnd || '01:00')
+  const [days, setDays] = useState<CronDays[]>(
+    config?.days || (Object.keys(cronDays) as CronDays[])
+  )
+
+  return (
+    <div className="space-y-4">
+      <Field>
+        <FieldLabel>Каждые</FieldLabel>
+        <InputGroup>
+          <InputGroupInput
+            type="number"
+            value={timeUnits}
+            onChange={(ev) => {
+              const val = Number(ev.target.value)
+              setTimeUnits(val)
+              if (onChange) {
+                onChange({
+                  type: 'interval-time',
+                  timeUnits: val,
+                  timeStart,
+                  timeEnd,
+                  days,
+                })
+              }
+            }}
+          />
+          <InputGroupAddon align="inline-end">мин</InputGroupAddon>
+        </InputGroup>
+      </Field>
+
+      <Field>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-muted-foreground">между</span>
+          <InputGroup>
+            <InputGroupInput
+              type="time"
+              value={timeStart}
+              onChange={(ev) => {
+                const val = ev.target.value
+                setTimeStart(val)
+                if (onChange) {
+                  onChange({ type: 'interval-time', timeUnits, timeStart: val, timeEnd, days })
+                }
+              }}
+            />
+          </InputGroup>
+          <span className="text-sm text-muted-foreground">и</span>
+          <InputGroup>
+            <InputGroupInput
+              type="time"
+              value={timeEnd}
+              onChange={(ev) => {
+                const val = ev.target.value
+                setTimeEnd(val)
+                if (onChange) {
+                  onChange({ type: 'interval-time', timeUnits, timeStart, timeEnd: val, days })
+                }
+              }}
+            />
+          </InputGroup>
+        </div>
+      </Field>
+
+      <Field>
+        <FieldLabel>по</FieldLabel>
+        <div className="flex flex-wrap gap-3" data-slot="checkbox-group">
+          {(Object.keys(cronDays) as CronDays[]).map((d) => (
+            <label key={d} className="inline-flex items-center gap-2">
+              <Checkbox
+                checked={days.includes(d)}
+                onCheckedChange={(checked) => {
+                  const next = checked
+                    ? Array.from(new Set([...days, d]))
+                    : days.filter((x) => x !== d)
+                  setDays(next)
+                  if (onChange) {
+                    onChange({ type: 'interval-time', timeUnits, timeStart, timeEnd, days: next })
+                  }
+                }}
+              />
+              <span className="text-sm">{cronDays[d]}</span>
+            </label>
+          ))}
+        </div>
+      </Field>
+    </div>
+  )
+}
+
+export type TimeEditorProps = {
+  config?: CronTime
+  onChange?: (config: CronTime) => void
+}
+
+export function TimeEditor({ config, onChange }: TimeEditorProps) {
+  const [time, setTime] = useState(config?.time || '12:00')
+  const [days, setDays] = useState<CronDays[]>(
+    config?.days || (Object.keys(cronDays) as CronDays[])
+  )
+
+  return (
+    <div className="space-y-4">
+      <Field>
+        <FieldLabel>Время</FieldLabel>
+        <Input
+          type="time"
+          value={time}
+          onChange={(ev) => {
+            const val = ev.target.value
+            setTime(val)
+            if (onChange) {
+              onChange({ type: 'time', time: val, days })
+            }
+          }}
+        />
+      </Field>
+
+      <Field>
+        <FieldLabel>Дни недели</FieldLabel>
+        <div className="flex flex-wrap gap-3" data-slot="checkbox-group">
+          {(Object.keys(cronDays) as CronDays[]).map((d) => (
+            <label key={d} className="inline-flex items-center gap-2">
+              <Checkbox
+                checked={days.includes(d)}
+                onCheckedChange={(checked) => {
+                  const next = checked
+                    ? Array.from(new Set([...days, d]))
+                    : days.filter((x) => x !== d)
+                  setDays(next)
+                  if (onChange) {
+                    onChange({ type: 'time', time, days: next })
+                  }
+                }}
+              />
+              <span className="text-sm">{cronDays[d]}</span>
+            </label>
+          ))}
+        </div>
       </Field>
     </div>
   )
