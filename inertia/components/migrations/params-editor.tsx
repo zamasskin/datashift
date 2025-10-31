@@ -194,8 +194,16 @@ export type DateOp = { amount: DurationInputArg1; unit: DurationInputArg2 }
 export type DateParamValue =
   | { type: 'add'; ops: DateOp[] }
   | { type: 'subtract'; ops: DateOp[] }
-  | { type: 'startOf'; unit: 'day' | 'week' | 'month' | 'quarter' | 'year' }
-  | { type: 'endOf'; unit: 'day' | 'week' | 'month' | 'quarter' | 'year' }
+  | {
+      type: 'startOf'
+      unit: 'day' | 'week' | 'month' | 'quarter' | 'year'
+      position: 'current' | 'next' | 'previous'
+    }
+  | {
+      type: 'endOf'
+      unit: 'day' | 'week' | 'month' | 'quarter' | 'year'
+      position: 'current' | 'next' | 'previous'
+    }
   | { type: 'format'; format: string }
 
 export type ParamType = 'string' | 'number' | 'boolean' | 'date'
@@ -283,7 +291,7 @@ function deepEqualDateParamValue(a?: DateParamValue, b?: DateParamValue) {
     return true
   }
   if (a.type === 'startOf' || a.type === 'endOf') {
-    return (a as any).unit === (b as any).unit
+    return (a as any).unit === (b as any).unit && (a as any).position === (b as any).position
   }
   if (a.type === 'format') {
     return (a as any).format === (b as any).format
@@ -360,6 +368,9 @@ function DateValueEditor({
   const [unitBoundary, setUnitBoundary] = useState<
     'day' | 'week' | 'month' | 'quarter' | 'year' | undefined
   >(() => (value as any)?.unit)
+  const [position, setPosition] = useState<'current' | 'next' | 'previous'>(
+    () => ((value as any)?.position as 'current' | 'next' | 'previous') || 'current'
+  )
   const [format, setFormat] = useState<string>(
     () => ((value as any)?.format as string) || 'YYYY-MM-DD'
   )
@@ -384,6 +395,8 @@ function DateValueEditor({
     } else if (value.type === 'startOf' || value.type === 'endOf') {
       const nextUnit = (value as any)?.unit as 'day' | 'week' | 'month' | 'quarter' | 'year'
       setUnitBoundary((prev) => (prev === nextUnit ? prev : nextUnit))
+      const nextPos = ((value as any)?.position as 'current' | 'next' | 'previous') || 'current'
+      setPosition((prev) => (prev === nextPos ? prev : nextPos))
     } else if (value.type === 'format') {
       const nextFormat = (value as any)?.format || 'YYYY-MM-DD'
       setFormat((prev) => (prev === nextFormat ? prev : nextFormat))
@@ -403,6 +416,7 @@ function DateValueEditor({
       payload = {
         type: kind,
         unit: unitBoundary ?? 'day',
+        position,
       }
     } else if (kind === 'format') {
       payload = { type: 'format', format }
@@ -410,7 +424,7 @@ function DateValueEditor({
     if (payload && (!isDateValue(value) || !deepEqualDateParamValue(payload, value))) {
       onChange(payload)
     }
-  }, [kind, ops, unitBoundary, format])
+  }, [kind, ops, unitBoundary, position, format])
 
   const dateUnits: { value: DurationInputArg2; label: string }[] = [
     { value: 'second', label: 'Секунды' },
@@ -429,6 +443,11 @@ function DateValueEditor({
     { value: 'month', label: 'Месяц' },
     { value: 'quarter', label: 'Квартал' },
     { value: 'year', label: 'Год' },
+  ]
+  const positionOptions: { value: 'current' | 'next' | 'previous'; label: string }[] = [
+    { value: 'current', label: 'Текущей' },
+    { value: 'next', label: 'Следующей' },
+    { value: 'previous', label: 'Предыдущей' },
   ]
 
   return (
@@ -511,21 +530,40 @@ function DateValueEditor({
       )}
 
       {(kind === 'startOf' || kind === 'endOf') && (
-        <Select
-          value={String(unitBoundary || '')}
-          onValueChange={(v) => setUnitBoundary(v as 'day' | 'week' | 'month' | 'quarter' | 'year')}
-        >
-          <SelectTrigger className="min-w-40 h-8" title="Единица (граница)">
-            <SelectValue placeholder="единица" />
-          </SelectTrigger>
-          <SelectContent>
-            {startEndUnits.map((u) => (
-              <SelectItem key={u.value} value={u.value}>
-                {u.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <>
+          <Select
+            value={String(unitBoundary || '')}
+            onValueChange={(v) =>
+              setUnitBoundary(v as 'day' | 'week' | 'month' | 'quarter' | 'year')
+            }
+          >
+            <SelectTrigger className="min-w-40 h-8" title="Единица (граница)">
+              <SelectValue placeholder="единица" />
+            </SelectTrigger>
+            <SelectContent>
+              {startEndUnits.map((u) => (
+                <SelectItem key={u.value} value={u.value}>
+                  {u.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={position}
+            onValueChange={(v) => setPosition(v as 'current' | 'next' | 'previous')}
+          >
+            <SelectTrigger className="min-w-40 h-8" title="Период">
+              <SelectValue placeholder="период" />
+            </SelectTrigger>
+            <SelectContent>
+              {positionOptions.map((p) => (
+                <SelectItem key={p.value} value={p.value}>
+                  {p.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </>
       )}
 
       {kind === 'format' && (
