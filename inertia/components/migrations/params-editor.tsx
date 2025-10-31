@@ -351,11 +351,7 @@ function DateValueEditor({
   value?: DateParamValue
   onChange: (v: DateParamValue) => void
 }) {
-  // Если пришли старые значения 'format', переключаем на 'exact' без нарушения типов
-  const mappedType = ((value as any)?.type === 'format' ? 'exact' : value?.type) as
-    | DateParamValue['type']
-    | undefined
-  const [kind, setKind] = useState<DateParamValue['type']>(mappedType || 'startOf')
+  const [kind, setKind] = useState<DateParamValue['type']>(value?.type || 'startOf')
   const defaultOp: { amount: number; unit: DurationInputArg2 } = {
     amount: 1,
     unit: 'day' as DurationInputArg2,
@@ -383,19 +379,12 @@ function DateValueEditor({
     if (v?.type === 'exact') {
       return typeof v.date === 'string' && v.date ? v.date : formatDate(new Date(), 'yyyy-MM-dd')
     }
-    // для старых значений 'format' подставляем сегодняшнюю дату
-    if (v?.type === 'format') {
-      return formatDate(new Date(), 'yyyy-MM-dd')
-    }
     return formatDate(new Date(), 'yyyy-MM-dd')
   })
 
   useEffect(() => {
     if (!value) return
-    setKind((prev) => {
-      const nextType = ((value as any)?.type === 'format' ? 'exact' : value.type) as DateParamValue['type']
-      return prev === nextType ? prev : nextType
-    })
+    setKind((prev) => (prev === value.type ? prev : value.type))
     if (value.type === 'add' || value.type === 'subtract') {
       const rawOps = (value as any)?.ops
       if (Array.isArray(rawOps)) {
@@ -418,11 +407,6 @@ function DateValueEditor({
     } else if ((value as any)?.type === 'exact') {
       const nextDate = (value as any)?.date || formatDate(new Date(), 'yyyy-MM-dd')
       setExactDate((prev) => (prev === nextDate ? prev : nextDate))
-      setUnitBoundary(undefined)
-    } else if ((value as any)?.type === 'format') {
-      // устаревший тип: переключаемся на 'exact' с сегодняшней датой
-      const today = formatDate(new Date(), 'yyyy-MM-dd')
-      setExactDate((prev) => (prev === today ? prev : today))
       setUnitBoundary(undefined)
     }
   }, [value])
