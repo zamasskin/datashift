@@ -3,6 +3,8 @@ import { DurationInputArg1, DurationInputArg2 } from 'moment'
 import { Button } from '~/components/ui/button'
 import { Field, FieldGroup, FieldError } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
+import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover'
+import { Calendar } from '~/components/ui/calendar'
 import {
   Select,
   SelectContent,
@@ -10,7 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '~/components/ui/select'
-import { PlusIcon, Trash2Icon } from 'lucide-react'
+import { PlusIcon, Trash2Icon, Calendar as CalendarIcon } from 'lucide-react'
+import { format as formatDate, parse as parseDate } from 'date-fns'
 
 export type ParamsEditorProps = {
   params?: Param[]
@@ -204,7 +207,7 @@ export type DateParamValue =
       unit: 'day' | 'week' | 'month' | 'quarter' | 'year'
       position: 'current' | 'next' | 'previous'
     }
-  | { type: 'format'; format: string }
+  | { type: 'exact'; date: string }
 
 export type ParamType = 'string' | 'number' | 'boolean' | 'date'
 
@@ -254,7 +257,7 @@ function toParams(items: ParamItem[]): Param[] {
 
 function isDateValue(v: any): v is DateParamValue {
   if (!v || typeof v !== 'object') return false
-  return 'type' in v && ['add', 'subtract', 'startOf', 'endOf', 'format'].includes((v as any).type)
+  return 'type' in v && ['add', 'subtract', 'startOf', 'endOf', 'exact'].includes((v as any).type)
 }
 
 function equalOps(
@@ -293,8 +296,8 @@ function deepEqualDateParamValue(a?: DateParamValue, b?: DateParamValue) {
   if (a.type === 'startOf' || a.type === 'endOf') {
     return (a as any).unit === (b as any).unit && (a as any).position === (b as any).position
   }
-  if (a.type === 'format') {
-    return (a as any).format === (b as any).format
+  if (a.type === 'exact') {
+    return (a as any).date === (b as any).date
   }
   return false
 }
@@ -348,7 +351,11 @@ function DateValueEditor({
   value?: DateParamValue
   onChange: (v: DateParamValue) => void
 }) {
-  const [kind, setKind] = useState<DateParamValue['type']>(value?.type || 'startOf')
+  // Если пришли старые значения 'format', переключаем на 'exact' без нарушения типов
+  const mappedType = ((value as any)?.type === 'format' ? 'exact' : value?.type) as
+    | DateParamValue['type']
+    | undefined
+  const [kind, setKind] = useState<DateParamValue['type']>(mappedType || 'startOf')
   const defaultOp: { amount: number; unit: DurationInputArg2 } = {
     amount: 1,
     unit: 'day' as DurationInputArg2,
@@ -371,13 +378,24 @@ function DateValueEditor({
   const [position, setPosition] = useState<'current' | 'next' | 'previous'>(
     () => ((value as any)?.position as 'current' | 'next' | 'previous') || 'current'
   )
-  const [format, setFormat] = useState<string>(
-    () => ((value as any)?.format as string) || 'YYYY-MM-DD'
-  )
+  const [exactDate, setExactDate] = useState<string>(() => {
+    const v = value as any
+    if (v?.type === 'exact') {
+      return typeof v.date === 'string' && v.date ? v.date : formatDate(new Date(), 'yyyy-MM-dd')
+    }
+    // для старых значений 'format' подставляем сегодняшнюю дату
+    if (v?.type === 'format') {
+      return formatDate(new Date(), 'yyyy-MM-dd')
+    }
+    return formatDate(new Date(), 'yyyy-MM-dd')
+  })
 
   useEffect(() => {
     if (!value) return
-    setKind((prev) => (prev === value.type ? prev : value.type))
+    setKind((prev) => {
+      const nextType = ((value as any)?.type === 'format' ? 'exact' : value.type) as DateParamValue['type']
+      return prev === nextType ? prev : nextType
+    })
     if (value.type === 'add' || value.type === 'subtract') {
       const rawOps = (value as any)?.ops
       if (Array.isArray(rawOps)) {
@@ -397,9 +415,14 @@ function DateValueEditor({
       setUnitBoundary((prev) => (prev === nextUnit ? prev : nextUnit))
       const nextPos = ((value as any)?.position as 'current' | 'next' | 'previous') || 'current'
       setPosition((prev) => (prev === nextPos ? prev : nextPos))
-    } else if (value.type === 'format') {
-      const nextFormat = (value as any)?.format || 'YYYY-MM-DD'
-      setFormat((prev) => (prev === nextFormat ? prev : nextFormat))
+    } else if ((value as any)?.type === 'exact') {
+      const nextDate = (value as any)?.date || formatDate(new Date(), 'yyyy-MM-dd')
+      setExactDate((prev) => (prev === nextDate ? prev : nextDate))
+      setUnitBoundary(undefined)
+    } else if ((value as any)?.type === 'format') {
+      // устаревший тип: переключаемся на 'exact' с сегодняшней датой
+      const today = formatDate(new Date(), 'yyyy-MM-dd')
+      setExactDate((prev) => (prev === today ? prev : today))
       setUnitBoundary(undefined)
     }
   }, [value])
@@ -418,13 +441,13 @@ function DateValueEditor({
         unit: unitBoundary ?? 'day',
         position,
       }
-    } else if (kind === 'format') {
-      payload = { type: 'format', format }
+    } else if (kind === 'exact') {
+      payload = { type: 'exact', date: exactDate }
     }
     if (payload && (!isDateValue(value) || !deepEqualDateParamValue(payload, value))) {
       onChange(payload)
     }
-  }, [kind, ops, unitBoundary, position, format])
+  }, [kind, ops, unitBoundary, position, exactDate])
 
   const dateUnits: { value: DurationInputArg2; label: string }[] = [
     { value: 'second', label: 'Секунды' },
@@ -461,7 +484,7 @@ function DateValueEditor({
           <SelectItem value="subtract">Отнять</SelectItem>
           <SelectItem value="startOf">Начало</SelectItem>
           <SelectItem value="endOf">Конец</SelectItem>
-          <SelectItem value="format">Формат</SelectItem>
+          <SelectItem value="exact">Точная дата</SelectItem>
         </SelectContent>
       </Select>
 
@@ -566,13 +589,31 @@ function DateValueEditor({
         </>
       )}
 
-      {kind === 'format' && (
-        <Input
-          className="h-8"
-          placeholder="формат (например, YYYY-MM-DD)"
-          value={format}
-          onChange={(e) => setFormat(e.target.value)}
-        />
+      {kind === 'exact' && (
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className="h-8 min-w-40 justify-start">
+              <CalendarIcon className="mr-2" />
+              {exactDate || 'Выберите дату'}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0">
+            <Calendar
+              mode="single"
+              selected={(() => {
+                try {
+                  return parseDate(exactDate, 'yyyy-MM-dd', new Date())
+                } catch {
+                  return undefined
+                }
+              })()}
+              onSelect={(d) => {
+                if (d) setExactDate(formatDate(d, 'yyyy-MM-dd'))
+              }}
+              showOutsideDays
+            />
+          </PopoverContent>
+        </Popover>
       )}
     </div>
   )
