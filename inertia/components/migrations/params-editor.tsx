@@ -438,11 +438,11 @@ function DateValueEditor({
           <SelectValue placeholder="операция" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="add">add</SelectItem>
-          <SelectItem value="subtract">subtract</SelectItem>
-          <SelectItem value="startOf">startOf</SelectItem>
-          <SelectItem value="endOf">endOf</SelectItem>
-          <SelectItem value="format">format</SelectItem>
+          <SelectItem value="add">Прибавить</SelectItem>
+          <SelectItem value="subtract">Отнять</SelectItem>
+          <SelectItem value="startOf">Начало</SelectItem>
+          <SelectItem value="endOf">Конец</SelectItem>
+          <SelectItem value="format">Формат</SelectItem>
         </SelectContent>
       </Select>
 
