@@ -19,10 +19,10 @@ import {
   SidebarMenuItem,
 } from '~/components/ui/sidebar'
 import { Link } from '@inertiajs/react'
-import { Barcode } from 'lucide-react'
 import { NavMain } from './nav-main'
 import { NavUser } from './user-naw'
 import { NavSecondary } from './nav-secondary'
+import { BrandMark } from '~/components/ui/brand-logo'
 
 const data = {
   user: {
@@ -80,10 +80,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!p-1.5">
               <Link href="/" className="flex items-center gap-2">
                 <div className="size-9 rounded-md grid place-items-center bg-background shadow-[0_0_0_1px_hsl(var(--sidebar-border))]">
-                  <Barcode className="size-5 text-foreground/80" />
+                  <BrandMark className="size-5 text-foreground/80" />
                 </div>
                 <span className="text-foreground text-xl font-semibold tracking-tight">
-                  Dataship
+                  Datashift
                 </span>
               </Link>
             </SidebarMenuButton>
