@@ -372,6 +372,7 @@ function DateValueEditor({
   value?: DateParamValue
   onChange: (v: DateParamValue) => void
 }) {
+  const [isOpen, setIsOpen] = useState(false)
   const [kind, setKind] = useState<DateParamValue['type']>(value?.type || 'startOf')
   const defaultOp: { amount: number; unit: DurationInputArg2 } = {
     amount: 1,
@@ -595,7 +596,7 @@ function DateValueEditor({
       )}
 
       {kind === 'exact' && (
-        <Popover>
+        <Popover open={isOpen} onOpenChange={setIsOpen}>
           <PopoverTrigger asChild>
             <Button variant="outline" className="h-8 min-w-40 justify-start">
               <CalendarIcon className="mr-2" />
@@ -613,7 +614,10 @@ function DateValueEditor({
                 }
               })()}
               onSelect={(d) => {
-                if (d) setExactDate(formatDate(d, 'yyyy-MM-dd'))
+                if (d) {
+                  setExactDate(formatDate(d, 'yyyy-MM-dd'))
+                  setIsOpen(false)
+                }
               }}
               showOutsideDays
             />
