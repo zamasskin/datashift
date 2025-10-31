@@ -46,6 +46,7 @@ import {
 import { Spinner } from '~/components/ui/spinner'
 import { Switch } from '~/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
+import { ModificationDataset } from '~/components/migrations/datasets/modification-dataset'
 
 type FetchMapping = SqlConfig | SqlBuilderConfig | MergeConfig
 const MigrationEdit = ({ migration }: { migration: Migration }) => {
@@ -268,6 +269,16 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                       >
                         <Button>Объединение</Button>
                       </MergeDataset>
+
+                      <ModificationDataset
+                        datasetsConfigs={[
+                          { id: 'aa', title: 'sql', columns: ['aa1', 'aa2'] },
+                          { id: 'bb', title: 'dataset1', columns: ['bb1', 'bb2'] },
+                          { id: 'cc', title: 'custom', columns: ['cc1', 'cc2'] },
+                        ]}
+                      >
+                        <Button>Модификация</Button>
+                      </ModificationDataset>
                     </div>
                   </div>
                 </CardContent>
