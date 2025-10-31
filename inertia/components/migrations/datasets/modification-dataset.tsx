@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Button } from '~/components/ui/button'
 import { Field, FieldLabel, FieldError } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
+import { Textarea } from '~/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -441,7 +442,13 @@ function ColumnValueEditor({
   }
 
   return (
-    <div className="flex items-start gap-2 border rounded p-2">
+    <div
+      className={
+        type === 'template' || type === 'expression' || type === 'function'
+          ? 'flex flex-col gap-2 border rounded p-2'
+          : 'flex items-start gap-2 border rounded p-2'
+      }
+    >
       <Select value={type} onValueChange={(t) => setType(t as ColumnValue['type'])}>
         <SelectTrigger className="min-w-40 h-8">
           <SelectValue placeholder="Тип значения" />
@@ -492,20 +499,20 @@ function ColumnValueEditor({
       )}
 
       {type === 'template' && (
-        <Input
+        <Textarea
           placeholder="template string"
           value={(value as ColumnTemplate).value as string}
           onChange={(e) => setTemplateValue(e.target.value)}
-          className="h-8"
+          className="min-h-24"
         />
       )}
 
       {type === 'expression' && (
-        <Input
+        <Textarea
           placeholder="expression"
           value={(value as ColumnExpression).value as string}
           onChange={(e) => setExpressionValue(e.target.value)}
-          className="h-8"
+          className="min-h-24"
         />
       )}
 
