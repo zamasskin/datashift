@@ -9,6 +9,13 @@ import { Item } from '~/components/ui/item'
 import { ItemGroup } from '~/components/ui/item'
 import { ScrollArea } from '~/components/ui/scroll-area'
 import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '~/components/ui/dialog'
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -32,6 +39,9 @@ export function ParamsEditor({
   label = 'Параметры',
 }: ParamsEditorProps) {
   const [items, setItems] = useState<ParamItem[]>(() => toItems(params))
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [editingIndex, setEditingIndex] = useState<number | null>(null)
+  const [draft, setDraft] = useState<ParamItem>({ key: '', type: 'string', value: '' })
 
   useEffect(() => {
     setItems(toItems(params))
@@ -54,13 +64,44 @@ export function ParamsEditor({
     )
   }, [items])
 
-  const addItem = () => update([...items, { key: '', type: 'string', value: '' }])
+  const openAdd = () => {
+    setEditingIndex(null)
+    setDraft({ key: '', type: 'string', value: '' })
+    setIsDialogOpen(true)
+  }
   const removeItem = (idx: number) => update(items.filter((_, i) => i !== idx))
 
   const setItem = (idx: number, patch: Partial<ParamItem>) => {
     const next = items.slice()
     next[idx] = { ...next[idx], ...patch }
     update(next)
+  }
+
+  const openEdit = (idx: number) => {
+    setEditingIndex(idx)
+    setDraft(items[idx])
+    setIsDialogOpen(true)
+  }
+
+  const saveDraft = () => {
+    const keyTrim = (draft.key || '').trim()
+    const isInvalidName = !/^[A-Za-z_][A-Za-z0-9_]*$/.test(keyTrim)
+    const keyLower = keyTrim.toLowerCase()
+    const duplicate = items.some((it, i) => i !== editingIndex && (it.key || '').trim().toLowerCase() === keyLower)
+    if (!keyTrim || isInvalidName || duplicate) {
+      // Простая защита: не сохраняем некорректные данные
+      return
+    }
+
+    if (editingIndex === null) {
+      update([...items, { ...draft, key: keyTrim }])
+    } else {
+      const next = items.slice()
+      next[editingIndex] = { ...draft, key: keyTrim }
+      update(next)
+    }
+    setIsDialogOpen(false)
+    setEditingIndex(null)
   }
 
   const typeOptions: { value: ParamType; label: string }[] = [
@@ -78,7 +119,7 @@ export function ParamsEditor({
           variant="secondary"
           size="sm"
           type="button"
-          onClick={addItem}
+          onClick={openAdd}
           className="h-8 gap-1"
           title="Добавить параметр"
         >
@@ -91,17 +132,6 @@ export function ParamsEditor({
           <ItemGroup className="gap-2">
             {items.map((item, idx) => {
               const keyTrim = (item.key || '').trim()
-              const keyLower = keyTrim.toLowerCase()
-              const isEmpty = keyTrim.length === 0
-              const isInvalidName = !isEmpty && !/^[A-Za-z_][A-Za-z0-9_]*$/.test(keyTrim)
-              const isDuplicate = !isEmpty && !isInvalidName && (keyCounts[keyLower] || 0) > 1
-              const keyErrorMsg = isEmpty
-                ? 'Заполните ключ'
-                : isInvalidName
-                  ? 'Ключ должен соответствовать: [A-Za-z_][A-Za-z0-9_]*'
-                  : isDuplicate
-                    ? 'Ключ должен быть уникальным'
-                    : ''
 
               return (
                 <Item
@@ -110,76 +140,23 @@ export function ParamsEditor({
                   size="sm"
                   className="w-full items-start gap-1 py-3 px-3"
                 >
-                  <div className="flex flex-col gap-2 w-full">
-                    <div className="flex flex-wrap gap-2 items-start justify-between">
-                      <div className="flex gap-2">
-                        <div className="flex flex-col min-w-36">
-                          {(() => {
-                            const keyId = `param-${idx}-key`
-                            return (
-                              <Field>
-                                <FieldLabel htmlFor={keyId}>Ключ</FieldLabel>
-                                <FieldContent>
-                                  <Input
-                                    id={keyId}
-                                    className={`${isEmpty || isInvalidName || isDuplicate ? 'border-red-500' : ''}`}
-                                    placeholder="ключ (имя переменной)"
-                                    aria-invalid={isEmpty || isInvalidName || isDuplicate}
-                                    title={
-                                      isEmpty
-                                        ? 'Заполните ключ'
-                                        : isInvalidName
-                                          ? 'Разрешены латиница, цифры и _, первый символ — буква или _'
-                                          : isDuplicate
-                                            ? 'Ключ должен быть уникальным'
-                                            : 'Лишние символы удаляются: латиница, цифры и _; первый символ — буква или _'
-                                    }
-                                    value={item.key}
-                                    onChange={(e) => {
-                                      const raw = e.target.value
-                                      const cleaned = raw.replace(/[^A-Za-z0-9_]/g, '')
-                                      setItem(idx, { key: cleaned })
-                                    }}
-                                  />
-                                </FieldContent>
-                                {(isEmpty || isInvalidName || isDuplicate) && (
-                                  <FieldError errors={[{ message: keyErrorMsg }]} />
-                                )}
-                              </Field>
-                            )
-                          })()}
-                        </div>
-                        {(() => {
-                          const typeId = `param-${idx}-type`
-                          return (
-                            <Field>
-                              <FieldLabel htmlFor={typeId}>Тип</FieldLabel>
-                              <FieldContent>
-                                <Select
-                                  value={item.type}
-                                  onValueChange={(v) => setItem(idx, { type: v as ParamType })}
-                                >
-                                  <SelectTrigger
-                                    id={typeId}
-                                    className="min-w-32 h-8"
-                                    title="Тип параметра"
-                                  >
-                                    <SelectValue placeholder="тип" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {typeOptions.map((t) => (
-                                      <SelectItem key={t.value} value={t.value}>
-                                        {t.label}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </FieldContent>
-                            </Field>
-                          )
-                        })()}
-                      </div>
-
+                  <div className="flex w-full items-start justify-between gap-2">
+                    <div className="flex flex-col">
+                      <div className="text-sm font-medium">{keyTrim || '(без ключа)'}</div>
+                      <div className="text-xs text-muted-foreground">Тип: {item.type}</div>
+                      <div className="text-xs text-muted-foreground">Значение: {renderValueSummary(item)}</div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        className="h-8 px-2"
+                        variant="ghost"
+                        size="sm"
+                        type="button"
+                        onClick={() => openEdit(idx)}
+                        title="Редактировать параметр"
+                      >
+                        Редактировать
+                      </Button>
                       <Button
                         className="h-8 p-2"
                         variant="ghost"
@@ -192,72 +169,141 @@ export function ParamsEditor({
                         <Trash2Icon className="h-4 w-4" />
                       </Button>
                     </div>
-
-                    {/* Value editor */}
-                    {(() => {
-                      const valueId = `param-${idx}-value`
-                      return (
-                        <Field>
-                          <FieldLabel htmlFor={valueId}>Значение</FieldLabel>
-                          <FieldContent>
-                            {item.type === 'string' && (
-                              <Input
-                                id={valueId}
-                                className="h-8 w-full"
-                                placeholder="значение"
-                                title="Строковое значение"
-                                value={String(item.value ?? '')}
-                                onChange={(e) => setItem(idx, { value: e.target.value })}
-                              />
-                            )}
-
-                            {item.type === 'number' && (
-                              <NumberValueEditor
-                                id={valueId}
-                                value={typeof item.value === 'number' ? item.value : undefined}
-                                onChange={(num) => setItem(idx, { value: num })}
-                              />
-                            )}
-
-                            {item.type === 'boolean' && (
-                              <Select
-                                value={String(Boolean(item.value))}
-                                onValueChange={(v) => setItem(idx, { value: v === 'true' })}
-                              >
-                                <SelectTrigger
-                                  id={valueId}
-                                  className="h-8 w-full"
-                                  title="Булево значение"
-                                >
-                                  <SelectValue placeholder="значение" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="true">true</SelectItem>
-                                  <SelectItem value="false">false</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            )}
-
-                            {item.type === 'date' && (
-                              <DateValueEditor
-                                value={
-                                  isDateValue(item.value)
-                                    ? (item.value as DateParamValue)
-                                    : undefined
-                                }
-                                onChange={(val) => setItem(idx, { value: val })}
-                              />
-                            )}
-                          </FieldContent>
-                        </Field>
-                      )
-                    })()}
                   </div>
                 </Item>
               )
             })}
           </ItemGroup>
         </ScrollArea>
+        {/* Диалог добавления/редактирования параметра */}
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>{editingIndex === null ? 'Добавить параметр' : 'Редактировать параметр'}</DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col gap-3">
+              {(() => {
+                const keyId = `param-key`
+                const keyTrim = (draft.key || '').trim()
+                const isEmpty = keyTrim.length === 0
+                const isInvalidName = !isEmpty && !/^[A-Za-z_][A-Za-z0-9_]*$/.test(keyTrim)
+                const duplicate = items.some((it, i) => i !== editingIndex && (it.key || '').trim().toLowerCase() === keyTrim.toLowerCase())
+                const keyErrorMsg = isEmpty
+                  ? 'Заполните ключ'
+                  : isInvalidName
+                    ? 'Ключ должен соответствовать: [A-Za-z_][A-Za-z0-9_]*'
+                    : duplicate
+                      ? 'Ключ должен быть уникальным'
+                      : ''
+                return (
+                  <Field>
+                    <FieldLabel htmlFor={keyId}>Ключ</FieldLabel>
+                    <FieldContent>
+                      <Input
+                        id={keyId}
+                        className={`${isEmpty || isInvalidName || duplicate ? 'border-red-500' : ''}`}
+                        placeholder="ключ (имя переменной)"
+                        aria-invalid={isEmpty || isInvalidName || duplicate}
+                        value={draft.key}
+                        onChange={(e) => {
+                          const raw = e.target.value
+                          const cleaned = raw.replace(/[^A-Za-z0-9_]/g, '')
+                          setDraft({ ...draft, key: cleaned })
+                        }}
+                      />
+                    </FieldContent>
+                    {(isEmpty || isInvalidName || duplicate) && <FieldError errors={[{ message: keyErrorMsg }]} />}
+                  </Field>
+                )
+              })()}
+
+              {(() => {
+                const typeId = `param-type`
+                return (
+                  <Field>
+                    <FieldLabel htmlFor={typeId}>Тип</FieldLabel>
+                    <FieldContent>
+                      <Select
+                        value={draft.type}
+                        onValueChange={(v) => setDraft({ ...draft, type: v as ParamType, value: undefined })}
+                      >
+                        <SelectTrigger id={typeId} className="min-w-32 h-8" title="Тип параметра">
+                          <SelectValue placeholder="тип" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {typeOptions.map((t) => (
+                            <SelectItem key={t.value} value={t.value}>
+                              {t.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FieldContent>
+                  </Field>
+                )
+              })()}
+
+              {(() => {
+                const valueId = `param-value`
+                return (
+                  <Field>
+                    <FieldLabel htmlFor={valueId}>Значение</FieldLabel>
+                    <FieldContent>
+                      {draft.type === 'string' && (
+                        <Input
+                          id={valueId}
+                          className="h-8 w-full"
+                          placeholder="значение"
+                          title="Строковое значение"
+                          value={String(draft.value ?? '')}
+                          onChange={(e) => setDraft({ ...draft, value: e.target.value })}
+                        />
+                      )}
+
+                      {draft.type === 'number' && (
+                        <NumberValueEditor
+                          id={valueId}
+                          value={typeof draft.value === 'number' ? draft.value : undefined}
+                          onChange={(num) => setDraft({ ...draft, value: num })}
+                        />
+                      )}
+
+                      {draft.type === 'boolean' && (
+                        <Select
+                          value={String(Boolean(draft.value))}
+                          onValueChange={(v) => setDraft({ ...draft, value: v === 'true' })}
+                        >
+                          <SelectTrigger id={valueId} className="h-8 w-full" title="Булево значение">
+                            <SelectValue placeholder="значение" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="true">true</SelectItem>
+                            <SelectItem value="false">false</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+
+                      {draft.type === 'date' && (
+                        <DateValueEditor
+                          value={isDateValue(draft.value) ? (draft.value as DateParamValue) : undefined}
+                          onChange={(val) => setDraft({ ...draft, value: val })}
+                        />
+                      )}
+                    </FieldContent>
+                  </Field>
+                )
+              })()}
+            </div>
+            <DialogFooter>
+              <Button variant="secondary" type="button" onClick={() => setIsDialogOpen(false)}>
+                Отмена
+              </Button>
+              <Button type="button" onClick={saveDraft}>
+                Сохранить
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </FieldContent>
     </Field>
   )
@@ -370,6 +416,31 @@ function deepEqualDateParamValue(a?: DateParamValue, b?: DateParamValue) {
     return (a as any).date === (b as any).date
   }
   return false
+}
+
+function renderValueSummary(item: ParamItem): string {
+  if (item.type === 'string') return String(item.value ?? '')
+  if (item.type === 'number') return typeof item.value === 'number' ? String(item.value) : ''
+  if (item.type === 'boolean') return String(Boolean(item.value))
+  if (item.type === 'date') {
+    const v = item.value as any
+    if (!v || typeof v !== 'object' || !v.type) return ''
+    if (v.type === 'exact') return v.date || ''
+    if (v.type === 'add' || v.type === 'subtract') {
+      const ops = Array.isArray(v.ops) ? v.ops : []
+      const label = v.type === 'add' ? 'Прибавить' : 'Отнять'
+      const parts = ops.map((o: any) => `${Number(o?.amount) || 1} ${String(o?.unit || 'day')}`)
+      return `${label}: ${parts.join(', ')}`
+    }
+    if (v.type === 'startOf' || v.type === 'endOf') {
+      const label = v.type === 'startOf' ? 'Начало' : 'Конец'
+      const unit = String(v.unit || '')
+      const pos = String(v.position || 'current')
+      return `${label}: ${unit}, ${pos}`
+    }
+    return ''
+  }
+  return ''
 }
 
 function NumberValueEditor({
