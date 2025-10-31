@@ -190,9 +190,10 @@ export function ParamsEditor({
   )
 }
 
+export type DateOp = { amount: DurationInputArg1; unit: DurationInputArg2 }
 export type DateParamValue =
-  | { type: 'add'; amount: DurationInputArg1; unit?: DurationInputArg2 }
-  | { type: 'subtract'; amount: DurationInputArg1; unit?: DurationInputArg2 }
+  | { type: 'add'; ops: DateOp[] }
+  | { type: 'subtract'; ops: DateOp[] }
   | { type: 'startOf'; unit: 'day' | 'week' | 'month' | 'quarter' | 'year' }
   | { type: 'endOf'; unit: 'day' | 'week' | 'month' | 'quarter' | 'year' }
   | { type: 'format'; format: string }
@@ -248,6 +249,48 @@ function isDateValue(v: any): v is DateParamValue {
   return 'type' in v && ['add', 'subtract', 'startOf', 'endOf', 'format'].includes((v as any).type)
 }
 
+function equalOps(
+  a: Array<{ amount: number; unit: DurationInputArg2 }>,
+  b: Array<{ amount: number; unit: DurationInputArg2 }>
+) {
+  if (a === b) return true
+  if (!Array.isArray(a) || !Array.isArray(b)) return false
+  if (a.length !== b.length) return false
+  for (let i = 0; i < a.length; i++) {
+    const ai = a[i]
+    const bi = b[i]
+    if (!ai || !bi) return false
+    if (ai.amount !== bi.amount) return false
+    if (ai.unit !== bi.unit) return false
+  }
+  return true
+}
+
+function deepEqualDateParamValue(a?: DateParamValue, b?: DateParamValue) {
+  if (!isDateValue(a) || !isDateValue(b)) return false
+  if (a.type !== b.type) return false
+  if (a.type === 'add' || a.type === 'subtract') {
+    const aOps = (a as { ops: DateOp[] }).ops || []
+    const bOps = (b as { ops: DateOp[] }).ops || []
+    if (aOps.length !== bOps.length) return false
+    for (let i = 0; i < aOps.length; i++) {
+      const ao = aOps[i]
+      const bo = bOps[i]
+      if (!ao || !bo) return false
+      if (ao.amount !== bo.amount) return false
+      if (ao.unit !== bo.unit) return false
+    }
+    return true
+  }
+  if (a.type === 'startOf' || a.type === 'endOf') {
+    return (a as any).unit === (b as any).unit
+  }
+  if (a.type === 'format') {
+    return (a as any).format === (b as any).format
+  }
+  return false
+}
+
 function NumberValueEditor({ value, onChange }: { value?: number; onChange: (v: number) => void }) {
   const [text, setText] = useState<string>(() => (typeof value === 'number' ? String(value) : ''))
 
@@ -298,13 +341,22 @@ function DateValueEditor({
   onChange: (v: DateParamValue) => void
 }) {
   const [kind, setKind] = useState<DateParamValue['type']>(value?.type || 'startOf')
-  const [amountText, setAmountText] = useState<string>(() => {
-    const raw = (value as any)?.amount
-    return typeof raw === 'number' ? String(raw) : ''
+  const defaultOp: { amount: number; unit: DurationInputArg2 } = {
+    amount: 1,
+    unit: 'day' as DurationInputArg2,
+  }
+  const [ops, setOps] = useState<Array<{ amount: number; unit: DurationInputArg2 }>>(() => {
+    const v = value as any
+    if (v?.type === 'add' || v?.type === 'subtract') {
+      const rawOps = Array.isArray(v.ops) ? v.ops : []
+      const normalized = rawOps.map((o: any) => ({
+        amount: Number(o?.amount) || 1,
+        unit: (o?.unit as DurationInputArg2) || ('day' as DurationInputArg2),
+      }))
+      return normalized.length > 0 ? normalized : [defaultOp]
+    }
+    return [defaultOp]
   })
-  const [unitDuration, setUnitDuration] = useState<DurationInputArg2 | undefined>(
-    () => (value as any)?.unit
-  )
   const [unitBoundary, setUnitBoundary] = useState<
     'day' | 'week' | 'month' | 'quarter' | 'year' | undefined
   >(() => (value as any)?.unit)
@@ -314,50 +366,51 @@ function DateValueEditor({
 
   useEffect(() => {
     if (!value) return
-    setKind(value.type)
+    setKind((prev) => (prev === value.type ? prev : value.type))
     if (value.type === 'add' || value.type === 'subtract') {
-      const raw = (value as any)?.amount
-      setAmountText(typeof raw === 'number' ? String(raw) : '')
-      setUnitDuration((value as any)?.unit as DurationInputArg2)
+      const rawOps = (value as any)?.ops
+      if (Array.isArray(rawOps)) {
+        const normalized = rawOps.map((o: any) => ({
+          amount: Number(o?.amount) || 1,
+          unit: (o?.unit as DurationInputArg2) || ('day' as DurationInputArg2),
+        }))
+        const nextOps = normalized.length > 0 ? normalized : [defaultOp]
+        setOps((prev) => (equalOps(prev, nextOps) ? prev : nextOps))
+      } else {
+        const fallback = [defaultOp]
+        setOps((prev) => (equalOps(prev, fallback) ? prev : fallback))
+      }
       setUnitBoundary(undefined)
     } else if (value.type === 'startOf' || value.type === 'endOf') {
-      setUnitBoundary((value as any)?.unit as 'day' | 'week' | 'month' | 'quarter' | 'year')
-      setUnitDuration(undefined)
+      const nextUnit = (value as any)?.unit as 'day' | 'week' | 'month' | 'quarter' | 'year'
+      setUnitBoundary((prev) => (prev === nextUnit ? prev : nextUnit))
     } else if (value.type === 'format') {
-      setFormat((value as any)?.format || 'YYYY-MM-DD')
-      setUnitDuration(undefined)
+      const nextFormat = (value as any)?.format || 'YYYY-MM-DD'
+      setFormat((prev) => (prev === nextFormat ? prev : nextFormat))
       setUnitBoundary(undefined)
     }
   }, [value])
 
   useEffect(() => {
     // propagate changes
+    let payload: DateParamValue | undefined
     if (kind === 'add' || kind === 'subtract') {
-      const n = parseInt(amountText, 10)
-      const amount: DurationInputArg1 = !Number.isNaN(n) && n > 0 ? n : 1
-      const payload: {
-        type: 'add' | 'subtract'
-        amount: DurationInputArg1
-        unit?: DurationInputArg2
-      } = {
+      payload = {
         type: kind,
-        amount,
-        unit: unitDuration,
+        ops: ops.map((o) => ({ amount: o.amount as DurationInputArg1, unit: o.unit })),
       }
-      onChange(payload as DateParamValue)
     } else if (kind === 'startOf' || kind === 'endOf') {
-      const payload: {
-        type: 'startOf' | 'endOf'
-        unit: 'day' | 'week' | 'month' | 'quarter' | 'year'
-      } = {
+      payload = {
         type: kind,
         unit: unitBoundary ?? 'day',
       }
-      onChange(payload)
     } else if (kind === 'format') {
-      onChange({ type: 'format', format })
+      payload = { type: 'format', format }
     }
-  }, [kind, amountText, unitDuration, unitBoundary, format])
+    if (payload && (!isDateValue(value) || !deepEqualDateParamValue(payload, value))) {
+      onChange(payload)
+    }
+  }, [kind, ops, unitBoundary, format])
 
   const dateUnits: { value: DurationInputArg2; label: string }[] = [
     { value: 'second', label: 'Секунды' },
@@ -394,37 +447,67 @@ function DateValueEditor({
       </Select>
 
       {(kind === 'add' || kind === 'subtract') && (
-        <>
-          <Input
-            className="h-8"
-            inputMode="numeric"
-            type="number"
-            min={1}
-            step={1}
-            placeholder="количество"
-            value={amountText}
-            onChange={(e) => setAmountText(e.target.value)}
-            onBlur={() => {
-              const n = parseInt(amountText, 10)
-              if (Number.isNaN(n) || n <= 0) setAmountText('1')
-            }}
-          />
-          <Select
-            value={String(unitDuration || '')}
-            onValueChange={(v) => setUnitDuration(v as DurationInputArg2)}
-          >
-            <SelectTrigger className="min-w-40 h-8" title="Единица измерения">
-              <SelectValue placeholder="единица" />
-            </SelectTrigger>
-            <SelectContent>
-              {dateUnits.map((u) => (
-                <SelectItem key={u.value} value={u.value}>
-                  {u.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </>
+        <div className="flex flex-col gap-2">
+          {ops.map((op, idx) => (
+            <div key={idx} className="flex items-start gap-1.5">
+              <NumberValueEditor
+                value={op.amount}
+                onChange={(num) => {
+                  const next = ops.slice()
+                  next[idx] = { ...next[idx], amount: num }
+                  setOps(next)
+                }}
+              />
+              <Select
+                value={op.unit}
+                onValueChange={(v) => {
+                  const next = ops.slice()
+                  next[idx] = { ...next[idx], unit: v as DurationInputArg2 }
+                  setOps(next)
+                }}
+              >
+                <SelectTrigger className="min-w-40 h-8" title="Единица измерения">
+                  <SelectValue placeholder="единица" />
+                </SelectTrigger>
+                <SelectContent>
+                  {dateUnits.map((u) => (
+                    <SelectItem key={u.value} value={u.value}>
+                      {u.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                className="ml-auto h-8 p-2"
+                variant="ghost"
+                size="sm"
+                type="button"
+                onClick={() => {
+                  if (ops.length <= 1) return
+                  const next = ops.filter((_, i) => i !== idx)
+                  setOps(next)
+                }}
+                aria-label="Удалить шаг"
+                title="Удалить шаг"
+              >
+                <Trash2Icon className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
+          <div>
+            <Button
+              variant="secondary"
+              size="sm"
+              type="button"
+              className="h-8 gap-1"
+              onClick={() => setOps([...ops, { ...defaultOp }])}
+              title="Добавить шаг"
+            >
+              <PlusIcon className="h-3.5 w-3.5" />
+              Добавить шаг
+            </Button>
+          </div>
+        </div>
       )}
 
       {(kind === 'startOf' || kind === 'endOf') && (
