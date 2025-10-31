@@ -159,6 +159,8 @@ export function IntervalTimeEditor({ config, onChange }: IntervalTimeEditorProps
   const [timeUnitsText, setTimeUnitsText] = useState(String(config?.timeUnits || 1))
   const [timeStart, setTimeStart] = useState(config?.timeStart || '00:00')
   const [timeEnd, setTimeEnd] = useState(config?.timeEnd || '01:00')
+  const [timeStartText, setTimeStartText] = useState(String(config?.timeStart || '00:00'))
+  const [timeEndText, setTimeEndText] = useState(String(config?.timeEnd || '01:00'))
   const [days, setDays] = useState<CronDays[]>(
     config?.days || (Object.keys(cronDays) as CronDays[])
   )
@@ -168,6 +170,33 @@ export function IntervalTimeEditor({ config, onChange }: IntervalTimeEditorProps
     setTimeUnits(next)
     setTimeUnitsText(String(next))
   }, [config?.timeUnits])
+
+  useEffect(() => {
+    const nextStart = config?.timeStart || '00:00'
+    setTimeStart(nextStart)
+    setTimeStartText(String(nextStart))
+  }, [config?.timeStart])
+
+  useEffect(() => {
+    const nextEnd = config?.timeEnd || '01:00'
+    setTimeEnd(nextEnd)
+    setTimeEndText(String(nextEnd))
+  }, [config?.timeEnd])
+
+  const parseHHMM = (val: string): number | null => {
+    const m = /^([0-1]\d|2[0-3]):([0-5]\d)$/.exec(val)
+    if (!m) return null
+    const h = Number(m[1])
+    const mm = Number(m[2])
+    return h * 60 + mm
+  }
+
+  const formatHHMM = (mins: number): string => {
+    const clamped = Math.max(0, Math.min(1439, mins))
+    const h = String(Math.floor(clamped / 60)).padStart(2, '0')
+    const m = String(clamped % 60).padStart(2, '0')
+    return `${h}:${m}`
+  }
 
   return (
     <div className="space-y-4">
@@ -217,12 +246,39 @@ export function IntervalTimeEditor({ config, onChange }: IntervalTimeEditorProps
           <InputGroup>
             <InputGroupInput
               type="time"
-              value={timeStart}
+              value={timeStartText}
+              step={60}
+              min="00:00"
+              max="23:59"
               onChange={(ev) => {
-                const val = ev.target.value
-                setTimeStart(val)
-                if (onChange) {
-                  onChange({ type: 'interval-time', timeUnits, timeStart: val, timeEnd, days })
+                const raw = ev.target.value
+                setTimeStartText(raw)
+                const mins = parseHHMM(raw)
+                if (mins !== null) {
+                  const normalized = formatHHMM(mins)
+                  setTimeStart(normalized)
+                  if (onChange) {
+                    onChange({ type: 'interval-time', timeUnits, timeStart: normalized, timeEnd, days })
+                  }
+                }
+              }}
+              onBlur={(ev) => {
+                const mins = parseHHMM(ev.target.value)
+                const normalized = mins === null ? timeStart : formatHHMM(mins)
+                setTimeStart(normalized)
+                setTimeStartText(normalized)
+                const startMin = parseHHMM(normalized) ?? 0
+                const endMin = parseHHMM(timeEnd) ?? 0
+                const minEnd = startMin + timeUnits
+                if (endMin < minEnd) {
+                  const fixedEnd = formatHHMM(minEnd)
+                  setTimeEnd(fixedEnd)
+                  setTimeEndText(fixedEnd)
+                  if (onChange) {
+                    onChange({ type: 'interval-time', timeUnits, timeStart: normalized, timeEnd: fixedEnd, days })
+                  }
+                } else if (onChange) {
+                  onChange({ type: 'interval-time', timeUnits, timeStart: normalized, timeEnd, days })
                 }
               }}
             />
@@ -231,12 +287,35 @@ export function IntervalTimeEditor({ config, onChange }: IntervalTimeEditorProps
           <InputGroup>
             <InputGroupInput
               type="time"
-              value={timeEnd}
+              value={timeEndText}
+              step={60}
+              min="00:00"
+              max="23:59"
               onChange={(ev) => {
-                const val = ev.target.value
-                setTimeEnd(val)
+                const raw = ev.target.value
+                setTimeEndText(raw)
+                const mins = parseHHMM(raw)
+                if (mins !== null) {
+                  const normalized = formatHHMM(mins)
+                  setTimeEnd(normalized)
+                  if (onChange) {
+                    onChange({ type: 'interval-time', timeUnits, timeStart, timeEnd: normalized, days })
+                  }
+                }
+              }}
+              onBlur={(ev) => {
+                const mins = parseHHMM(ev.target.value)
+                let normalized = mins === null ? timeEnd : formatHHMM(mins)
+                const startMin = parseHHMM(timeStart) ?? 0
+                const endMin = parseHHMM(normalized) ?? 0
+                const minEnd = startMin + timeUnits
+                if (endMin < minEnd) {
+                  normalized = formatHHMM(minEnd)
+                }
+                setTimeEnd(normalized)
+                setTimeEndText(normalized)
                 if (onChange) {
-                  onChange({ type: 'interval-time', timeUnits, timeStart, timeEnd: val, days })
+                  onChange({ type: 'interval-time', timeUnits, timeStart, timeEnd: normalized, days })
                 }
               }}
             />
