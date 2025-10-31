@@ -99,6 +99,46 @@ export default class MigrationsController {
       on: vine.array(mergeOnSchema),
     })
 
+    // --- cronExpression validation ---
+    const dayEnum = vine.enum(['mo', 'tu', 'we', 'th', 'fr', 'sa', 'su'])
+    const cronIntervalSchema = vine.object({
+      type: vine.enum(['interval']),
+      count: vine.number(),
+      units: vine.enum(['s', 'm', 'h']),
+    })
+    const cronIntervalTimeSchema = vine.object({
+      type: vine.enum(['interval-time']),
+      timeUnits: vine.number(),
+      timeStart: vine.string(),
+      timeEnd: vine.string(),
+      days: vine.array(dayEnum).minLength(1),
+    })
+    const cronTimeSchema = vine.object({
+      type: vine.enum(['time']),
+      time: vine.string(),
+      days: vine.array(dayEnum).minLength(1),
+    })
+
+    const cronExprSchema = vine
+      .union([
+        vine.union.if((val) => vine.helpers.isString(val), vine.string()),
+        vine.union.if(
+          (val) => vine.helpers.isObject(val) && (val as any)?.type === 'interval',
+          cronIntervalSchema
+        ),
+        vine.union.if(
+          (val) => vine.helpers.isObject(val) && (val as any)?.type === 'interval-time',
+          cronIntervalTimeSchema
+        ),
+        vine.union.if(
+          (val) => vine.helpers.isObject(val) && (val as any)?.type === 'time',
+          cronTimeSchema
+        ),
+      ])
+      .otherwise((_, field) => {
+        field.report('Invalid cronExpression', 'invalid_cron_expression', field)
+      })
+
     // Дискретный union по полю type через vine.group
     const fetchConfigSchema = vine
       .object({
@@ -122,7 +162,7 @@ export default class MigrationsController {
     const schema = vine.compile(
       vine.object({
         name: vine.string().trim().minLength(3).maxLength(64),
-        cronExpression: vine.string().optional(),
+        cronExpression: vine.any().optional(),
         isActive: vine.boolean(),
         fetchConfigs: vine.array(fetchConfigSchema),
         saveMappings: vine.array(
@@ -148,6 +188,17 @@ export default class MigrationsController {
 
     try {
       const data = await schema.validate(request.all())
+
+      // Дополнительная проверка cronExpression при наличии значения
+      const rawCron = request.input('cronExpression')
+      if (rawCron !== undefined) {
+        const cronSchema = vine.compile(
+          vine.object({
+            cronExpression: cronExprSchema,
+          })
+        )
+        await cronSchema.validate({ cronExpression: rawCron })
+      }
 
       migration.merge(data)
       await migration.save()
@@ -176,6 +227,9 @@ export default class MigrationsController {
             break
           case 'isActive':
             fieldErrors[fieldName] = 'Укажите корректную активность'
+            break
+          case 'cronExpression':
+            fieldErrors[fieldName] = 'Укажите корректное расписание'
             break
           default:
             fieldErrors[fieldName] = 'Укажите корректное значение'

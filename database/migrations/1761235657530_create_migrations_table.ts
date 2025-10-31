@@ -10,7 +10,8 @@ export default class extends BaseSchema {
       table.boolean('is_active').defaultTo(true)
       table.json('fetch_configs').defaultTo([])
       table.json('save_mappings').defaultTo([])
-      table.string('cron_expression').nullable()
+      table.json('params').defaultTo([])
+      table.json('cron_expression').nullable()
       table.integer('created_by').unsigned().references('users.id').onDelete('CASCADE')
 
       table.timestamp('created_at')

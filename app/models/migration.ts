@@ -23,8 +23,8 @@ export default class Migration extends BaseModel {
   @column(jsonColumn())
   declare params: any[]
 
-  @column()
-  declare cronExpression: string | null
+  @column(jsonColumn())
+  declare cronExpression: any
 
   @column()
   declare createdBy: number
