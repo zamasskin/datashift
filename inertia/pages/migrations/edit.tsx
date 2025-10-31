@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react'
 import { MergeCard } from '~/components/migrations/cards/merge-card'
 import { SqlBuilderCard } from '~/components/migrations/cards/sql-builder-card'
 import { SqlCard } from '~/components/migrations/cards/sql-card'
+import { CronExpressionEditor } from '~/components/migrations/cron-expression-editor'
 import { MergeConfig, MergeDataset } from '~/components/migrations/datasets/merge-dataset'
 import {
   SqlBuilderConfig,
@@ -49,7 +50,7 @@ type FetchMapping = SqlConfig | SqlBuilderConfig | MergeConfig
 const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const { props } = usePage<{ csrfToken?: string }>()
   const [name, setName] = useState(migration.name)
-  const [cronExpression, setCronExpression] = useState(migration.cronExpression || '')
+  const [cronExpression, setCronExpression] = useState(migration.cronExpression)
   const [fetchConfigs, setFetchConfigs] = useState<FetchMapping[]>(migration.fetchConfigs || [])
   const [saveMappings, setSaveMappings] = useState(migration.saveMappings || [])
   const [params, setParams] = useState(migration.params || [])
@@ -69,7 +70,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const onSave = () => {
     setSaveLoading(true)
     setSaveErrors({})
-    console.log(fetchConfigs)
+    console.log({ name, cronExpression, isActive, fetchConfigs, saveMappings, params })
     router.put(
       `/migrations/${migration.id}`,
       { name, cronExpression, isActive, fetchConfigs, saveMappings, params },
@@ -172,14 +173,8 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid w-full max-w-sm items-center gap-3">
-                    <Label htmlFor="cronExpression">Cron выражение</Label>
-                    <Input
-                      id="cronExpression"
-                      value={cronExpression}
-                      onChange={(e) => setCronExpression(e.target.value)}
-                      className="w-[320px]"
-                    />
+                  <div className=" space-y-4">
+                    <CronExpressionEditor config={cronExpression} onChange={setCronExpression} />
                     {saveErrors?.cronExpression && (
                       <p className="text-sm text-destructive">{saveErrors.cronExpression}</p>
                     )}

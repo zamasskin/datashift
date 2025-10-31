@@ -187,11 +187,13 @@ export default class MigrationsController {
     }
 
     try {
-      const data = await schema.validate(request.all())
+      const body = request.all()
+      const data = await schema.validate(body)
 
-      // Дополнительная проверка cronExpression при наличии значения
-      const rawCron = request.input('cronExpression')
-      if (rawCron !== null && rawCron !== undefined) {
+      // Дополнительная проверка cronExpression и явное присвоение, если поле присутствует
+      const hasCron = Object.prototype.hasOwnProperty.call(body, 'cronExpression')
+      const rawCron = hasCron ? body.cronExpression : undefined
+      if (hasCron && rawCron !== null && rawCron !== undefined) {
         const cronSchema = vine.compile(
           vine.object({
             cronExpression: cronExprSchema,
@@ -201,6 +203,9 @@ export default class MigrationsController {
       }
 
       migration.merge(data)
+      if (hasCron) {
+        migration.cronExpression = rawCron ?? null
+      }
       await migration.save()
 
       return response.redirect(`/migrations/${migration.id}`)
