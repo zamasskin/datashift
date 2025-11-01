@@ -85,6 +85,11 @@ export function ExpressionEditor({ value, columns = [], onChange }: ExpressionEd
           fontSize: 13,
           suggestOnTriggerCharacters: true,
           wordBasedSuggestions: 'off',
+          automaticLayout: true,
+          wordWrap: 'on',
+          scrollBeyondLastLine: false,
+          lineNumbers: 'off',
+          renderLineHighlight: 'none',
         }}
       />
     </div>
