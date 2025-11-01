@@ -177,46 +177,47 @@ export function ModificationDataset(props: ModificationDatasetProps) {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-w-3xl max-h-[75vh] overflow-hidden">
+      <DialogContent className="w-[95vw] sm:max-w-xl md:max-w-2xl lg:max-w-3xl xl:max-w-4xl max-h-[85vh] overflow-hidden p-4">
         <DialogHeader>
           <DialogTitle>Модификация датасета</DialogTitle>
         </DialogHeader>
-        <ScrollArea className=" w-full">
-          <div className="space-y-4 py-2">
-            <Field>
-              <FieldLabel>Датасет</FieldLabel>
-              <Select value={datasetId} onValueChange={setDatasetId}>
-                <SelectTrigger className="min-w-40 h-8" title="Датасет">
-                  <SelectValue placeholder="Выберите датасет" />
-                </SelectTrigger>
-                <SelectContent>
-                  {datasets.length > 0 ? (
-                    datasets.map((s) => (
-                      <SelectItem key={s} value={s}>
-                        {datasetTitleMap[s] || s}
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <SelectItem value="__no_datasets__" disabled>
-                      Нет вариантов
+
+        <div className="space-y-4 py-2">
+          <Field>
+            <FieldLabel>Датасет</FieldLabel>
+            <Select value={datasetId} onValueChange={setDatasetId}>
+              <SelectTrigger className="min-w-40 h-8" title="Датасет">
+                <SelectValue placeholder="Выберите датасет" />
+              </SelectTrigger>
+              <SelectContent>
+                {datasets.length > 0 ? (
+                  datasets.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {datasetTitleMap[s] || s}
                     </SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
-              {!datasetId.trim() && <FieldError>Укажите идентификатор датасета</FieldError>}
-            </Field>
+                  ))
+                ) : (
+                  <SelectItem value="__no_datasets__" disabled>
+                    Нет вариантов
+                  </SelectItem>
+                )}
+              </SelectContent>
+            </Select>
+            {!datasetId.trim() && <FieldError>Укажите идентификатор датасета</FieldError>}
+          </Field>
 
-            <Tabs defaultValue="new" className="w-full">
-              <TabsList>
-                <TabsTrigger value="new">Добавить</TabsTrigger>
-                <TabsTrigger value="rename">Переименовать</TabsTrigger>
-                <TabsTrigger value="drop">Удалить</TabsTrigger>
-              </TabsList>
+          <Tabs defaultValue="new" className="w-full">
+            <TabsList>
+              <TabsTrigger value="new">Добавить</TabsTrigger>
+              <TabsTrigger value="rename">Переименовать</TabsTrigger>
+              <TabsTrigger value="drop">Удалить</TabsTrigger>
+            </TabsList>
 
-              <TabsContent value="new" className="mt-3">
-                <Field>
-                  <FieldLabel>Новые колонки</FieldLabel>
-                  <ScrollArea className="h-36 w-full">
+            <TabsContent value="new" className="mt-3">
+              <Field>
+                <FieldLabel>Новые колонки</FieldLabel>
+                <div className="max-h-72 max-w-full overflow-scroll">
+                  <ScrollArea>
                     <div className="space-y-2 py-2">
                       {newColumns.map((col, idx) => (
                         <ColumnValueEditor
@@ -229,16 +230,19 @@ export function ModificationDataset(props: ModificationDatasetProps) {
                       ))}
                     </div>
                   </ScrollArea>
-                  <Button type="button" variant="outline" onClick={addNewColumn}>
-                    <PlusIcon className="mr-1" /> Добавить колонку
-                  </Button>
-                </Field>
-              </TabsContent>
+                </div>
 
-              <TabsContent value="rename" className="mt-3">
-                <Field>
-                  <FieldLabel>Переименовать колонки</FieldLabel>
-                  <ScrollArea className="h-28 w-full">
+                <Button type="button" variant="outline" onClick={addNewColumn}>
+                  <PlusIcon className="mr-1" /> Добавить колонку
+                </Button>
+              </Field>
+            </TabsContent>
+
+            <TabsContent value="rename" className="mt-3">
+              <Field>
+                <FieldLabel>Переименовать колонки</FieldLabel>
+                <div className="max-h-72 max-w-full overflow-scroll">
+                  <ScrollArea>
                     <div className="space-y-2 py-2">
                       {renamePairs.map((p, idx) => (
                         <div key={idx} className="flex items-center gap-2">
@@ -283,39 +287,42 @@ export function ModificationDataset(props: ModificationDatasetProps) {
                       ))}
                     </div>
                   </ScrollArea>
-                  <Button type="button" variant="outline" onClick={addRenamePair}>
-                    <PlusIcon className="mr-1" /> Добавить переименование
-                  </Button>
-                </Field>
-              </TabsContent>
+                </div>
 
-              <TabsContent value="drop" className="mt-3">
-                <Field>
-                  <FieldLabel>Удалить колонки</FieldLabel>
-                  <div className="flex gap-2">
-                    <Select value={newDropName} onValueChange={setNewDropName}>
-                      <SelectTrigger className="min-w-40 h-8" title="Колонка">
-                        <SelectValue placeholder="Выберите колонку" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {dropOptions.length > 0 ? (
-                          dropOptions.map((c) => (
-                            <SelectItem key={c} value={c}>
-                              {c}
-                            </SelectItem>
-                          ))
-                        ) : (
-                          <SelectItem value="__no_columns__" disabled>
-                            Нет колонок
+                <Button type="button" variant="outline" onClick={addRenamePair}>
+                  <PlusIcon className="mr-1" /> Добавить переименование
+                </Button>
+              </Field>
+            </TabsContent>
+
+            <TabsContent value="drop" className="mt-3">
+              <Field>
+                <FieldLabel>Удалить колонки</FieldLabel>
+                <div className="flex gap-2">
+                  <Select value={newDropName} onValueChange={setNewDropName}>
+                    <SelectTrigger className="min-w-40 h-8" title="Колонка">
+                      <SelectValue placeholder="Выберите колонку" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {dropOptions.length > 0 ? (
+                        dropOptions.map((c) => (
+                          <SelectItem key={c} value={c}>
+                            {c}
                           </SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                    <Button type="button" variant="secondary" onClick={addDropColumn}>
-                      Добавить
-                    </Button>
-                  </div>
-                  <ScrollArea className="h-24 w-full">
+                        ))
+                      ) : (
+                        <SelectItem value="__no_columns__" disabled>
+                          Нет колонок
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <Button type="button" variant="secondary" onClick={addDropColumn}>
+                    Добавить
+                  </Button>
+                </div>
+                <div className="max-h-72 max-w-full overflow-scroll">
+                  <ScrollArea>
                     <div className="flex flex-wrap gap-2 py-2">
                       {dropColumns.map((c, idx) => (
                         <div
@@ -337,11 +344,12 @@ export function ModificationDataset(props: ModificationDatasetProps) {
                       ))}
                     </div>
                   </ScrollArea>
-                </Field>
-              </TabsContent>
-            </Tabs>
-          </div>
-        </ScrollArea>
+                </div>
+              </Field>
+            </TabsContent>
+          </Tabs>
+        </div>
+
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="secondary">Закрыть</Button>
