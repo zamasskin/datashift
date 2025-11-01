@@ -33,6 +33,8 @@ export type SqlEditorProps = {
   children?: React.ReactNode
   saveBtnName?: string
   onSave?: (config: SqlConfig) => void
+  onOpenChange?: (open: boolean) => void
+  open?: boolean
 }
 
 export function SqlDataset(props: SqlEditorProps) {
@@ -101,7 +103,7 @@ export function SqlDataset(props: SqlEditorProps) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={props.open || open} onOpenChange={props.onOpenChange || setOpen}>
       <DialogTrigger asChild>{props.children}</DialogTrigger>
       <DialogContent className="max-w-[92vw] sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl max-h-[75vh] overflow-y-auto p-4">
         <DialogHeader>

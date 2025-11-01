@@ -49,6 +49,8 @@ export type SqlBuilderProps = {
   suggestions?: string[]
   isLoading?: boolean
   onSave?: (config: SqlBuilderConfig) => void
+  onOpenChange?: (open: boolean) => void
+  open?: boolean
 }
 
 export function SqlBuilderDataset({ config, ...props }: SqlBuilderProps) {
@@ -197,7 +199,7 @@ export function SqlBuilderDataset({ config, ...props }: SqlBuilderProps) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={props.open || open} onOpenChange={props.onOpenChange || setOpen}>
       <DialogTrigger asChild>{props.children}</DialogTrigger>
       <DialogContent className="w-[95vw] sm:max-w-xl md:max-w-2xl lg:max-w-3xl xl:max-w-4xl max-h-[85vh] overflow-hidden p-4">
         <DialogHeader>

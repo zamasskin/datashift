@@ -1,6 +1,6 @@
 import Migration from '#models/migration'
 import { Head, router, usePage } from '@inertiajs/react'
-import { ArrowDownUp, FileWarning, Pencil, Save, Settings, Trash } from 'lucide-react'
+import { ArrowDownUp, FileWarning, Pencil, Plus, Save, Settings, Trash } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { MergeCard } from '~/components/migrations/cards/merge-card'
 import { SqlBuilderCard } from '~/components/migrations/cards/sql-builder-card'
@@ -47,6 +47,13 @@ import { Spinner } from '~/components/ui/spinner'
 import { Switch } from '~/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 import { ModificationDataset } from '~/components/migrations/datasets/modification-dataset'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuShortcut,
+  DropdownMenuTrigger,
+} from '~/components/ui/dropdown-menu'
 
 type FetchMapping = SqlConfig | SqlBuilderConfig | MergeConfig
 const MigrationEdit = ({ migration }: { migration: Migration }) => {
@@ -61,6 +68,11 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [prevResults, setPrevResults] = useState<Record<string, string[]>>({})
+
+  const [newSqlOpen, setNewSqlOpen] = useState(false)
+  const [newSqlBuilderOpen, setNewSqlBuilderOpen] = useState(false)
+  const [newMergeBuilderOpen, setNewMergeBuilderOpen] = useState(false)
+  const [newModificationOpen, setNewModificationOpen] = useState(false)
 
   const [saveLoading, setSaveLoading] = useState(false)
   const [saveErrors, setSaveErrors] = useState<Record<string, string>>({})
@@ -241,24 +253,48 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                     </ItemGroup>
 
                     <div className="flex gap-2">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline">
+                            <Plus />
+                            Добавить датасет
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-56" align="start">
+                          <DropdownMenuItem onClick={() => setNewSqlOpen(true)}>
+                            SQL запрос
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setNewSqlBuilderOpen(true)}>
+                            Редактор запроса
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setNewMergeBuilderOpen(true)}>
+                            Объединение
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setNewModificationOpen(true)}>
+                            Модификация
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                       <SqlDataset
+                        open={newSqlOpen}
+                        onOpenChange={setNewSqlOpen}
                         onSave={(config) => setFetchConfigs([...fetchConfigs, config])}
                         prevResults={prevResults}
                         paramKeys={paramKeys}
                         isLoading={isLoading}
-                      >
-                        <Button>Sql</Button>
-                      </SqlDataset>
+                      />
 
                       <SqlBuilderDataset
+                        open={newSqlBuilderOpen}
+                        onOpenChange={setNewSqlBuilderOpen}
                         isLoading={isLoading}
                         suggestions={suggestions}
                         onSave={(config) => setFetchConfigs([...fetchConfigs, config])}
-                      >
-                        <Button>Редактор запроса</Button>
-                      </SqlBuilderDataset>
+                      />
 
                       <MergeDataset
+                        open={newMergeBuilderOpen}
+                        onOpenChange={setNewMergeBuilderOpen}
                         isLoading={isLoading}
                         datasetsConfigs={[
                           { id: 'aa', title: 'sql', columns: ['aa1', 'aa2'] },
@@ -266,19 +302,17 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                           { id: 'cc', title: 'custom', columns: ['cc1', 'cc2'] },
                         ]}
                         onSave={(config) => setFetchConfigs([...fetchConfigs, config])}
-                      >
-                        <Button>Объединение</Button>
-                      </MergeDataset>
+                      />
 
                       <ModificationDataset
+                        open={newModificationOpen}
+                        onOpenChange={setNewModificationOpen}
                         datasetsConfigs={[
                           { id: 'aa', title: 'sql', columns: ['aa1', 'aa2'] },
                           { id: 'bb', title: 'dataset1', columns: ['bb1', 'bb2'] },
                           { id: 'cc', title: 'custom', columns: ['cc1', 'cc2'] },
                         ]}
-                      >
-                        <Button>Модификация</Button>
-                      </ModificationDataset>
+                      />
                     </div>
                   </div>
                 </CardContent>
