@@ -479,7 +479,7 @@ function ColumnValueEditor({
           <SelectItem value="literal">literal</SelectItem>
           <SelectItem value="template">template</SelectItem>
           <SelectItem value="expression">expression</SelectItem>
-          <SelectItem value="function">function</SelectItem>
+          <SelectItem value="function" disabled title="Скоро">function (скоро)</SelectItem>
         </SelectContent>
       </Select>
 
@@ -538,17 +538,9 @@ function ColumnValueEditor({
 
       {type === 'function' && (
         <div className="flex flex-col gap-2 w-full">
-          <Input
-            placeholder="function name"
-            value={(value as ColumnFunction).name as string}
-            onChange={(e) => setFunctionName(e.target.value)}
-            className="h-8"
-          />
-          <Input
-            placeholder='args as JSON (e.g. [{"type":"reference","value":"col"}])'
-            onChange={(e) => setFunctionArgsJson(e.target.value)}
-            className="h-8"
-          />
+          <div className="text-sm text-muted-foreground">
+            Поддержка функций появится скоро.
+          </div>
         </div>
       )}
 
