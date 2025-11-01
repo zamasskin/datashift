@@ -23,6 +23,7 @@ import {
 } from '~/components/ui/dialog'
 import { PlusIcon, TrashIcon } from 'lucide-react'
 import { Item, ItemContent } from '~/components/ui/item'
+import { ExpressionEditor } from '../expression-editor'
 
 export type DatasetConfig = {
   id: string
@@ -539,11 +540,10 @@ function ColumnValueEditor({
         )}
 
         {type === 'expression' && (
-          <Textarea
-            placeholder="expression"
+          <ExpressionEditor
             value={(value as ColumnExpression).value as string}
-            onChange={(e) => setExpressionValue(e.target.value)}
-            className="min-h-24"
+            columns={columns || []}
+            onChange={(val) => setExpressionValue(val)}
           />
         )}
 
