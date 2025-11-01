@@ -22,6 +22,7 @@ import {
   DialogClose,
 } from '~/components/ui/dialog'
 import { PlusIcon, TrashIcon } from 'lucide-react'
+import { Item, ItemContent } from '~/components/ui/item'
 
 export type DatasetConfig = {
   id: string
@@ -463,97 +464,95 @@ function ColumnValueEditor({
   }
 
   return (
-    <div
-      className={
-        type === 'template' || type === 'expression' || type === 'function'
-          ? 'flex flex-col gap-2 border rounded p-2'
-          : 'flex items-start gap-2 border rounded p-2'
-      }
-    >
-      <Select value={type} onValueChange={(t) => setType(t as ColumnValue['type'])}>
-        <SelectTrigger className="min-w-40 h-8">
-          <SelectValue placeholder="Тип значения" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="reference">reference</SelectItem>
-          <SelectItem value="literal">literal</SelectItem>
-          <SelectItem value="template">template</SelectItem>
-          <SelectItem value="expression">expression</SelectItem>
-          <SelectItem value="function" disabled title="Скоро">function (скоро)</SelectItem>
-        </SelectContent>
-      </Select>
-
-      {type === 'reference' &&
-        (columns && columns.length > 0 ? (
-          <Select
-            value={(value as ColumnReference).value as string}
-            onValueChange={(v) => setReferenceValue(v)}
-          >
-            <SelectTrigger className="min-w-40 h-8" title="column name">
-              <SelectValue placeholder="column name" />
+    <Item variant="outline" className="w-full items-start gap-1 py-3 px-3">
+      <ItemContent>
+        <div className="flex justify-between">
+          <Select value={type} onValueChange={(t) => setType(t as ColumnValue['type'])}>
+            <SelectTrigger className="min-w-40 h-8">
+              <SelectValue placeholder="Тип значения" />
             </SelectTrigger>
             <SelectContent>
-              {columns.map((c) => (
-                <SelectItem key={c} value={c}>
-                  {c}
-                </SelectItem>
-              ))}
+              <SelectItem value="reference">ссылка</SelectItem>
+              <SelectItem value="literal">литерал</SelectItem>
+              <SelectItem value="template">шаблон</SelectItem>
+              <SelectItem value="expression">выражение</SelectItem>
+              <SelectItem value="function" disabled title="Скоро">
+                функция (скоро)
+              </SelectItem>
             </SelectContent>
           </Select>
-        ) : (
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            title="Удалить"
+            onClick={onRemove}
+            className="h-7 w-7"
+          >
+            <TrashIcon className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {type === 'reference' &&
+          (columns && columns.length > 0 ? (
+            <Select
+              value={(value as ColumnReference).value as string}
+              onValueChange={(v) => setReferenceValue(v)}
+            >
+              <SelectTrigger className="min-w-40 h-8" title="column name">
+                <SelectValue placeholder="column name" />
+              </SelectTrigger>
+              <SelectContent>
+                {columns.map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {c}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <Input
+              placeholder="column name"
+              value={(value as ColumnReference).value as string}
+              onChange={(e) => setReferenceValue(e.target.value)}
+              className="h-8"
+            />
+          ))}
+
+        {type === 'literal' && (
           <Input
-            placeholder="column name"
-            value={(value as ColumnReference).value as string}
-            onChange={(e) => setReferenceValue(e.target.value)}
+            placeholder="string | number | boolean"
+            value={String((value as ColumnLiteral).value ?? '')}
+            onChange={(e) => setLiteralValue(e.target.value)}
             className="h-8"
           />
-        ))}
+        )}
 
-      {type === 'literal' && (
-        <Input
-          placeholder="string | number | boolean"
-          value={String((value as ColumnLiteral).value ?? '')}
-          onChange={(e) => setLiteralValue(e.target.value)}
-          className="h-8"
-        />
-      )}
+        {type === 'template' && (
+          <Textarea
+            placeholder="template string"
+            value={(value as ColumnTemplate).value as string}
+            onChange={(e) => setTemplateValue(e.target.value)}
+            className="min-h-24"
+          />
+        )}
 
-      {type === 'template' && (
-        <Textarea
-          placeholder="template string"
-          value={(value as ColumnTemplate).value as string}
-          onChange={(e) => setTemplateValue(e.target.value)}
-          className="min-h-24"
-        />
-      )}
+        {type === 'expression' && (
+          <Textarea
+            placeholder="expression"
+            value={(value as ColumnExpression).value as string}
+            onChange={(e) => setExpressionValue(e.target.value)}
+            className="min-h-24"
+          />
+        )}
 
-      {type === 'expression' && (
-        <Textarea
-          placeholder="expression"
-          value={(value as ColumnExpression).value as string}
-          onChange={(e) => setExpressionValue(e.target.value)}
-          className="min-h-24"
-        />
-      )}
-
-      {type === 'function' && (
-        <div className="flex flex-col gap-2 w-full">
-          <div className="text-sm text-muted-foreground">
-            Поддержка функций появится скоро.
+        {type === 'function' && (
+          <div className="flex flex-col gap-2 w-full">
+            <div className="text-sm text-muted-foreground">Поддержка функций появится скоро.</div>
           </div>
-        </div>
-      )}
-
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        title="Удалить"
-        onClick={onRemove}
-        className="h-7 w-7"
-      >
-        <TrashIcon className="h-4 w-4" />
-      </Button>
-    </div>
+        )}
+      </ItemContent>
+    </Item>
   )
 }
