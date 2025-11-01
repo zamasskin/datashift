@@ -99,6 +99,7 @@ export function SqlDataset(props: SqlEditorProps) {
         props.onSave({ type: 'sql', id: Date.now().toString(36), params: { query, sourceId } })
       }
     }
+    if (props?.onOpenChange) props.onOpenChange(false)
     setOpen(false)
   }
 

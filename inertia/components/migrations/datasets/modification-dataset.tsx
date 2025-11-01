@@ -121,6 +121,7 @@ export function ModificationDataset(props: ModificationDatasetProps) {
       } else {
         props.onSave({ type: 'modification', id: Date.now().toString(36), params })
       }
+      if (props?.onOpenChange) props.onOpenChange(false)
       setOpen(false)
     }
   }

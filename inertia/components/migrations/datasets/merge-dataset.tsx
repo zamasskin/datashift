@@ -127,6 +127,7 @@ export function MergeDataset(props: MergeDatasetProps) {
       }
     }
 
+    if (props?.onOpenChange) props.onOpenChange(false)
     setOpen(false)
   }
 

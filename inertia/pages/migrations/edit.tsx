@@ -36,13 +36,6 @@ import {
   ItemDescription,
 } from '~/components/ui/item'
 import { Label } from '~/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '~/components/ui/select'
 import { Spinner } from '~/components/ui/spinner'
 import { Switch } from '~/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
@@ -51,7 +44,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
 
@@ -69,10 +61,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const [error, setError] = useState('')
   const [prevResults, setPrevResults] = useState<Record<string, string[]>>({})
 
-  const [newSqlOpen, setNewSqlOpen] = useState(false)
-  const [newSqlBuilderOpen, setNewSqlBuilderOpen] = useState(false)
-  const [newMergeBuilderOpen, setNewMergeBuilderOpen] = useState(false)
-  const [newModificationOpen, setNewModificationOpen] = useState(false)
+  const [newDatasetOpen, setNewDatasetOpen] = useState('')
 
   const [saveLoading, setSaveLoading] = useState(false)
   const [saveErrors, setSaveErrors] = useState<Record<string, string>>({})
@@ -261,23 +250,23 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-56" align="start">
-                          <DropdownMenuItem onClick={() => setNewSqlOpen(true)}>
+                          <DropdownMenuItem onClick={() => setNewDatasetOpen('sql')}>
                             SQL запрос
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => setNewSqlBuilderOpen(true)}>
+                          <DropdownMenuItem onClick={() => setNewDatasetOpen('sql_builder')}>
                             Редактор запроса
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => setNewMergeBuilderOpen(true)}>
+                          <DropdownMenuItem onClick={() => setNewDatasetOpen('merge')}>
                             Объединение
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => setNewModificationOpen(true)}>
+                          <DropdownMenuItem onClick={() => setNewDatasetOpen('modification')}>
                             Модификация
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                       <SqlDataset
-                        open={newSqlOpen}
-                        onOpenChange={setNewSqlOpen}
+                        open={newDatasetOpen == 'sql'}
+                        onOpenChange={(val) => setNewDatasetOpen(val ? 'sql' : '')}
                         onSave={(config) => setFetchConfigs([...fetchConfigs, config])}
                         prevResults={prevResults}
                         paramKeys={paramKeys}
@@ -285,16 +274,16 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                       />
 
                       <SqlBuilderDataset
-                        open={newSqlBuilderOpen}
-                        onOpenChange={setNewSqlBuilderOpen}
+                        open={newDatasetOpen == 'sql_builder'}
+                        onOpenChange={(val) => setNewDatasetOpen(val ? 'sql_builder' : '')}
                         isLoading={isLoading}
                         suggestions={suggestions}
                         onSave={(config) => setFetchConfigs([...fetchConfigs, config])}
                       />
 
                       <MergeDataset
-                        open={newMergeBuilderOpen}
-                        onOpenChange={setNewMergeBuilderOpen}
+                        open={newDatasetOpen == 'merge'}
+                        onOpenChange={(val) => setNewDatasetOpen(val ? 'merge' : '')}
                         isLoading={isLoading}
                         datasetsConfigs={[
                           { id: 'aa', title: 'sql', columns: ['aa1', 'aa2'] },
@@ -305,8 +294,8 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                       />
 
                       <ModificationDataset
-                        open={newModificationOpen}
-                        onOpenChange={setNewModificationOpen}
+                        open={newDatasetOpen == 'modification'}
+                        onOpenChange={(val) => setNewDatasetOpen(val ? 'modification' : '')}
                         datasetsConfigs={[
                           { id: 'aa', title: 'sql', columns: ['aa1', 'aa2'] },
                           { id: 'bb', title: 'dataset1', columns: ['bb1', 'bb2'] },

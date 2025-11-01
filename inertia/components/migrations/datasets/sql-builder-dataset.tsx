@@ -195,6 +195,8 @@ export function SqlBuilderDataset({ config, ...props }: SqlBuilderProps) {
         })
       }
     }
+
+    if (props?.onOpenChange) props.onOpenChange(false)
     setOpen(false)
   }
 
