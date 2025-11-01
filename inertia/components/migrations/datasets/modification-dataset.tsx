@@ -24,6 +24,7 @@ import {
 import { PlusIcon, TrashIcon } from 'lucide-react'
 import { Item, ItemContent } from '~/components/ui/item'
 import { ExpressionEditor } from '../expression-editor'
+import { TemplateEditor } from '../template-editor'
 
 export type DatasetConfig = {
   id: string
@@ -539,11 +540,10 @@ function ColumnValueEditor({
         )}
 
         {type === 'template' && (
-          <Textarea
-            placeholder="template string"
+          <TemplateEditor
             value={(value as ColumnTemplate).value as string}
-            onChange={(e) => setTemplateValue(e.target.value)}
-            className="min-h-24"
+            columns={columns || []}
+            onChange={(val) => setTemplateValue(val)}
           />
         )}
 
