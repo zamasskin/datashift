@@ -8,7 +8,7 @@ import { Checkbox } from '../ui/checkbox'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 
 export type CronExpressionEditorProps = {
-  config?: CronConfig
+  config?: CronConfig | null
   onChange?: (config: CronConfig | null) => void
 }
 

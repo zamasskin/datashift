@@ -15,16 +15,16 @@ export default class Migration extends BaseModel {
   declare isActive: boolean
 
   @column(jsonColumn())
-  declare fetchConfigs: any[]
+  declare fetchConfigs: FetchConfig[]
 
   @column(jsonColumn())
-  declare saveMappings: any[]
+  declare saveMappings: SaveMapping[]
 
   @column(jsonColumn())
-  declare params: any[]
+  declare params: ParamItem[]
 
   @column(jsonColumn())
-  declare cronExpression: any
+  declare cronExpression: CronConfig | null
 
   @column()
   declare createdBy: number
@@ -40,3 +40,88 @@ export default class Migration extends BaseModel {
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
 }
+
+type SqlConfig = {
+  type: 'sql'
+  id: string
+  params: { sourceId: number; query: string }
+}
+
+type WhereField = {
+  key: string
+  value?: any
+  values?: any[]
+  op?: '=' | '!=' | '<>' | '>' | '>=' | '<' | '<=' | 'in' | 'nin'
+}
+type WhereData = {
+  fields?: WhereField[]
+  $and?: Record<string, any>
+  $or?: Record<string, any>
+}
+
+type JoinOn = {
+  tableColumn: string
+  aliasColumn: string
+  operator: '=' | '!=' | '<' | '<=' | '>' | '>='
+  cond?: 'and' | 'or'
+}
+type JoinItem = {
+  table: string
+  alias?: string
+  type: 'inner' | 'left' | 'right' | 'full'
+  on: JoinOn[]
+}
+
+type SqlBuilderConfig = {
+  type: 'sql_builder'
+  id: string
+  params: {
+    sourceId: number
+    table: string
+    alias?: string
+    selects?: string[]
+    orders?: Record<string, 'asc' | 'desc'>[]
+    joins?: JoinItem[]
+    where?: WhereData
+    hawing?: WhereData
+    group?: string[]
+  }
+}
+
+type MergeOn = {
+  tableColumn: string
+  aliasColumn: string
+  operator: '=' | '!=' | '<' | '<=' | '>' | '>='
+  cond?: 'and' | 'or'
+}
+
+type MergeConfig = {
+  type: 'merge'
+  id: string
+  params: {
+    datasetLeftId: string
+    datasetRightId: string
+    on: MergeOn[]
+  }
+}
+
+type FetchConfig = SqlConfig | SqlBuilderConfig | MergeConfig
+type SaveMapping = { datasetId: number; source: string }
+
+type ParamItem = {
+  key: string
+  type: 'string' | 'number' | 'boolean' | 'date'
+  value?: any
+}
+
+type CronDays = 'mo' | 'tu' | 'we' | 'th' | 'fr' | 'sa' | 'su'
+type CronInterval = { type: 'interval'; count: number; units: 's' | 'm' | 'h' }
+type CronIntervalTime = {
+  type: 'interval-time'
+  timeUnits: number
+  timeStart: string
+  timeEnd: string
+  days: CronDays[]
+}
+type CronTime = { type: 'time'; time: string; days: CronDays[] }
+type CronConfig = CronInterval | CronIntervalTime | CronTime
