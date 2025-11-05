@@ -392,7 +392,7 @@ type ColumnValue =
   | ColumnReference
   | ColumnFunction
 
-type ModificationConfig = {
+export type ModificationConfig = {
   type: 'modification'
   id: string
   params: {

@@ -39,7 +39,10 @@ import { Label } from '~/components/ui/label'
 import { Spinner } from '~/components/ui/spinner'
 import { Switch } from '~/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
-import { ModificationDataset } from '~/components/migrations/datasets/modification-dataset'
+import {
+  ModificationConfig,
+  ModificationDataset,
+} from '~/components/migrations/datasets/modification-dataset'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,7 +50,7 @@ import {
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
 
-type FetchMapping = SqlConfig | SqlBuilderConfig | MergeConfig
+type FetchMapping = SqlConfig | SqlBuilderConfig | MergeConfig | ModificationConfig
 const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const { props } = usePage<{ csrfToken?: string }>()
   const [name, setName] = useState(migration.name)

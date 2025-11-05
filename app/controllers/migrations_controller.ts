@@ -99,6 +99,57 @@ export default class MigrationsController {
       on: vine.array(mergeOnSchema),
     })
 
+    // ColumnValue recursive union (template | expression | literal | reference | function)
+    const columnTemplateSchema = vine.object({
+      type: vine.enum(['template']),
+      value: vine.string(),
+    })
+    const columnExpressionSchema = vine.object({
+      type: vine.enum(['expression']),
+      value: vine.string(),
+    })
+    const columnLiteralSchema = vine.object({
+      type: vine.enum(['literal']),
+      value: vine.union([
+        vine.union.if((v) => typeof v === 'string', vine.string()),
+        vine.union.if((v) => typeof v === 'number', vine.number()),
+        vine.union.if((v) => typeof v === 'boolean', vine.boolean()),
+      ]),
+    })
+    const columnReferenceSchema = vine.object({
+      type: vine.enum(['reference']),
+      value: vine.string(),
+    })
+
+    // Non-recursive ColumnValue for function args (exclude nested function to avoid recursion)
+    const simpleColumnValueSchema = vine.union([
+      vine.union.if((val) => (val as any)?.type === 'template', columnTemplateSchema),
+      vine.union.if((val) => (val as any)?.type === 'expression', columnExpressionSchema),
+      vine.union.if((val) => (val as any)?.type === 'literal', columnLiteralSchema),
+      vine.union.if((val) => (val as any)?.type === 'reference', columnReferenceSchema),
+    ])
+
+    const columnFunctionSchema = vine.object({
+      type: vine.enum(['function']),
+      name: vine.string(),
+      args: vine.array(simpleColumnValueSchema),
+    })
+
+    const columnValueSchema = vine.union([
+      vine.union.if((val) => (val as any)?.type === 'template', columnTemplateSchema),
+      vine.union.if((val) => (val as any)?.type === 'expression', columnExpressionSchema),
+      vine.union.if((val) => (val as any)?.type === 'literal', columnLiteralSchema),
+      vine.union.if((val) => (val as any)?.type === 'reference', columnReferenceSchema),
+      vine.union.if((val) => (val as any)?.type === 'function', columnFunctionSchema),
+    ])
+
+    const modificationParamsSchema = vine.object({
+      datasetId: vine.string(),
+      newColumns: vine.array(columnValueSchema).optional(),
+      dropColumns: vine.array(vine.string()).optional(),
+      renameColumns: vine.record(vine.string()).optional(),
+    })
+
     // --- cronExpression validation ---
     const dayEnum = vine.enum(['mo', 'tu', 'we', 'th', 'fr', 'sa', 'su'])
     const cronIntervalSchema = vine.object({
@@ -143,7 +194,7 @@ export default class MigrationsController {
     const fetchConfigSchema = vine
       .object({
         id: vine.string(),
-        type: vine.enum(['sql', 'sql_builder', 'merge']),
+        type: vine.enum(['sql', 'sql_builder', 'merge', 'modification']),
       })
       .merge(
         vine.group([
@@ -155,6 +206,9 @@ export default class MigrationsController {
           }),
           vine.group.if((data) => data.type === 'merge', {
             params: mergeParamsSchema,
+          }),
+          vine.group.if((data) => data.type === 'modification', {
+            params: modificationParamsSchema,
           }),
         ])
       )
@@ -203,7 +257,10 @@ export default class MigrationsController {
         await cronSchema.validate({ cronExpression: rawCron })
       }
 
-      migration.merge(data)
+      // Явно присваиваем поля, чтобы избежать TS-конфликта union по fetchConfigs
+      const { fetchConfigs, ...rest } = data
+      migration.merge(rest as any)
+      migration.fetchConfigs = fetchConfigs as any
       if (hasCron) {
         migration.cronExpression = rawCron ?? null
       }
