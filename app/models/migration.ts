@@ -41,7 +41,7 @@ export default class Migration extends BaseModel {
   declare updatedAt: DateTime
 }
 
-type SqlConfig = {
+export type SqlConfig = {
   type: 'sql'
   id: string
   params: { sourceId: number; query: string }
@@ -72,7 +72,7 @@ type JoinItem = {
   on: JoinOn[]
 }
 
-type SqlBuilderConfig = {
+export type SqlBuilderConfig = {
   type: 'sql_builder'
   id: string
   params: {
@@ -95,7 +95,7 @@ type MergeOn = {
   cond?: 'and' | 'or'
 }
 
-type MergeConfig = {
+export type MergeConfig = {
   type: 'merge'
   id: string
   params: {
@@ -139,7 +139,7 @@ type ColumnValue =
   | ColumnFunction
 
 // Modification dataset config (aligned with controller validation)
-type ModificationConfig = {
+export type ModificationConfig = {
   type: 'modification'
   id: string
   params: {
@@ -150,10 +150,10 @@ type ModificationConfig = {
   }
 }
 
-type FetchConfig = SqlConfig | SqlBuilderConfig | MergeConfig | ModificationConfig
+export type FetchConfig = SqlConfig | SqlBuilderConfig | MergeConfig | ModificationConfig
 type SaveMapping = { datasetId: number; source: string }
 
-type ParamItem = {
+export type ParamItem = {
   key: string
   type: 'string' | 'number' | 'boolean' | 'date'
   value?: any
