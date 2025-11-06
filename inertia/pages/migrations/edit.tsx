@@ -41,6 +41,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [prevResults, setPrevResults] = useState<Record<string, string[]>>({})
+  const [previewPages, setPreviewPages] = useState<Record<string, number>>({})
 
   const [newDatasetOpen, setNewDatasetOpen] = useState('')
 
@@ -58,7 +59,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
       const response = await fetch('/migrations/fetch-config-test', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': props.csrfToken || '' },
-        body: JSON.stringify({ fetchConfigs, params }),
+        body: JSON.stringify({ fetchConfigs, params, pages: previewPages }),
       })
 
       const json = await response.json()
@@ -206,25 +207,36 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                     <ItemGroup className="gap-2">
                       {fetchConfigs.map((conf) => (
                         <div key={conf?.id}>
-                          {conf?.type == 'sql' && (
-                            <SqlCard
-                              paramKeys={paramKeys}
-                              isLoading={isLoading}
-                              prevResults={undefined}
-                              config={conf}
-                              onRemove={handleRemove}
-                              onUpdate={handleSave}
-                            />
-                          )}
-                          {conf?.type == 'sql_builder' && (
-                            <SqlBuilderCard
-                              suggestions={suggestions}
-                              isLoading={isLoading}
-                              config={conf}
-                              onRemove={handleRemove}
-                              onSave={handleSave}
-                            />
-                          )}
+                        {conf?.type == 'sql' && (
+                          <SqlCard
+                            paramKeys={paramKeys}
+                            isLoading={isLoading}
+                            prevResults={undefined}
+                            config={conf}
+                            onRemove={handleRemove}
+                            onUpdate={handleSave}
+                            page={previewPages[conf.id] || 1}
+                            onChangePage={(page) => {
+                              setPreviewPages((old) => ({ ...old, [conf.id]: page }))
+                              // Обновляем предпросмотр после смены страницы
+                              loadData()
+                            }}
+                          />
+                        )}
+                        {conf?.type == 'sql_builder' && (
+                          <SqlBuilderCard
+                            suggestions={suggestions}
+                            isLoading={isLoading}
+                            config={conf}
+                            onRemove={handleRemove}
+                            onSave={handleSave}
+                            page={previewPages[conf.id] || 1}
+                            onChangePage={(page) => {
+                              setPreviewPages((old) => ({ ...old, [conf.id]: page }))
+                              loadData()
+                            }}
+                          />
+                        )}
                           {conf?.type == 'merge' && (
                             <MergeCard
                               config={conf}

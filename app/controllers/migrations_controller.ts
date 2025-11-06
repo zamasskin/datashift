@@ -176,13 +176,15 @@ export default class MigrationsController {
       vine.object({
         fetchConfigs: vine.array(fetchConfigSchema),
         params: this.makeParamsSchema(),
+        pages: vine.record(vine.number()).optional(),
       })
     )
 
     const body = request.all()
     const data = await schema.validate(body)
     const params = this.normalizeParams(data.params)
-    const fetchConfigs = this.normalizeFetchConfigs(data.fetchConfigs)
+    const fetchConfigsBase = this.normalizeFetchConfigs(data.fetchConfigs)
+    const fetchConfigs = this.applyPreviewPages(fetchConfigsBase, data.pages || {})
 
     const paramsService = new ParamsService()
     const fetchConfigService = new FetchConfigService()
@@ -307,6 +309,20 @@ export default class MigrationsController {
         default:
           throw new Error(`Unknown fetch config type: ${String(c?.type)}`)
       }
+    })
+  }
+
+  /**
+   * Применяет предпросмотрные номера страниц для sql/sql_builder, не изменяя сохранённый конфиг.
+   */
+  private applyPreviewPages(configs: FetchConfig[], pages: Record<string, number>): FetchConfig[] {
+    return configs.map((cfg) => {
+      const page = pages[cfg.id]
+      if (!page || page < 1) return cfg
+      if (cfg.type === 'sql' || cfg.type === 'sql_builder') {
+        return { ...cfg, page: Number(page) } as any
+      }
+      return cfg
     })
   }
 

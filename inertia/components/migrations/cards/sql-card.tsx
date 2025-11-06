@@ -1,6 +1,13 @@
-import { Settings, Trash } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Settings, Trash } from 'lucide-react'
 import { Button } from '~/components/ui/button'
-import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '~/components/ui/item'
+import {
+  Item,
+  ItemContent,
+  ItemDescription,
+  ItemFooter,
+  ItemMedia,
+  ItemTitle,
+} from '~/components/ui/item'
 import { SqlDataset } from '../datasets/sql-dataset'
 import { SqlConfig } from '#interfaces/sql_config'
 
@@ -9,6 +16,8 @@ export type SqlCardProps = {
   paramKeys?: string[]
   config?: SqlConfig
   prevResults?: Record<string, string[]>
+  page?: number
+  onChangePage?: (page: number) => void
 
   onRemove?: (id: string) => void
   onUpdate?: (config: SqlConfig) => void
@@ -20,6 +29,8 @@ export function SqlCard({
   prevResults,
   isLoading,
   onRemove: onRemove,
+  page = 1,
+  onChangePage,
   onUpdate,
 }: SqlCardProps) {
   const handleRemove = () => {
@@ -45,7 +56,7 @@ export function SqlCard({
         </ItemTitle>
         <ItemDescription>Источник данных № {config?.params?.sourceId}</ItemDescription>
       </ItemContent>
-      <ItemContent className="flex-none text-center">
+      <ItemContent>
         <ItemDescription className="space-x-2">
           <Button size="icon" variant="outline" onClick={handleRemove}>
             <Trash />
@@ -65,6 +76,30 @@ export function SqlCard({
           </SqlDataset>
         </ItemDescription>
       </ItemContent>
+      <ItemContent className="flex-none text-center">
+        <ItemDescription className="space-x-2">
+          {/* Preview-only pagination controls */}
+        </ItemDescription>
+      </ItemContent>
+      <ItemFooter className="space-x-2">
+        <Button
+          size="icon"
+          variant="outline"
+          disabled={isLoading || (page || 1) <= 1}
+          onClick={() => onChangePage && onChangePage(Math.max(1, (page || 1) - 1))}
+        >
+          <ChevronLeft />
+        </Button>
+        <span className="text-sm text-muted-foreground">Страница {page || 1}</span>
+        <Button
+          size="icon"
+          variant="outline"
+          disabled={isLoading}
+          onClick={() => onChangePage && onChangePage((page || 1) + 1)}
+        >
+          <ChevronRight />
+        </Button>
+      </ItemFooter>
     </Item>
   )
 }
