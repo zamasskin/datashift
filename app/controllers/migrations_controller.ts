@@ -170,38 +170,42 @@ export default class MigrationsController {
   }
 
   async fetchConfigTest({ request }: HttpContext) {
-    const fetchConfigSchema = this.makeFetchConfigSchema()
+    try {
+      const fetchConfigSchema = this.makeFetchConfigSchema()
 
-    const schema = vine.compile(
-      vine.object({
-        fetchConfigs: vine.array(fetchConfigSchema),
-        params: this.makeParamsSchema(),
-        pages: vine.record(vine.number()).optional(),
-      })
-    )
+      const schema = vine.compile(
+        vine.object({
+          fetchConfigs: vine.array(fetchConfigSchema),
+          params: this.makeParamsSchema(),
+          pages: vine.record(vine.number()).optional(),
+        })
+      )
 
-    const body = request.all()
-    const data = await schema.validate(body)
-    const params = this.normalizeParams(data.params)
-    const fetchConfigsBase = this.normalizeFetchConfigs(data.fetchConfigs)
-    const fetchConfigs = this.applyPreviewPages(fetchConfigsBase, data.pages || {})
+      const body = request.all()
+      const data = await schema.validate(body)
+      const params = this.normalizeParams(data.params)
+      const fetchConfigsBase = this.normalizeFetchConfigs(data.fetchConfigs)
+      const fetchConfigs = this.applyPreviewPages(fetchConfigsBase, data.pages || {})
 
-    const paramsService = new ParamsService()
-    const fetchConfigService = new FetchConfigService()
+      const paramsService = new ParamsService()
+      const fetchConfigService = new FetchConfigService()
 
-    const paramsSource = paramsService.getSource(params)
-    const initialResults: FetchConfigResult[] = [{ dataType: 'params', data: paramsSource }]
-    if (fetchConfigs.length === 0) {
-      return initialResults
+      const paramsSource = paramsService.getSource(params)
+      const initialResults: FetchConfigResult[] = [{ dataType: 'params', data: paramsSource }]
+      if (fetchConfigs.length === 0) {
+        return initialResults
+      }
+
+      // Получаем первый результат конечного конфига через AsyncGenerator.next()
+      const generator = fetchConfigService.execute(fetchConfigs, initialResults)
+      const { value, done } = await generator.next()
+      if (done) {
+        return { error: 'Нет данных' }
+      }
+      return value
+    } catch (error: any) {
+      return { error: error.message }
     }
-
-    // Получаем первый результат конечного конфига через AsyncGenerator.next()
-    const generator = fetchConfigService.execute(fetchConfigs, initialResults)
-    const { value, done } = await generator.next()
-    if (done) {
-      return { error: 'Нет данных' }
-    }
-    return value
   }
 
   /**
