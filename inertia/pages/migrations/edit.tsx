@@ -26,8 +26,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
-import { FetchConfig } from '#interfaces/fetchсonfigs'
-import { SaveMappings } from '~/components/migrations/mappings-status'
+import { FetchConfig, FetchConfigResult } from '#interfaces/fetchсonfigs'
+import { SaveMappings } from '~/components/migrations/save-mappings'
+import { FetchConfigResultCard } from '~/components/migrations/fetch_config_result_card'
 
 const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const { props } = usePage<{ csrfToken?: string }>()
@@ -39,7 +40,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const [isActive, setIsActive] = useState(migration.isActive || false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  const [prevResults, setPrevResults] = useState<Record<string, string[]>>({})
+  const [prevResults, setPrevResults] = useState<FetchConfigResult>()
   const [previewPages, setPreviewPages] = useState<Record<string, number>>({})
 
   const [newDatasetOpen, setNewDatasetOpen] = useState('')
@@ -67,7 +68,6 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
         return
       }
       setPrevResults(json)
-      console.log(json)
     } catch (e) {
       console.log(e)
       setError(e.message || 'Unknown error')
@@ -298,7 +298,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                         open={newDatasetOpen == 'sql'}
                         onOpenChange={(val) => setNewDatasetOpen(val ? 'sql' : '')}
                         onSave={(config) => setFetchConfigs([...fetchConfigs, config])}
-                        prevResults={prevResults}
+                        prevResults={undefined}
                         paramKeys={paramKeys}
                         isLoading={isLoading}
                       />
@@ -362,7 +362,9 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                 <CardTitle>Результат</CardTitle>
                 <CardDescription></CardDescription>
               </CardHeader>
-              <CardContent>Тут будет результат</CardContent>
+              <CardContent>
+                <FetchConfigResultCard result={prevResults} isLoading={isLoading} error={error} />
+              </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
