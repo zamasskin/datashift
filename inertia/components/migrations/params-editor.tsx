@@ -24,6 +24,7 @@ import {
 } from '~/components/ui/select'
 import { PlusIcon, Trash2Icon, Calendar as CalendarIcon } from 'lucide-react'
 import { format as formatDate, parse as parseDate } from 'date-fns'
+import { DateOp, DateParamValue, Param, ParamItem, ParamType } from '#interfaces/params'
 
 export type ParamsEditorProps = {
   params?: Param[]
@@ -73,7 +74,9 @@ export function ParamsEditor({
     const keyTrim = (draft.key || '').trim()
     const isInvalidName = !/^[A-Za-z_][A-Za-z0-9_]*$/.test(keyTrim)
     const keyLower = keyTrim.toLowerCase()
-    const duplicate = items.some((it, i) => i !== editingIndex && (it.key || '').trim().toLowerCase() === keyLower)
+    const duplicate = items.some(
+      (it, i) => i !== editingIndex && (it.key || '').trim().toLowerCase() === keyLower
+    )
     if (!keyTrim || isInvalidName || duplicate) {
       // Простая защита: не сохраняем некорректные данные
       return
@@ -130,7 +133,9 @@ export function ParamsEditor({
                     <div className="flex flex-col">
                       <div className="text-sm font-medium">{keyTrim || '(без ключа)'}</div>
                       <div className="text-xs text-muted-foreground">Тип: {item.type}</div>
-                      <div className="text-xs text-muted-foreground">Значение: {renderValueSummary(item)}</div>
+                      <div className="text-xs text-muted-foreground">
+                        Значение: {renderValueSummary(item)}
+                      </div>
                     </div>
                     <div className="flex items-center gap-1">
                       <Button
@@ -165,7 +170,9 @@ export function ParamsEditor({
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="max-w-lg">
             <DialogHeader>
-              <DialogTitle>{editingIndex === null ? 'Добавить параметр' : 'Редактировать параметр'}</DialogTitle>
+              <DialogTitle>
+                {editingIndex === null ? 'Добавить параметр' : 'Редактировать параметр'}
+              </DialogTitle>
             </DialogHeader>
             <div className="flex flex-col gap-3">
               {(() => {
@@ -173,7 +180,11 @@ export function ParamsEditor({
                 const keyTrim = (draft.key || '').trim()
                 const isEmpty = keyTrim.length === 0
                 const isInvalidName = !isEmpty && !/^[A-Za-z_][A-Za-z0-9_]*$/.test(keyTrim)
-                const duplicate = items.some((it, i) => i !== editingIndex && (it.key || '').trim().toLowerCase() === keyTrim.toLowerCase())
+                const duplicate = items.some(
+                  (it, i) =>
+                    i !== editingIndex &&
+                    (it.key || '').trim().toLowerCase() === keyTrim.toLowerCase()
+                )
                 const keyErrorMsg = isEmpty
                   ? 'Заполните ключ'
                   : isInvalidName
@@ -198,7 +209,9 @@ export function ParamsEditor({
                         }}
                       />
                     </FieldContent>
-                    {(isEmpty || isInvalidName || duplicate) && <FieldError errors={[{ message: keyErrorMsg }]} />}
+                    {(isEmpty || isInvalidName || duplicate) && (
+                      <FieldError errors={[{ message: keyErrorMsg }]} />
+                    )}
                   </Field>
                 )
               })()}
@@ -211,7 +224,9 @@ export function ParamsEditor({
                     <FieldContent>
                       <Select
                         value={draft.type}
-                        onValueChange={(v) => setDraft({ ...draft, type: v as ParamType, value: undefined })}
+                        onValueChange={(v) =>
+                          setDraft({ ...draft, type: v as ParamType, value: undefined })
+                        }
                       >
                         <SelectTrigger id={typeId} className="min-w-32 h-8" title="Тип параметра">
                           <SelectValue placeholder="тип" />
@@ -259,7 +274,11 @@ export function ParamsEditor({
                           value={String(Boolean(draft.value))}
                           onValueChange={(v) => setDraft({ ...draft, value: v === 'true' })}
                         >
-                          <SelectTrigger id={valueId} className="h-8 w-full" title="Булево значение">
+                          <SelectTrigger
+                            id={valueId}
+                            className="h-8 w-full"
+                            title="Булево значение"
+                          >
                             <SelectValue placeholder="значение" />
                           </SelectTrigger>
                           <SelectContent>
@@ -271,7 +290,9 @@ export function ParamsEditor({
 
                       {draft.type === 'date' && (
                         <DateValueEditor
-                          value={isDateValue(draft.value) ? (draft.value as DateParamValue) : undefined}
+                          value={
+                            isDateValue(draft.value) ? (draft.value as DateParamValue) : undefined
+                          }
                           onChange={(val) => setDraft({ ...draft, value: val })}
                         />
                       )}
@@ -294,56 +315,6 @@ export function ParamsEditor({
     </Field>
   )
 }
-
-export type DateOp = { amount: DurationInputArg1; unit: DurationInputArg2 }
-export type DateParamValue =
-  | { type: 'add'; ops: DateOp[] }
-  | { type: 'subtract'; ops: DateOp[] }
-  | {
-      type: 'startOf'
-      unit: 'day' | 'week' | 'month' | 'quarter' | 'year'
-      position: 'current' | 'next' | 'previous'
-    }
-  | {
-      type: 'endOf'
-      unit: 'day' | 'week' | 'month' | 'quarter' | 'year'
-      position: 'current' | 'next' | 'previous'
-    }
-  | { type: 'exact'; date: string }
-
-export type ParamType = 'string' | 'number' | 'boolean' | 'date'
-
-export type ParamItem = {
-  key: string
-  type: ParamType
-  value?: string | number | boolean | DateParamValue
-}
-
-type BooleanParam = {
-  key: string
-  type: 'boolean'
-  value: boolean
-}
-
-type DateParam = {
-  key: string
-  type: 'date'
-  value: DateParamValue
-}
-
-type StringParam = {
-  key: string
-  type: 'string'
-  value: string
-}
-
-type NumberParam = {
-  key: string
-  type: 'number'
-  value: number
-}
-
-type Param = StringParam | NumberParam | DateParam | BooleanParam
 
 function toItems(params: Param[]): ParamItem[] {
   return (params || []).map((p) => ({
