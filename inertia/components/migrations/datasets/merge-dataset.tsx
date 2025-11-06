@@ -21,23 +21,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '~/components/ui/dialog'
-
-export type MergeOn = {
-  tableColumn: string
-  aliasColumn: string
-  operator: '=' | '!=' | '<' | '<=' | '>' | '>='
-  cond?: 'and' | 'or'
-}
-
-export type MergeConfig = {
-  type: 'merge'
-  id: string
-  params: {
-    datasetLeftId: string
-    datasetRightId: string
-    on: MergeOn[]
-  }
-}
+import { MergeConfig, MergeOn } from '#interfaces/merge_config'
 
 export type DatasetConfig = {
   id: string

@@ -25,22 +25,7 @@ import { ScrollArea } from '~/components/ui/scroll-area'
 import { SelectsEditor } from '~/components/migrations/datasets/sql-builder-dataset/selects-editor'
 import { OrdersEditor } from '~/components/migrations/datasets/sql-builder-dataset/order-editor'
 import { GroupEditor } from '~/components/migrations/datasets/sql-builder-dataset/group-editor'
-
-export type SqlBuilderConfig = {
-  type: 'sql_builder'
-  id: string
-  params: {
-    sourceId: number
-    table: string
-    alias?: string
-    selects?: string[]
-    orders?: Record<string, 'asc' | 'desc'>[]
-    joins?: JoinItem[]
-    where?: WhereData
-    hawing?: WhereData
-    group?: string[]
-  }
-}
+import { SqlBuilderConfig } from '#interfaces/sql_builder_config'
 
 export type SqlBuilderProps = {
   children?: React.ReactNode

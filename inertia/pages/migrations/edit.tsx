@@ -7,12 +7,9 @@ import { SqlBuilderCard } from '~/components/migrations/cards/sql-builder-card'
 import { SqlCard } from '~/components/migrations/cards/sql-card'
 import { CronExpressionEditor } from '~/components/migrations/cron-expression-editor'
 import { ParamsEditor as MigrationParamsEditor } from '~/components/migrations/params-editor'
-import { MergeConfig, MergeDataset } from '~/components/migrations/datasets/merge-dataset'
-import {
-  SqlBuilderConfig,
-  SqlBuilderDataset,
-} from '~/components/migrations/datasets/sql-builder-dataset'
-import { SqlConfig, SqlDataset } from '~/components/migrations/datasets/sql-dataset'
+import { MergeDataset } from '~/components/migrations/datasets/merge-dataset'
+import { SqlBuilderDataset } from '~/components/migrations/datasets/sql-builder-dataset'
+import { SqlDataset } from '~/components/migrations/datasets/sql-dataset'
 import { RootLayout } from '~/components/root-layout'
 import { Alert, AlertTitle } from '~/components/ui/alert'
 import { Button } from '~/components/ui/button'
@@ -25,7 +22,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '~/components/ui/dialog'
-import { Field } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
 import {
   ItemGroup,
@@ -36,26 +32,22 @@ import {
   ItemDescription,
 } from '~/components/ui/item'
 import { Label } from '~/components/ui/label'
-import { Spinner } from '~/components/ui/spinner'
 import { Switch } from '~/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
-import {
-  ModificationConfig,
-  ModificationDataset,
-} from '~/components/migrations/datasets/modification-dataset'
+import { ModificationDataset } from '~/components/migrations/datasets/modification-dataset'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
+import { FetchConfig } from '#interfaces/fetchсonfigs'
 
-type FetchMapping = SqlConfig | SqlBuilderConfig | MergeConfig | ModificationConfig
 const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const { props } = usePage<{ csrfToken?: string }>()
   const [name, setName] = useState(migration.name)
   const [cronExpression, setCronExpression] = useState(migration.cronExpression)
-  const [fetchConfigs, setFetchConfigs] = useState<FetchMapping[]>(migration.fetchConfigs || [])
+  const [fetchConfigs, setFetchConfigs] = useState<FetchConfig[]>(migration.fetchConfigs || [])
   const [saveMappings, setSaveMappings] = useState(migration.saveMappings || [])
   const [params, setParams] = useState(migration.params || [])
   const [isActive, setIsActive] = useState(migration.isActive || false)
@@ -103,7 +95,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
     setFetchConfigs((old) => old.filter((cfg) => cfg.id !== id))
   }
 
-  const handleSave = (config: FetchMapping) => {
+  const handleSave = (config: FetchConfig) => {
     setFetchConfigs((old) => old.map((item) => (item.id == config.id ? config : item)))
   }
 

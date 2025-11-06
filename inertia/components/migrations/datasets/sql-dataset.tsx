@@ -15,15 +15,7 @@ import { SqlEditor } from '../sql-editor'
 import { Spinner } from '~/components/ui/spinner'
 import { usePage } from '@inertiajs/react'
 import DataSource from '#models/data_source'
-
-export type SqlConfig = {
-  type: 'sql'
-  id: string
-  params: {
-    sourceId: number
-    query: string
-  }
-}
+import { SqlConfig } from '#interfaces/sql_config'
 
 export type SqlEditorProps = {
   isLoading?: boolean

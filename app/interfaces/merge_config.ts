@@ -1,4 +1,4 @@
-type MergeOn = {
+export type MergeOn = {
   tableColumn: string
   aliasColumn: string
   operator: '=' | '!=' | '<' | '<=' | '>' | '>='

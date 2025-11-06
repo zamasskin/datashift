@@ -1,30 +1,30 @@
-type ColumnTemplate = {
+export type ColumnTemplate = {
   type: 'template'
   value: string
 }
 
-type ColumnExpression = {
+export type ColumnExpression = {
   type: 'expression'
   value: string
 }
 
-type ColumnLiteral = {
+export type ColumnLiteral = {
   type: 'literal'
   value: string | number | boolean
 }
 
-type ColumnReference = {
+export type ColumnReference = {
   type: 'reference'
   value: string // column name
 }
 
-type ColumnFunction = {
+export type ColumnFunction = {
   type: 'function'
   name: string
   args: ColumnValue[]
 }
 
-type ColumnValue =
+export type ColumnValue =
   | ColumnTemplate
   | ColumnExpression
   | ColumnLiteral

@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { Button } from '~/components/ui/button'
 import { Field, FieldLabel, FieldError } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
-import { Textarea } from '~/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -25,6 +24,15 @@ import { PlusIcon, TrashIcon } from 'lucide-react'
 import { Item, ItemContent } from '~/components/ui/item'
 import { ExpressionEditor } from '../expression-editor'
 import { TemplateEditor } from '../template-editor'
+import {
+  ColumnExpression,
+  ColumnFunction,
+  ColumnLiteral,
+  ColumnReference,
+  ColumnTemplate,
+  ColumnValue,
+  ModificationConfig,
+} from '#interfaces/modification_config'
 
 export type DatasetConfig = {
   id: string
@@ -357,51 +365,6 @@ export function ModificationDataset(props: ModificationDatasetProps) {
       </DialogContent>
     </Dialog>
   )
-}
-
-type ColumnTemplate = {
-  type: 'template'
-  value: string
-}
-
-type ColumnExpression = {
-  type: 'expression'
-  value: string
-}
-
-type ColumnLiteral = {
-  type: 'literal'
-  value: string | number | boolean
-}
-
-type ColumnReference = {
-  type: 'reference'
-  value: string // column name
-}
-
-type ColumnFunction = {
-  type: 'function'
-  name: string
-  args: ColumnValue[]
-}
-
-type ColumnValue =
-  | ColumnTemplate
-  | ColumnExpression
-  | ColumnLiteral
-  | ColumnReference
-  | ColumnFunction
-
-export type ModificationConfig = {
-  type: 'modification'
-  id: string
-  params: {
-    datasetId: string
-    // Column extension options
-    newColumns?: ColumnValue[]
-    dropColumns?: string[] // List of column names to remove
-    renameColumns?: Record<string, string> // Map oldName -> newName
-  }
 }
 
 function ColumnValueEditor({
