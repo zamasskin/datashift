@@ -1,7 +1,8 @@
 import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '~/components/ui/item'
-import { SqlBuilderConfig, SqlBuilderDataset } from '../datasets/sql-builder-dataset'
+import { SqlBuilderDataset } from '../datasets/sql-builder-dataset'
 import { Button } from '~/components/ui/button'
 import { Settings, Trash } from 'lucide-react'
+import { SqlBuilderConfig } from '#interfaces/sql_builder_config'
 
 export interface SqlBuilderCardProps {
   config?: SqlBuilderConfig

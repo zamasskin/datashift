@@ -1,7 +1,8 @@
 import { Settings, Trash } from 'lucide-react'
 import { Button } from '~/components/ui/button'
 import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '~/components/ui/item'
-import { SqlConfig, SqlDataset } from '../datasets/sql-dataset'
+import { SqlDataset } from '../datasets/sql-dataset'
+import { SqlConfig } from '#interfaces/sql_config'
 
 export type SqlCardProps = {
   isLoading?: boolean

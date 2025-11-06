@@ -1,7 +1,8 @@
 import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '~/components/ui/item'
-import { DatasetConfig, MergeConfig, MergeDataset } from '../datasets/merge-dataset'
+import { DatasetConfig, MergeDataset } from '../datasets/merge-dataset'
 import { Button } from '~/components/ui/button'
 import { Settings, Trash } from 'lucide-react'
+import { MergeConfig } from '#interfaces/merge_config'
 
 export type MergeCardProps = {
   config?: MergeConfig
