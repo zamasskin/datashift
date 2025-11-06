@@ -19,4 +19,5 @@ export type ParamsResult = {
 
 export type FetchConfigResult = (ArrayColumnsResult | ParamsResult) & {
   progress?: number
+  count?: number
 }

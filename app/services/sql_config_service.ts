@@ -23,6 +23,7 @@ export default class SqlConfigService {
       this.getSource(resultList)
     )
 
+    const count = await this.sqlService.countSql(ds.type, ds.config, prepared.sql, prepared.values)
     if (config.page) {
       const { rows, columns } = await this.sqlService.executeSql(
         ds.type,
@@ -38,15 +39,9 @@ export default class SqlConfigService {
         dataType: 'array_columns',
         data: rows,
         columns: columns || [],
+        count: Math.ceil(count / this.limit),
       }
     } else {
-      const count = await this.sqlService.countSql(
-        ds.type,
-        ds.config,
-        prepared.sql,
-        prepared.values
-      )
-
       const countPages = Math.ceil(count / this.limit)
       for (let page = 1; page <= countPages; page++) {
         const { rows, columns } = await this.sqlService.executeSql(
@@ -64,6 +59,7 @@ export default class SqlConfigService {
           data: rows,
           columns: columns || [],
           progress: Math.round((page / countPages) * 100),
+          count: Math.ceil(count / this.limit),
         }
       }
     }
