@@ -33,22 +33,8 @@ router
     router.post('/migrations', [MigrationsController, 'store'])
     router.get('/migrations/:id', [MigrationsController, 'edit'])
     router.put('/migrations/:id', [MigrationsController, 'update'])
-
-    router.post('/migrations/:id/fetch-config', [MigrationsController, 'storeFetchConfig'])
-    router.put('/migrations/:id/fetch-config/:fetchConfigId', [
-      MigrationsController,
-      'updateFetchConfig',
-    ])
-    router.delete('/migrations/:id/fetch-config', [MigrationsController, 'destroyFetchConfig'])
-
-    router.post('/migrations/:id/save-mapping', [MigrationsController, 'storeSaveMapping'])
-    router.put('/migrations/:id/save-mapping/:saveMappingId', [
-      MigrationsController,
-      'updateSaveMapping',
-    ])
-    router.delete('/migrations/:id/save-mapping', [MigrationsController, 'destroySaveMapping'])
-
     router.delete('/migrations', [MigrationsController, 'destroy'])
+    router.post('/migrations/fetch-config-test', [MigrationsController, 'fetchConfigTest'])
 
     // Data sources
     router.get('/sources', [DataSourcesController, 'index'])
