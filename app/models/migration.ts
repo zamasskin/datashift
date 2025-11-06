@@ -1,12 +1,13 @@
 import { DateTime } from 'luxon'
-import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
+import { BaseModel, belongsTo, column, hasMany } from '@adonisjs/lucid/orm'
 import User from './user.js'
-import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import { jsonColumn } from '../helpers/json_column.js'
 import { FetchConfig } from '#interfaces/fetchсonfigs'
 import { SaveMapping } from '#interfaces/save_mapping'
 import { Param } from '#interfaces/params'
 import { CronConfig } from '#interfaces/cron_config'
+import MigrationRun from './migration_run.js'
 
 export default class Migration extends BaseModel {
   @column({ isPrimary: true })
@@ -37,6 +38,11 @@ export default class Migration extends BaseModel {
     foreignKey: 'createdBy',
   })
   declare user: BelongsTo<typeof User>
+
+  @hasMany(() => MigrationRun, {
+    foreignKey: 'migrationId',
+  })
+  declare migrationRuns: HasMany<typeof MigrationRun>
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
