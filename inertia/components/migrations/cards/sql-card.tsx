@@ -7,6 +7,7 @@ import {
   PaginationPrevious,
   PaginationNext,
   PaginationLink,
+  PaginationEllipsis,
 } from '~/components/ui/pagination'
 import {
   Item,
@@ -25,6 +26,7 @@ export type SqlCardProps = {
   config?: SqlConfig
   prevResults?: Record<string, string[]>
   page?: number
+  totalPages?: number
   onChangePage?: (page: number) => void
 
   onRemove?: (id: string) => void
@@ -38,6 +40,7 @@ export function SqlCard({
   isLoading,
   onRemove: onRemove,
   page = 1,
+  totalPages,
   onChangePage,
   onUpdate,
 }: SqlCardProps) {
@@ -104,21 +107,94 @@ export function SqlCard({
                 className={isLoading || (page || 1) <= 1 ? 'pointer-events-none opacity-50' : ''}
               />
             </PaginationItem>
-            <PaginationItem>
-              <PaginationLink href="#" isActive>
-                1
-              </PaginationLink>
-            </PaginationItem>
+
+            {typeof totalPages === 'number' && totalPages > 1 ? (
+              <>
+                {/* First page */}
+                <PaginationItem>
+                  <PaginationLink
+                    href="#"
+                    isActive={(page || 1) === 1}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      onChangePage?.(1)
+                    }}
+                  >
+                    1
+                  </PaginationLink>
+                </PaginationItem>
+
+                {/* Left ellipsis */}
+                {(page || 1) - 2 > 2 && (
+                  <PaginationItem>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                )}
+
+                {/* Window around current */}
+                {Array.from({ length: 5 }, (_, i) => (page || 1) - 2 + i)
+                  .filter((p) => p > 1 && p < totalPages)
+                  .map((p) => (
+                    <PaginationItem key={p}>
+                      <PaginationLink
+                        href="#"
+                        isActive={(page || 1) === p}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          onChangePage?.(p)
+                        }}
+                      >
+                        {p}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
+
+                {/* Right ellipsis */}
+                {(page || 1) + 2 < totalPages - 1 && (
+                  <PaginationItem>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                )}
+
+                {/* Last page */}
+                <PaginationItem>
+                  <PaginationLink
+                    href="#"
+                    isActive={(page || 1) === totalPages}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      onChangePage?.(totalPages)
+                    }}
+                  >
+                    {totalPages}
+                  </PaginationLink>
+                </PaginationItem>
+              </>
+            ) : (
+              <PaginationItem>
+                <PaginationLink href="#" isActive>
+                  {page || 1}
+                </PaginationLink>
+              </PaginationItem>
+            )}
+
             <PaginationItem>
               <PaginationNext
                 href="#"
                 onClick={(e) => {
                   e.preventDefault()
                   if (!isLoading) {
-                    onChangePage?.((page || 1) + 1)
+                    const next = (page || 1) + 1
+                    const capped =
+                      typeof totalPages === 'number' ? Math.min(next, totalPages) : next
+                    onChangePage?.(capped)
                   }
                 }}
-                className={isLoading ? 'pointer-events-none opacity-50' : ''}
+                className={
+                  isLoading || (typeof totalPages === 'number' && (page || 1) >= totalPages)
+                    ? 'pointer-events-none opacity-50'
+                    : ''
+                }
               />
             </PaginationItem>
           </PaginationContent>
