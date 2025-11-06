@@ -37,7 +37,6 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const [saveMappings, setSaveMappings] = useState(migration.saveMappings || [])
   const [params, setParams] = useState(migration.params || [])
   const [isActive, setIsActive] = useState(migration.isActive || false)
-  const [addType, setAddType] = useState('sql')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [prevResults, setPrevResults] = useState<Record<string, string[]>>({})
