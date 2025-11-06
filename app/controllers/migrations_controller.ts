@@ -189,6 +189,9 @@ export default class MigrationsController {
 
     const paramsSource = paramsService.getSource(params)
     const initialResults: FetchConfigResult[] = [{ dataType: 'params', data: paramsSource }]
+    if (fetchConfigs.length === 0) {
+      return initialResults
+    }
 
     // Получаем первый результат конечного конфига через AsyncGenerator.next()
     const generator = fetchConfigService.execute(fetchConfigs, initialResults)

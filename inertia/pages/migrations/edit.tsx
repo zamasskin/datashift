@@ -1,7 +1,7 @@
 import type Migration from '#models/migration'
 import { Head, router, usePage } from '@inertiajs/react'
 import { ArrowDownUp, FileWarning, Plus, Save, Settings, Trash } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { MergeCard } from '~/components/migrations/cards/merge-card'
 import { ModificationCard } from '~/components/migrations/cards/modification-card'
 import { SqlBuilderCard } from '~/components/migrations/cards/sql-builder-card'
@@ -50,6 +50,30 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const suggestions = ['main', 'database']
 
   const paramKeys = useMemo(() => params.map((p) => p.key as string), [params])
+
+  const loadData = async () => {
+    try {
+      setIsLoading(true)
+      setError('')
+      const response = await fetch('/migrations/fetch-config-test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': props.csrfToken || '' },
+        body: JSON.stringify({ fetchConfigs, params }),
+      })
+
+      const json = await response.json()
+      console.log(json)
+    } catch (e) {
+      console.log(e)
+      setError(e.message || 'Unknown error')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadData()
+  }, [params, fetchConfigs])
 
   const onSave = () => {
     setSaveLoading(true)
