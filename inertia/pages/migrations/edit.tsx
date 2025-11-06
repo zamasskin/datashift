@@ -1,6 +1,6 @@
 import type Migration from '#models/migration'
 import { Head, router, usePage } from '@inertiajs/react'
-import { ArrowDownUp, FileWarning, Pencil, Plus, Save, Settings, Trash } from 'lucide-react'
+import { ArrowDownUp, FileWarning, Plus, Save, Settings, Trash } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { MergeCard } from '~/components/migrations/cards/merge-card'
 import { ModificationCard } from '~/components/migrations/cards/modification-card'
@@ -15,23 +15,8 @@ import { RootLayout } from '~/components/root-layout'
 import { Alert, AlertTitle } from '~/components/ui/alert'
 import { Button } from '~/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '~/components/ui/card'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '~/components/ui/dialog'
 import { Input } from '~/components/ui/input'
-import {
-  ItemGroup,
-  Item,
-  ItemMedia,
-  ItemContent,
-  ItemTitle,
-  ItemDescription,
-} from '~/components/ui/item'
+import { ItemGroup, Item, ItemContent } from '~/components/ui/item'
 import { Label } from '~/components/ui/label'
 import { Switch } from '~/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
@@ -348,47 +333,6 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
         </Tabs>
       </div>
     </>
-  )
-}
-
-export function MyItem({ name, icon }: { name: string; icon: string }) {
-  return (
-    <Item variant="outline">
-      <ItemMedia>
-        <img src={icon} alt={name} width={32} height={32} className="object-cover grayscale" />
-      </ItemMedia>
-      <ItemContent>
-        <ItemTitle className="line-clamp-1">
-          Sql запрос - <span className="text-muted-foreground">Источник данных 1</span>
-        </ItemTitle>
-        <ItemDescription>
-          <code>SELECT * FROM b_iblock_element</code>{' '}
-        </ItemDescription>
-      </ItemContent>
-      <ItemContent className="flex-none text-center">
-        <ItemDescription className="space-x-2">
-          <Button size="icon" variant="outline">
-            <Trash />
-          </Button>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button size="icon" variant="outline">
-                <Pencil />
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Are you absolutely sure?</DialogTitle>
-                <DialogDescription>
-                  This action cannot be undone. This will permanently delete your account and remove
-                  your data from our servers.
-                </DialogDescription>
-              </DialogHeader>
-            </DialogContent>
-          </Dialog>
-        </ItemDescription>
-      </ItemContent>
-    </Item>
   )
 }
 
