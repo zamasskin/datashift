@@ -8,7 +8,15 @@ import {
 } from '~/components/ui/item'
 import { SqlBuilderDataset } from '../datasets/sql-builder-dataset'
 import { Button } from '~/components/ui/button'
-import { ChevronLeft, ChevronRight, Settings, Trash } from 'lucide-react'
+import { Settings, Trash } from 'lucide-react'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationPrevious,
+  PaginationNext,
+  PaginationLink,
+} from '~/components/ui/pagination'
 import { SqlBuilderConfig } from '#interfaces/sql_builder_config'
 
 export interface SqlBuilderCardProps {
@@ -71,24 +79,40 @@ export function SqlBuilderCard({
           </SqlBuilderDataset>
         </ItemDescription>
       </ItemContent>
-      <ItemFooter className="space-x-2">
-        <Button
-          size="icon"
-          variant="outline"
-          disabled={isLoading || (page || 1) <= 1}
-          onClick={() => onChangePage && onChangePage(Math.max(1, (page || 1) - 1))}
-        >
-          <ChevronLeft />
-        </Button>
-        <span className="text-sm text-muted-foreground">Стр. {page || 1}</span>
-        <Button
-          size="icon"
-          variant="outline"
-          disabled={isLoading}
-          onClick={() => onChangePage && onChangePage((page || 1) + 1)}
-        >
-          <ChevronRight />
-        </Button>
+      <ItemFooter>
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault()
+                  if (!isLoading) {
+                    onChangePage?.(Math.max(1, (page || 1) - 1))
+                  }
+                }}
+                className={isLoading || (page || 1) <= 1 ? 'pointer-events-none opacity-50' : ''}
+              />
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationLink href="#" isActive>
+                {page || 1}
+              </PaginationLink>
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationNext
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault()
+                  if (!isLoading) {
+                    onChangePage?.((page || 1) + 1)
+                  }
+                }}
+                className={isLoading ? 'pointer-events-none opacity-50' : ''}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       </ItemFooter>
     </Item>
   )

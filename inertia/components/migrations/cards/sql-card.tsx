@@ -1,5 +1,13 @@
-import { ChevronLeft, ChevronRight, Settings, Trash } from 'lucide-react'
+import { Settings, Trash } from 'lucide-react'
 import { Button } from '~/components/ui/button'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationPrevious,
+  PaginationNext,
+  PaginationLink,
+} from '~/components/ui/pagination'
 import {
   Item,
   ItemContent,
@@ -82,23 +90,39 @@ export function SqlCard({
         </ItemDescription>
       </ItemContent>
       <ItemFooter className="space-x-2">
-        <Button
-          size="icon"
-          variant="outline"
-          disabled={isLoading || (page || 1) <= 1}
-          onClick={() => onChangePage && onChangePage(Math.max(1, (page || 1) - 1))}
-        >
-          <ChevronLeft />
-        </Button>
-        <span className="text-sm text-muted-foreground">Страница {page || 1}</span>
-        <Button
-          size="icon"
-          variant="outline"
-          disabled={isLoading}
-          onClick={() => onChangePage && onChangePage((page || 1) + 1)}
-        >
-          <ChevronRight />
-        </Button>
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault()
+                  if (!isLoading) {
+                    onChangePage?.(Math.max(1, (page || 1) - 1))
+                  }
+                }}
+                className={isLoading || (page || 1) <= 1 ? 'pointer-events-none opacity-50' : ''}
+              />
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationLink href="#" isActive>
+                1
+              </PaginationLink>
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationNext
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault()
+                  if (!isLoading) {
+                    onChangePage?.((page || 1) + 1)
+                  }
+                }}
+                className={isLoading ? 'pointer-events-none opacity-50' : ''}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       </ItemFooter>
     </Item>
   )
