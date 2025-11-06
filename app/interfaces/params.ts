@@ -1,6 +1,7 @@
-import { DurationInputArg1, DurationInputArg2 } from 'moment'
-
-export type DateOp = { amount: DurationInputArg1; unit: DurationInputArg2 }
+export type DateOp = {
+  amount: number
+  unit: 'second' | 'minute' | 'hour' | 'day' | 'week' | 'month' | 'quarter' | 'year'
+}
 export type DateParamValue =
   | { type: 'add'; ops: DateOp[] }
   | { type: 'subtract'; ops: DateOp[] }

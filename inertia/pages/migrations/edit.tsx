@@ -1,4 +1,4 @@
-import Migration from '#models/migration'
+import type Migration from '#models/migration'
 import { Head, router, usePage } from '@inertiajs/react'
 import { ArrowDownUp, FileWarning, Pencil, Plus, Save, Settings, Trash } from 'lucide-react'
 import { useMemo, useState } from 'react'
