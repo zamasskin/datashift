@@ -3,6 +3,7 @@ import { Head, router, usePage } from '@inertiajs/react'
 import { ArrowDownUp, FileWarning, Pencil, Plus, Save, Settings, Trash } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { MergeCard } from '~/components/migrations/cards/merge-card'
+import { ModificationCard } from '~/components/migrations/cards/modification-card'
 import { SqlBuilderCard } from '~/components/migrations/cards/sql-builder-card'
 import { SqlCard } from '~/components/migrations/cards/sql-card'
 import { CronExpressionEditor } from '~/components/migrations/cron-expression-editor'
@@ -228,12 +229,21 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                               ]}
                             />
                           )}
+                          {conf?.type == 'modification' && (
+                            <ModificationCard
+                              config={conf}
+                              isLoading={isLoading}
+                              onRemove={handleRemove}
+                              onSave={handleSave}
+                              datasetsConfigs={[
+                                { id: 'aa', title: 'sql', columns: ['aa1', 'aa2'] },
+                                { id: 'bb', title: 'dataset1', columns: ['bb1', 'bb2'] },
+                                { id: 'cc', title: 'custom', columns: ['cc1', 'cc2'] },
+                              ]}
+                            />
+                          )}
                         </div>
                       ))}
-                      <MyItem name="sql1" icon="/icons/sql-edit.png" />
-                      <MyItem name="sql2" icon="/icons/sql-build.png" />
-                      <MyItem name="sql3" icon="/icons/merge.png" />
-                      <MyItem name="sql3" icon="/icons/modify.png" />
                     </ItemGroup>
 
                     <div className="flex gap-2">
@@ -296,6 +306,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                           { id: 'bb', title: 'dataset1', columns: ['bb1', 'bb2'] },
                           { id: 'cc', title: 'custom', columns: ['cc1', 'cc2'] },
                         ]}
+                        onSave={(config) => setFetchConfigs([...fetchConfigs, config])}
                       />
                     </div>
                   </div>
