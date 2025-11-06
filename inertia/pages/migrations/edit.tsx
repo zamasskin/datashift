@@ -207,36 +207,36 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                     <ItemGroup className="gap-2">
                       {fetchConfigs.map((conf) => (
                         <div key={conf?.id}>
-                        {conf?.type == 'sql' && (
-                          <SqlCard
-                            paramKeys={paramKeys}
-                            isLoading={isLoading}
-                            prevResults={undefined}
-                            config={conf}
-                            onRemove={handleRemove}
-                            onUpdate={handleSave}
-                            page={previewPages[conf.id] || 1}
-                            onChangePage={(page) => {
-                              setPreviewPages((old) => ({ ...old, [conf.id]: page }))
-                              // Обновляем предпросмотр после смены страницы
-                              loadData()
-                            }}
-                          />
-                        )}
-                        {conf?.type == 'sql_builder' && (
-                          <SqlBuilderCard
-                            suggestions={suggestions}
-                            isLoading={isLoading}
-                            config={conf}
-                            onRemove={handleRemove}
-                            onSave={handleSave}
-                            page={previewPages[conf.id] || 1}
-                            onChangePage={(page) => {
-                              setPreviewPages((old) => ({ ...old, [conf.id]: page }))
-                              loadData()
-                            }}
-                          />
-                        )}
+                          {conf?.type == 'sql' && (
+                            <SqlCard
+                              paramKeys={paramKeys}
+                              isLoading={isLoading}
+                              prevResults={undefined}
+                              config={conf}
+                              onRemove={handleRemove}
+                              onUpdate={handleSave}
+                              page={previewPages[conf.id] || 1}
+                              onChangePage={(page) => {
+                                setPreviewPages((old) => ({ ...old, [conf.id]: page }))
+                                // Обновляем предпросмотр после смены страницы
+                                loadData()
+                              }}
+                            />
+                          )}
+                          {conf?.type == 'sql_builder' && (
+                            <SqlBuilderCard
+                              suggestions={suggestions}
+                              isLoading={isLoading}
+                              config={conf}
+                              onRemove={handleRemove}
+                              onSave={handleSave}
+                              page={previewPages[conf.id] || 1}
+                              onChangePage={(page) => {
+                                setPreviewPages((old) => ({ ...old, [conf.id]: page }))
+                                loadData()
+                              }}
+                            />
+                          )}
                           {conf?.type == 'merge' && (
                             <MergeCard
                               config={conf}
