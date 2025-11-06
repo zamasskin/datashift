@@ -12,7 +12,6 @@ import { MergeDataset } from '~/components/migrations/datasets/merge-dataset'
 import { SqlBuilderDataset } from '~/components/migrations/datasets/sql-builder-dataset'
 import { SqlDataset } from '~/components/migrations/datasets/sql-dataset'
 import { RootLayout } from '~/components/root-layout'
-import { Alert, AlertTitle } from '~/components/ui/alert'
 import { Button } from '~/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '~/components/ui/card'
 import { Input } from '~/components/ui/input'
@@ -28,6 +27,7 @@ import {
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
 import { FetchConfig } from '#interfaces/fetchсonfigs'
+import { SaveMappings } from '~/components/migrations/mappings-status'
 
 const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const { props } = usePage<{ csrfToken?: string }>()
@@ -61,8 +61,13 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': props.csrfToken || '' },
         body: JSON.stringify({ fetchConfigs, params, pages: previewPages }),
       })
-
       const json = await response.json()
+      if (json.error) {
+        console.log(json.error)
+        setError(json.error)
+        return
+      }
+      setPrevResults(json)
       console.log(json)
     } catch (e) {
       console.log(e)
@@ -343,16 +348,11 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                 </CardHeader>
                 <CardContent className="flex-1">
                   <div className="flex w-full max-w-xl flex-col gap-6">
-                    {fetchConfigs.length == 0 && (
-                      <Alert>
-                        <FileWarning />
-                        <AlertTitle>
-                          Предупреждение: сначала добавьте датасеты, чтобы создать выгрузки
-                        </AlertTitle>
-                      </Alert>
-                    )}
-
-                    {fetchConfigs.length > 0 && <Button>Добавить</Button>}
+                    <SaveMappings
+                      error={error}
+                      isLoading={isLoading}
+                      fetchConfigsLength={fetchConfigs.length}
+                    />
                   </div>
                 </CardContent>
               </Card>
