@@ -180,7 +180,6 @@ export function FieldWhere({
       <div className="flex-1 min-w-[220px]">
         <Autocomplete
           suggestions={suggestionKeys}
-          id="key"
           value={field.key}
           onValueChange={(value) => {
             if (onChange) {
@@ -262,7 +261,6 @@ export function FieldWhere({
         <div className="flex-1 min-w-[220px]">
           <Autocomplete
             suggestions={suggestionValues}
-            id="value"
             value={field.value}
             onValueChange={(value) => {
               if (onChange) {
@@ -344,7 +342,6 @@ export function ActionsWhere({
             <Field>
               <FieldLabel htmlFor="input-id">Поле</FieldLabel>
               <Autocomplete
-                id="field"
                 suggestions={suggestionKeys}
                 value={newCondKey}
                 onValueChange={(value) => seNewtCondKey(value)}
@@ -407,7 +404,6 @@ export function ActionsWhere({
                   suggestions={suggestionValues}
                   value={newCondValue.toString()}
                   onValueChange={(value) => setNewCondValue(value)}
-                  id="value"
                   className="col-span-2 h-8"
                 />
               )}

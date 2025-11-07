@@ -31,7 +31,7 @@ export type SqlBuilderProps = {
   children?: React.ReactNode
   saveBtnName?: string
   config?: SqlBuilderConfig
-  suggestions?: string[]
+  suggestions?: Record<string, string[]>
   isLoading?: boolean
   onSave?: (config: SqlBuilderConfig) => void
   onOpenChange?: (open: boolean) => void
@@ -57,6 +57,12 @@ export function SqlBuilderDataset({ config, ...props }: SqlBuilderProps) {
   const [columnsMap, setColumnsMap] = useState<Record<string, string[]>>({})
 
   const isLoading = useMemo(() => loading || props.isLoading, [loading, props.isLoading])
+
+  const suggestions = useMemo(() => {
+    return Object.entries(props.suggestions || {}).flatMap(([alias, cols]) =>
+      cols.map((col) => `{${alias}.${col}}`)
+    )
+  }, [props.suggestions])
 
   const onSelectSourceId = async (value: number) => {
     setSourceId(value)
@@ -277,7 +283,7 @@ export function SqlBuilderDataset({ config, ...props }: SqlBuilderProps) {
                     <ScrollArea>
                       <WhereEditor
                         suggestionKeys={suggestionKeys}
-                        suggestionValues={['hello', 'world']}
+                        suggestionValues={suggestions}
                         data={where}
                         onChange={setWhere}
                       />
@@ -308,7 +314,7 @@ export function SqlBuilderDataset({ config, ...props }: SqlBuilderProps) {
                   <div className="max-h-72 max-w-full overflow-scroll">
                     <WhereEditor
                       suggestionKeys={suggestionKeys}
-                      suggestionValues={['hello', 'world']}
+                      suggestionValues={suggestions}
                       data={hawing}
                       onChange={setHawing}
                     />

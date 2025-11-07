@@ -248,7 +248,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                           )}
                           {conf?.type == 'sql_builder' && (
                             <SqlBuilderCard
-                              suggestions={suggestions}
+                              suggestions={suggestionsById[conf.id]}
                               isLoading={isLoading}
                               config={conf}
                               onRemove={handleRemove}
@@ -325,7 +325,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                         open={newDatasetOpen == 'sql_builder'}
                         onOpenChange={(val) => setNewDatasetOpen(val ? 'sql_builder' : '')}
                         isLoading={isLoading}
-                        suggestions={suggestions}
+                        suggestions={meta?.suggestions || {}}
                         onSave={(config) => setFetchConfigs([...fetchConfigs, config])}
                       />
 

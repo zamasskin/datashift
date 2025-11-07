@@ -6,7 +6,7 @@ import { SqlBuilderConfig } from '#interfaces/sql_builder_config'
 
 export interface SqlBuilderCardProps {
   config?: SqlBuilderConfig
-  suggestions?: string[]
+  suggestions?: Record<string, string[]>
   isLoading?: boolean
   onSave?: (config: SqlBuilderConfig) => void
   onRemove?: (id: string) => void
