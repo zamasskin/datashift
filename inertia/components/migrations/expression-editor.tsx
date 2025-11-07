@@ -21,7 +21,7 @@ export function ExpressionEditor({ value, columns = [], onChange }: ExpressionEd
     if (!monaco) return
 
     const provider = monaco.languages.registerCompletionItemProvider('javascript', {
-      triggerCharacters: ['.', ' ', '(', '{'],
+      triggerCharacters: ['.', ' ', '(', '{', '[', '"'],
       provideCompletionItems(model, position) {
         const word = model.getWordUntilPosition(position)
         const range = {
@@ -34,13 +34,23 @@ export function ExpressionEditor({ value, columns = [], onChange }: ExpressionEd
         const line = model.getLineContent(position.lineNumber)
         const prefix = line.slice(0, Math.max(0, position.column - 1))
         const afterColumnPrefix = /(?:^|\W)column\.$/.test(prefix)
+        const afterColumnBracketPrefix = /(?:^|\W)column\["?$/.test(prefix)
 
-        const columnSuggestions = (columns || []).map((c, i) => ({
+        const columnSuggestionsDot = (columns || []).map((c, i) => ({
           label: `column.${c}`,
           kind: monaco.languages.CompletionItemKind.Property,
           insertText: `column.${c}`,
           range,
-          detail: 'Колонка',
+          detail: 'Колонка (точечная запись)',
+          sortText: `01${i}`,
+        }))
+
+        const columnSuggestionsBracket = (columns || []).map((c, i) => ({
+          label: `column["${c}"]`,
+          kind: monaco.languages.CompletionItemKind.Property,
+          insertText: `column["${c}"]`,
+          range,
+          detail: 'Колонка (скобочная запись — безопасно для ключей с точками)',
           sortText: `00${i}`,
         }))
 
@@ -53,9 +63,25 @@ export function ExpressionEditor({ value, columns = [], onChange }: ExpressionEd
           sortText: '000',
         }
 
-        const suggestions = afterColumnPrefix
-          ? columnSuggestions
-          : [baseSuggestion, ...columnSuggestions]
+        const baseBracketSuggestion = {
+          label: 'column["..."]',
+          kind: monaco.languages.CompletionItemKind.Keyword,
+          insertText: 'column[""]',
+          range,
+          detail: 'Скобочная запись колонок',
+          sortText: '000',
+        }
+
+        const suggestions = afterColumnBracketPrefix
+          ? columnSuggestionsBracket
+          : afterColumnPrefix
+            ? [...columnSuggestionsBracket, ...columnSuggestionsDot]
+            : [
+                baseSuggestion,
+                baseBracketSuggestion,
+                ...columnSuggestionsBracket,
+                ...columnSuggestionsDot,
+              ]
 
         return { suggestions }
       },
