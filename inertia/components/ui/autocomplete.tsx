@@ -20,6 +20,7 @@ export function Autocomplete({
   const activeIndexRef = useRef(0)
   const containerRef = useRef<HTMLDivElement | null>(null)
   const itemRefs = useRef<Array<HTMLButtonElement | null>>([])
+  const portalRef = useRef<HTMLDivElement | null>(null)
   const [placement, setPlacement] = useState<'bottom' | 'top'>('bottom')
   const [maxHeightPx, setMaxHeightPx] = useState<number>(288)
 
@@ -65,7 +66,10 @@ export function Autocomplete({
   useEffect(() => {
     const onDocMouseDown = (e: MouseEvent) => {
       if (!containerRef.current) return
-      if (!containerRef.current.contains(e.target as Node)) {
+      const target = e.target as Node
+      const insideInput = containerRef.current.contains(target)
+      const insidePortal = portalRef.current ? portalRef.current.contains(target) : false
+      if (!insideInput && !insidePortal) {
         setOpen(false)
       }
     }
@@ -167,19 +171,26 @@ export function Autocomplete({
           (() => {
             const rect = containerRef.current!.getBoundingClientRect()
             const top = placement === 'bottom' ? rect.bottom + 8 : rect.top - 8
+            const maxW = Math.max(200, Math.min(window.innerWidth - rect.left - 8, 640))
             const style: React.CSSProperties = {
               position: 'fixed',
               left: rect.left,
               top,
-              width: rect.width,
               zIndex: 1000,
               transform: placement === 'top' ? 'translateY(-100%)' : undefined,
+              width: 'max-content',
+              maxWidth: maxW,
             }
             return (
               <div
                 role="listbox"
                 className="inline-block border rounded-md bg-popover text-popover-foreground shadow-md"
                 style={style}
+                ref={portalRef}
+                onMouseDown={(e) => {
+                  // Предотвращаем закрытие по outside-click на document
+                  e.stopPropagation()
+                }}
               >
                 <div
                   className="overflow-auto p-2 overscroll-contain pointer-events-auto"
@@ -193,7 +204,7 @@ export function Autocomplete({
                     e.stopPropagation()
                   }}
                 >
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-2 whitespace-nowrap">
                     {filteredValueSuggestions.map((s, i) => (
                       <Button
                         key={s}
@@ -204,7 +215,11 @@ export function Autocomplete({
                         className={(i === activeIndex ? 'bg-accent ' : '') + 'justify-start px-3 py-2'}
                         variant="ghost"
                         size="sm"
-                        onMouseDown={(e) => e.preventDefault()}
+                        onMouseDown={(e) => {
+                          // Не даём инпуту потерять фокус и не пускаем событие наверх
+                          e.preventDefault()
+                          e.stopPropagation()
+                        }}
                         onClick={() => {
                           onValueChange && onValueChange(s)
                           setOpen(false)
