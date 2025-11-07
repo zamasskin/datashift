@@ -212,7 +212,14 @@ export default class SqlBuilderConfigService {
     if (val instanceof Date) return `'${this.formatDate(val)}'`
     // массив значений для IN
     if (Array.isArray(val)) return val.map((v) => this.escapeLiteral(v)).join(', ')
+
     const s = String(val)
+    const trimmed = s.trim()
+    // если это плейсхолдер вида {source.path} — не обрамляем кавычками
+    if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+      return trimmed
+    }
+
     // экранирование одинарных кавычек: ' -> ''
     const escaped = s.replace(/'/g, "''")
     return `'${escaped}'`
