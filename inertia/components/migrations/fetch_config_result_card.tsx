@@ -56,11 +56,6 @@ export function ArrayColumnsResult({ result }: { result: FetchConfigResult }) {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="text-xs text-muted-foreground">
-        Строк: {count}
-        {typeof progress === 'number' && <> • Прогресс: {progress}%</>}
-      </div>
-
       <div className="overflow-auto max-h-64 border rounded-md">
         <table className="w-full text-sm">
           <thead className="bg-muted/50">
