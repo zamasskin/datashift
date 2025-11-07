@@ -73,7 +73,15 @@ export function ModificationDataset(props: ModificationDatasetProps) {
   })
   const [dropColumns, setDropColumns] = useState<string[]>(initial?.params?.dropColumns || [])
   const [bulkDropSelection, setBulkDropSelection] = useState<string[]>([])
-  const [newColumns, setNewColumns] = useState<ColumnValue[]>(initial?.params?.newColumns || [])
+  type NewColumnUI = { name: string; value: ColumnValue }
+  const [newColumns, setNewColumns] = useState<NewColumnUI[]>(() => {
+    const raw = (initial?.params?.newColumns || []) as any[]
+    return raw.map((item) =>
+      item && typeof item === 'object' && 'type' in item
+        ? { name: '', value: item as ColumnValue }
+        : { name: String(item?.name || ''), value: (item?.value || { type: 'reference', value: '' }) as ColumnValue }
+    )
+  })
 
   const dropOptions = useMemo(
     () => availableColumns.filter((c) => !dropColumns.includes(c)),
@@ -96,7 +104,13 @@ export function ModificationDataset(props: ModificationDatasetProps) {
   }, [initial?.params?.renameColumns])
 
   useEffect(() => {
-    setNewColumns(initial?.params?.newColumns || [])
+    const raw = (initial?.params?.newColumns || []) as any[]
+    const normalized = raw.map((item) =>
+      item && typeof item === 'object' && 'type' in item
+        ? { name: '', value: item as ColumnValue }
+        : { name: String(item?.name || ''), value: (item?.value || { type: 'reference', value: '' }) as ColumnValue }
+    )
+    setNewColumns(normalized)
   }, [initial?.params?.newColumns])
 
   const handleSave = () => {
@@ -110,7 +124,7 @@ export function ModificationDataset(props: ModificationDatasetProps) {
         datasetId: datasetId.trim(),
         dropColumns: dropColumns.filter((c) => !!c.trim()),
         renameColumns: renameMap,
-        newColumns: newColumns,
+        newColumns: newColumns.map((c) => ({ name: c.name.trim(), value: c.value })),
       }
 
       if (props.config) {
@@ -144,13 +158,21 @@ export function ModificationDataset(props: ModificationDatasetProps) {
   }
 
   const addNewColumn = () => {
-    setNewColumns((prev) => [...prev, { type: 'reference', value: '' } as ColumnReference])
+    setNewColumns((prev) => [...prev, { name: '', value: { type: 'reference', value: '' } as ColumnReference }])
   }
 
-  const patchNewColumn = (idx: number, patch: ColumnValue) => {
+  const patchNewColumnValue = (idx: number, patch: ColumnValue) => {
     setNewColumns((prev) => {
       const next = prev.slice()
-      next[idx] = patch
+      next[idx] = { ...next[idx], value: patch }
+      return next
+    })
+  }
+
+  const patchNewColumnName = (idx: number, name: string) => {
+    setNewColumns((prev) => {
+      const next = prev.slice()
+      next[idx] = { ...next[idx], name }
       return next
     })
   }
@@ -205,13 +227,22 @@ export function ModificationDataset(props: ModificationDatasetProps) {
                   <ScrollArea>
                     <div className="space-y-2 py-2">
                       {newColumns.map((col, idx) => (
-                        <ColumnValueEditor
-                          key={idx}
-                          value={col}
-                          onChange={(v) => patchNewColumn(idx, v)}
-                          onRemove={() => removeNewColumn(idx)}
-                          columns={availableColumns}
-                        />
+                        <div key={idx} className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Input
+                              placeholder="new_column_name"
+                              value={col.name}
+                              onChange={(e) => patchNewColumnName(idx, e.target.value)}
+                              className="h-8"
+                            />
+                          </div>
+                          <ColumnValueEditor
+                            value={col.value}
+                            onChange={(v) => patchNewColumnValue(idx, v)}
+                            onRemove={() => removeNewColumn(idx)}
+                            columns={availableColumns}
+                          />
+                        </div>
                       ))}
                     </div>
                   </ScrollArea>

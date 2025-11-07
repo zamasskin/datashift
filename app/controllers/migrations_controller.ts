@@ -529,9 +529,27 @@ export default class MigrationsController {
       vine.union.if((val) => (val as any)?.type === 'function', columnFunctionSchema),
     ])
 
+    // Поддержать как прежний формат значений, так и новый формат { name, value }
+    const columnSpecSchema = vine.union([
+      // Старый формат: просто ColumnValue
+      vine.union.if((val) => (val as any)?.type === 'template', columnTemplateSchema),
+      vine.union.if((val) => (val as any)?.type === 'expression', columnExpressionSchema),
+      vine.union.if((val) => (val as any)?.type === 'literal', columnLiteralSchema),
+      vine.union.if((val) => (val as any)?.type === 'reference', columnReferenceSchema),
+      vine.union.if((val) => (val as any)?.type === 'function', columnFunctionSchema),
+      // Новый формат: объект с именем и значением
+      vine.union.if(
+        (val) => vine.helpers.isObject(val) && 'value' in (val as any),
+        vine.object({
+          name: vine.string().optional(),
+          value: columnValueSchema,
+        })
+      ),
+    ])
+
     const modificationParamsSchema = vine.object({
       datasetId: vine.string(),
-      newColumns: vine.array(columnValueSchema).optional(),
+      newColumns: vine.array(columnSpecSchema).optional(),
       dropColumns: vine.array(vine.string()).optional(),
       renameColumns: vine.record(vine.string()).optional(),
     })

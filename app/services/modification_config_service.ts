@@ -46,32 +46,40 @@ export default class ModificationConfigService {
       }
     }
 
-    // 3) Add new columns
+    // 3) Add new columns (supports both old style: ColumnValue[] and new style: { name, value }[])
     const newCols = Array.isArray(params.newColumns) ? params.newColumns : []
     if (newCols.length > 0) {
-      for (const [i, spec] of newCols.entries()) {
-        const proposedName = this.proposeNewColumnName(spec, i)
-        const name = this.uniqueName(proposedName, new Set(columns))
+      for (const [i, specOrPair] of newCols.entries()) {
+        const isValueOnly =
+          specOrPair && typeof specOrPair === 'object' && 'type' in (specOrPair as any)
+        const valueSpec = isValueOnly ? (specOrPair as any) : (specOrPair as any)?.value
+        const providedName = (isValueOnly ? undefined : (specOrPair as any)?.name) as
+          | string
+          | undefined
+
+        const baseName =
+          String(providedName || '').trim() || this.proposeNewColumnName(valueSpec, i)
+        const name = this.uniqueName(baseName, new Set(columns))
 
         for (const row of rows) {
           let value: any = null
-          switch (spec?.type) {
+          switch (valueSpec?.type) {
             case 'reference': {
-              const ref = String(spec?.value || '').trim()
+              const ref = String(valueSpec?.value || '').trim()
               value = ref ? row[ref] : undefined
               break
             }
             case 'literal': {
-              value = spec?.value
+              value = valueSpec?.value
               break
             }
             case 'template': {
-              const tpl = String(spec?.value || '')
+              const tpl = String(valueSpec?.value || '')
               value = this.renderTemplate(tpl, row, paramsData)
               break
             }
             case 'expression': {
-              const expr = String(spec?.value || '')
+              const expr = String(valueSpec?.value || '')
               value = this.evalExpression(expr, row, paramsData)
               break
             }

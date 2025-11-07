@@ -31,13 +31,15 @@ export type ColumnValue =
   | ColumnReference
   | ColumnFunction
 
+export type NewColumnSpec = ColumnValue | { name?: string; value: ColumnValue }
+
 // Modification dataset config (aligned with controller validation)
 export type ModificationConfig = {
   type: 'modification'
   id: string
   params: {
     datasetId: string
-    newColumns?: ColumnValue[]
+    newColumns?: NewColumnSpec[]
     dropColumns?: string[] // List of column names to remove
     renameColumns?: Record<string, string> // Map oldName -> newName
   }
