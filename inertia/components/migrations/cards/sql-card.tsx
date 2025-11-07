@@ -14,9 +14,8 @@ import { SqlConfig } from '#interfaces/sql_config'
 
 export type SqlCardProps = {
   isLoading?: boolean
-  paramKeys?: string[]
   config?: SqlConfig
-  prevResults?: Record<string, string[]>
+  suggestions?: Record<string, string[]>
   page?: number
   onChangePage?: (page: number) => void
 
@@ -26,9 +25,8 @@ export type SqlCardProps = {
 
 export function SqlCard({
   config,
-  paramKeys,
-  prevResults,
   isLoading,
+  suggestions,
   onRemove: onRemove,
   page = 1,
   onChangePage,
@@ -84,9 +82,8 @@ export function SqlCard({
             </Button>
 
             <SqlDataset
+              suggestions={suggestions}
               onSave={onUpdate}
-              prevResults={prevResults}
-              paramKeys={paramKeys}
               isLoading={isLoading}
               config={config}
               saveBtnName="Сохранить"

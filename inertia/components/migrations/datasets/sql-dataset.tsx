@@ -19,9 +19,8 @@ import { SqlConfig } from '#interfaces/sql_config'
 
 export type SqlEditorProps = {
   isLoading?: boolean
-  paramKeys?: string[]
   config?: SqlConfig
-  prevResults?: Record<string, string[]>
+  suggestions?: Record<string, string[]>
   children?: React.ReactNode
   saveBtnName?: string
   onSave?: (config: SqlConfig) => void
@@ -111,8 +110,7 @@ export function SqlDataset(props: SqlEditorProps) {
             value={query}
             onChange={setQuery}
             tables={tables}
-            paramKeys={props.paramKeys}
-            prevResults={props.prevResults}
+            suggestions={props.suggestions}
           />
 
           {isShowLoading && (

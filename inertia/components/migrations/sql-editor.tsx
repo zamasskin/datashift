@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import Editor, { useMonaco } from '@monaco-editor/react'
 import { useTheme } from '../theme-provider'
+import _ from 'lodash'
 
 type SqlEditorProps = {
   value: string
   tables?: string[]
-  paramKeys?: string[]
-  prevResults?: Record<string, string[]>
+  suggestions?: Record<string, string[]>
   onChange: (val: string) => void
 }
 
@@ -22,8 +22,6 @@ export function SqlEditor(props: SqlEditorProps) {
   useEffect(() => {
     if (!monaco) return
 
-    const paramKeys = props.paramKeys || []
-    const prevResults = props.prevResults || {}
     const tables = props.tables || []
 
     const provider = monaco.languages.registerCompletionItemProvider('sql', {
@@ -37,10 +35,15 @@ export function SqlEditor(props: SqlEditorProps) {
           endColumn: word.endColumn,
         }
 
-        const paramSuggestions = paramKeys.map((p, i) => ({
-          label: `{param.${p}}`,
+        const params = props?.suggestions?.params || []
+        const fields = _.omit(props?.suggestions, ['params'])
+
+        console.log('suggestions', props?.suggestions)
+
+        const paramSuggestions = params.map((param, i) => ({
+          label: `{${param}}`,
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: `{param.${p}}`,
+          insertText: `{${param}}`,
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           range,
           detail: 'Параметр',
@@ -48,11 +51,11 @@ export function SqlEditor(props: SqlEditorProps) {
           preselect: i === 0,
         }))
 
-        const prevResultSuggestions = Object.entries(prevResults).flatMap(([alias, cols]) =>
+        const prevResultSuggestions = Object.entries(fields).flatMap(([alias, cols]) =>
           (cols || []).map((c, i) => ({
-            label: `{${alias}.${c}}`,
+            label: `{${c}}`,
             kind: monaco.languages.CompletionItemKind.Snippet,
-            insertText: `{${alias}.${c}}`,
+            insertText: `{${c}}`,
             insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
             range,
             detail: `Из результата ${alias}`,
@@ -96,7 +99,7 @@ export function SqlEditor(props: SqlEditorProps) {
     })
 
     return () => provider.dispose()
-  }, [monaco, props.paramKeys, props.prevResults, props.tables])
+  }, [monaco, props.suggestions, props.tables])
 
   useEffect(() => {
     if (!mounted) return

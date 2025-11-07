@@ -26,9 +26,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
-import { FetchConfig, FetchConfigResult } from '#interfaces/fetchсonfigs'
+import { FetchConfig, FetchConfigMeta, FetchConfigResult } from '#interfaces/fetchсonfigs'
 import { SaveMappings } from '~/components/migrations/save-mappings'
 import { FetchConfigResultCard } from '~/components/migrations/fetch_config_result_card'
+import _ from 'lodash'
 
 const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const { props } = usePage<{ csrfToken?: string }>()
@@ -41,6 +42,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [prevResults, setPrevResults] = useState<FetchConfigResult>()
+  const [meta, setMeta] = useState<FetchConfigMeta>()
   const [previewPages, setPreviewPages] = useState<Record<string, number>>({})
 
   const [newDatasetOpen, setNewDatasetOpen] = useState('')
@@ -67,7 +69,8 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
         setError(json.error)
         return
       }
-      setPrevResults(json)
+      setPrevResults(json.data)
+      setMeta(json.meta)
     } catch (e) {
       console.log(e)
       setError(e.message || 'Unknown error')
@@ -113,6 +116,23 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const handleSave = (config: FetchConfig) => {
     setFetchConfigs((old) => old.map((item) => (item.id == config.id ? config : item)))
   }
+
+  const suggestionsById = useMemo(() => {
+    const map: Record<string, Record<string, string[]>> = {}
+    const prefix: FetchConfig[] = []
+    for (const fetchConfig of fetchConfigs) {
+      const index = fetchConfigs.findIndex((cfg) => cfg.id === fetchConfig.id)
+      const ids = prefix.slice(0, index).map((cfg) => cfg.id)
+      const fields = _.pick(meta?.suggestions || {}, ids)
+      map[fetchConfig.id] = {
+        params: meta?.suggestions?.params || [],
+        ...fields,
+      }
+      prefix.push(fetchConfig)
+    }
+
+    return map
+  }, [fetchConfigs, meta])
 
   return (
     <>
@@ -213,9 +233,8 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                         <div key={conf?.id}>
                           {conf?.type == 'sql' && (
                             <SqlCard
-                              paramKeys={paramKeys}
+                              suggestions={suggestionsById[conf.id]}
                               isLoading={isLoading}
-                              prevResults={undefined}
                               config={conf}
                               onRemove={handleRemove}
                               onUpdate={handleSave}
@@ -296,10 +315,9 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                       </DropdownMenu>
                       <SqlDataset
                         open={newDatasetOpen == 'sql'}
+                        suggestions={meta?.suggestions || {}}
                         onOpenChange={(val) => setNewDatasetOpen(val ? 'sql' : '')}
                         onSave={(config) => setFetchConfigs([...fetchConfigs, config])}
-                        prevResults={undefined}
-                        paramKeys={paramKeys}
                         isLoading={isLoading}
                       />
 
