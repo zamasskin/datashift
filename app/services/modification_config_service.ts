@@ -19,7 +19,7 @@ export default class ModificationConfigService {
 
     // Clone base rows and columns
     const rows = base.data.map((row) => ({ ...row }))
-    let columns = [...base.columns]
+    let columns = [...(base.meta?.columns || [])]
 
     // 1) Drop columns
     const drop = Array.isArray(params.dropColumns) ? params.dropColumns : []
@@ -89,7 +89,9 @@ export default class ModificationConfigService {
       datasetId: config.id,
       dataType: 'array_columns',
       data: rows,
-      columns,
+      meta: {
+        columns,
+      },
     }
   }
 

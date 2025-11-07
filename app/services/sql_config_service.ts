@@ -38,8 +38,10 @@ export default class SqlConfigService {
         datasetId: config.id,
         dataType: 'array_columns',
         data: rows,
-        columns: columns || [],
         count: Math.ceil(count / this.limit),
+        meta: {
+          columns: columns || [],
+        },
       }
     } else {
       const countPages = Math.ceil(count / this.limit)
@@ -57,9 +59,11 @@ export default class SqlConfigService {
           datasetId: config.id,
           dataType: 'array_columns',
           data: rows,
-          columns: columns || [],
           progress: Math.round((page / countPages) * 100),
           count: Math.ceil(count / this.limit),
+          meta: {
+            columns: columns || [],
+          },
         }
       }
     }

@@ -9,7 +9,9 @@ export type ArrayColumnsResult = {
   datasetId: string
   dataType: 'array_columns'
   data: Record<string, any>[]
-  columns: string[]
+  meta: {
+    columns: string[]
+  }
 }
 
 export type ParamsResult = {
@@ -20,4 +22,10 @@ export type ParamsResult = {
 export type FetchConfigResult = (ArrayColumnsResult | ParamsResult) & {
   progress?: number
   count?: number
+}
+
+export type FetchConfigMeta = {
+  params: Record<string, any>
+  progressList: number[]
+  suggestions: Record<string, string[]>
 }

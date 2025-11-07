@@ -24,8 +24,8 @@ export default class MergeConfigService {
     const rightId = right.datasetId
     const columns = [
       ...new Set([
-        ...left.columns.map((c) => `${leftId}.${c}`),
-        ...right.columns.map((c) => `${rightId}.${c}`),
+        ...(left.meta?.columns || []).map((c) => `${leftId}.${c}`),
+        ...(right.meta?.columns || []).map((c) => `${rightId}.${c}`),
       ]),
     ]
 
@@ -50,7 +50,9 @@ export default class MergeConfigService {
       datasetId: config.id,
       dataType: 'array_columns',
       data: matches,
-      columns,
+      meta: {
+        columns,
+      },
     }
   }
 
