@@ -1,5 +1,6 @@
 import path from 'node:path'
 import app from '@adonisjs/core/services/app'
+import { ArrayColumnsResult, FetchConfigResult, ParamsResult } from '#interfaces/fetchсonfigs'
 
 export type PlaceholderResult = {
   sql: string
@@ -192,5 +193,44 @@ export default class SqlService {
     }
 
     return { sql: out, values, placeholders }
+  }
+
+  getSource(resultList: FetchConfigResult[]) {
+    const result: Record<string, any> = {}
+    for (const resultItem of resultList) {
+      switch (resultItem.dataType) {
+        case 'params':
+          result['params'] = this.getSourceFromParams(resultItem)
+          break
+        case 'array_columns':
+          result[resultItem.datasetId] = this.getSourceFromArrayColumns(resultItem)
+          break
+      }
+    }
+
+    return result
+  }
+
+  getSourceFromParams(resultItem: ParamsResult) {
+    return resultItem.data
+  }
+
+  getSourceFromArrayColumns(resultItem: ArrayColumnsResult) {
+    const keys = new Set<string>()
+    for (const row of resultItem.data) {
+      for (const k of Object.keys(row)) keys.add(k)
+    }
+
+    const result: Record<string, any[]> = {}
+    for (const k of keys) result[k] = []
+
+    for (const row of resultItem.data) {
+      for (const k of keys) {
+        const hasKey = Object.prototype.hasOwnProperty.call(row, k)
+        result[k].push(hasKey ? row[k] : undefined)
+      }
+    }
+
+    return result
   }
 }

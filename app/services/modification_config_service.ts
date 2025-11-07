@@ -90,6 +90,7 @@ export default class ModificationConfigService {
       dataType: 'array_columns',
       data: rows,
       meta: {
+        name: 'Modification',
         columns,
       },
     }

@@ -51,6 +51,7 @@ export default class MergeConfigService {
       dataType: 'array_columns',
       data: matches,
       meta: {
+        name: 'MergeBuilder',
         columns,
       },
     }

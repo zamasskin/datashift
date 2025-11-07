@@ -10,6 +10,7 @@ export type ArrayColumnsResult = {
   dataType: 'array_columns'
   data: Record<string, any>[]
   meta: {
+    name: string
     columns: string[]
   }
 }

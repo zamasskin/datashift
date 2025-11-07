@@ -1,4 +1,4 @@
-import { ArrayColumnsResult, FetchConfigResult, ParamsResult } from '#interfaces/fetchсonfigs'
+import { FetchConfigResult } from '#interfaces/fetchсonfigs'
 import { SqlConfigExecute } from '#interfaces/sql_config'
 import DataSource from '#models/data_source'
 import SqlService from '#services/sql_service'
@@ -20,8 +20,10 @@ export default class SqlConfigService {
 
     const prepared = this.sqlService.replaceSqlPlaceholders(
       config.params.query,
-      this.getSource(resultList)
+      this.sqlService.getSource(resultList)
     )
+
+    console.log(prepared.sql, prepared.values, config)
 
     const count = await this.sqlService.countSql(ds.type, ds.config, prepared.sql, prepared.values)
     if (config.page) {
@@ -40,6 +42,7 @@ export default class SqlConfigService {
         data: rows,
         count: Math.ceil(count / this.limit),
         meta: {
+          name: 'Sql',
           columns: columns || [],
         },
       }
@@ -62,50 +65,12 @@ export default class SqlConfigService {
           progress: Math.round((page / countPages) * 100),
           count: Math.ceil(count / this.limit),
           meta: {
+            name: 'Sql',
             columns: columns || [],
           },
         }
       }
     }
-  }
-
-  getSource(resultList: FetchConfigResult[]) {
-    const result: Record<string, any> = {}
-    for (const resultItem of resultList) {
-      switch (resultItem.dataType) {
-        case 'params':
-          result['params'] = this.getSourceFromParams(resultItem)
-          break
-        case 'array_columns':
-          result[resultItem.datasetId] = this.getSourceFromArrayColumns(resultItem)
-          break
-      }
-    }
-
-    return result
-  }
-
-  getSourceFromParams(resultItem: ParamsResult) {
-    return resultItem.data
-  }
-
-  getSourceFromArrayColumns(resultItem: ArrayColumnsResult) {
-    const keys = new Set<string>()
-    for (const row of resultItem.data) {
-      for (const k of Object.keys(row)) keys.add(k)
-    }
-
-    const result: Record<string, any[]> = {}
-    for (const k of keys) result[k] = []
-
-    for (const row of resultItem.data) {
-      for (const k of keys) {
-        const hasKey = Object.prototype.hasOwnProperty.call(row, k)
-        result[k].push(hasKey ? row[k] : undefined)
-      }
-    }
-
-    return result
   }
 
   // TODO: Если появятся новые DataType(например json)

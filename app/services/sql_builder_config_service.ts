@@ -1,27 +1,79 @@
 import { FetchConfigResult } from '#interfaces/fetchсonfigs'
 import { SqlBuilderConfigExecute } from '#interfaces/sql_builder_config'
-import SqlConfigService from '#services/sql_config_service'
+import DataSource from '#models/data_source'
+import SqlService from './sql_service.js'
 
 export default class SqlBuilderConfigService {
-  constructor(private sqlConfigService = new SqlConfigService()) {}
+  private limit = 100
+
+  constructor(private sqlService = new SqlService()) {}
 
   async *execute(
     config: SqlBuilderConfigExecute,
     resultList: FetchConfigResult[]
   ): AsyncGenerator<FetchConfigResult> {
-    const p = config.params
-    const sql = this.buildSql(config)
-    // Делаем делегирование в SqlConfigService: он сам применит пагинацию и выполнит запрос
-    const executeConfig = {
-      type: 'sql' as const,
-      id: config.id,
-      params: { sourceId: p.sourceId, query: sql },
-      page: config.page,
+    const { params } = config
+    const ds = await DataSource.find(params.sourceId)
+    if (!ds) {
+      throw new Error(`DataSource not found: ${params.sourceId}`)
     }
 
-    for await (const res of this.sqlConfigService.execute(executeConfig, resultList)) {
-      yield res
+    const sql = this.buildSql(config)
+    const prepared = this.sqlService.replaceSqlPlaceholders(
+      sql,
+      this.sqlService.getSource(resultList)
+    )
+
+    const count = await this.sqlService.countSql(ds.type, ds.config, prepared.sql, prepared.values)
+    if (config.page) {
+      const { rows, columns } = await this.sqlService.executeSql(
+        ds.type,
+        ds.config,
+        prepared.sql,
+        prepared.values,
+        this.limit,
+        (config.page - 1) * this.limit
+      )
+
+      yield {
+        datasetId: config.id,
+        dataType: 'array_columns',
+        data: rows,
+        count: Math.ceil(count / this.limit),
+        meta: {
+          name: 'SqlBuilder',
+          columns: columns || [],
+        },
+      }
+    } else {
+      const countPages = Math.ceil(count / this.limit)
+      for (let page = 1; page <= countPages; page++) {
+        const { rows, columns } = await this.sqlService.executeSql(
+          ds.type,
+          ds.config,
+          prepared.sql,
+          prepared.values,
+          this.limit,
+          (page - 1) * this.limit
+        )
+
+        yield {
+          datasetId: config.id,
+          dataType: 'array_columns',
+          data: rows,
+          progress: Math.round((page / countPages) * 100),
+          count: Math.ceil(count / this.limit),
+          meta: {
+            name: 'SqlBuilder',
+            columns: columns || [],
+          },
+        }
+      }
     }
+
+    // for await (const res of this.sqlConfigService.execute(executeConfig, resultList)) {
+    //   yield res
+    // }
   }
 
   private buildSql(config: SqlBuilderConfigExecute) {
