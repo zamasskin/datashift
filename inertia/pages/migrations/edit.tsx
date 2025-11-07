@@ -175,49 +175,18 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
           </div>
         </div>
 
-        <Tabs defaultValue="config" className="mt-6">
+        <Tabs defaultValue="migrations" className="mt-6">
           <TabsList>
-            <TabsTrigger value="config">
-              <Settings />
-              Настройки
-            </TabsTrigger>
             <TabsTrigger value="migrations">
               <ArrowDownUp />
               Миграции
             </TabsTrigger>
-          </TabsList>
-          <TabsContent value="config" className="mt-4">
-            <div className="grid gap-4 lg:grid-cols-2 lg:auto-rows-fr">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Параметры</CardTitle>
-                  <CardDescription>
-                    Добавьте настройки, которые будут использоваться в миграции.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <MigrationParamsEditor params={params} onChange={setParams} />
-                </CardContent>
-              </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Расписание</CardTitle>
-                  <CardDescription>
-                    Укажите расписание выполнения миграции в формате cron-выражения.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className=" space-y-4">
-                    <CronExpressionEditor config={cronExpression} onChange={setCronExpression} />
-                    {saveErrors?.cronExpression && (
-                      <p className="text-sm text-destructive">{saveErrors.cronExpression}</p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
+            <TabsTrigger value="config">
+              <Settings />
+              Настройки
+            </TabsTrigger>
+          </TabsList>
 
           <TabsContent value="migrations" className="mt-4">
             <div className="grid gap-4 lg:grid-cols-2 lg:auto-rows-fr">
@@ -355,7 +324,11 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                       error={error}
                       isLoading={isLoading}
                       fetchConfigsLength={fetchConfigs.length}
-                      resultColumns={prevResults?.dataType === 'array_columns' ? prevResults?.meta?.columns || [] : []}
+                      resultColumns={
+                        prevResults?.dataType === 'array_columns'
+                          ? prevResults?.meta?.columns || []
+                          : []
+                      }
                       sources={[]}
                       tables={[]}
                       fields={[]}
@@ -374,6 +347,38 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                 <FetchConfigResultCard result={prevResults} isLoading={isLoading} error={error} />
               </CardContent>
             </Card>
+          </TabsContent>
+          <TabsContent value="config" className="mt-4">
+            <div className="grid gap-4 lg:grid-cols-2 lg:auto-rows-fr">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Параметры</CardTitle>
+                  <CardDescription>
+                    Добавьте настройки, которые будут использоваться в миграции.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <MigrationParamsEditor params={params} onChange={setParams} />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Расписание</CardTitle>
+                  <CardDescription>
+                    Укажите расписание выполнения миграции в формате cron-выражения.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className=" space-y-4">
+                    <CronExpressionEditor config={cronExpression} onChange={setCronExpression} />
+                    {saveErrors?.cronExpression && (
+                      <p className="text-sm text-destructive">{saveErrors.cronExpression}</p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
