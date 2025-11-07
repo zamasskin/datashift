@@ -21,7 +21,6 @@ export default class SqlBuilderConfigService {
     // Источники для плейсхолдеров {dataset.col}
     const sources = this.sqlService.getSource(resultList)
     const sql = this.buildSql(config, sources)
-    console.log(sql)
     const prepared = this.sqlService.replaceSqlPlaceholders(sql, sources)
 
     const count = await this.sqlService.countSql(ds.type, ds.config, prepared.sql, prepared.values)
@@ -263,6 +262,11 @@ export default class SqlBuilderConfigService {
     const trimmed = s.trim()
     // если это плейсхолдер вида {source.path} — не обрамляем кавычками
     if ((opts?.preservePlaceholder ?? true) && trimmed.startsWith('{') && trimmed.endsWith('}')) {
+      return trimmed
+    }
+
+    // если строка представляет число — не обрамляем кавычками
+    if (/^[-+]?\d+(?:\.\d+)?$/.test(trimmed)) {
       return trimmed
     }
 
