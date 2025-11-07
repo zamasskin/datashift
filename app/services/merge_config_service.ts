@@ -95,19 +95,36 @@ export default class MergeConfigService {
   }
 
   private compare(a: any, b: any, op: '=' | '!=' | '<' | '<=' | '>' | '>=') {
+    const toComparable = (v: any) => {
+      if (v === null || v === undefined) return v
+      if (typeof v === 'number') return v
+      if (typeof v === 'boolean') return v
+      if (typeof v === 'string') {
+        const s = v.trim()
+        // numeric-like string -> number
+        if (/^[-+]?\d+(?:\.\d+)?$/.test(s)) return Number(s)
+        return s
+      }
+      return v
+    }
+
+    const av = toComparable(a)
+    const bv = toComparable(b)
+
     switch (op) {
       case '=':
-        return a === b
+        // Compare after normalization; fall back to string equivalence
+        return av === bv || String(av) === String(bv)
       case '!=':
-        return a !== b
+        return !(av === bv || String(av) === String(bv))
       case '<':
-        return a < b
+        return av < bv
       case '<=':
-        return a <= b
+        return av <= bv
       case '>':
-        return a > b
+        return av > bv
       case '>=':
-        return a >= b
+        return av >= bv
       default:
         return false
     }
