@@ -37,7 +37,7 @@ export function FetchConfigResultCard({ result, isLoading, error }: FetchConfigR
 export function ArrayColumnsResult({ result }: { result: FetchConfigResult }) {
   if (!result || result.dataType !== 'array_columns') return null
 
-  const columns = result.columns || []
+  const columns = result.meta.columns || []
   const rows = Array.isArray(result.data) ? result.data : []
   const count = typeof result.count === 'number' ? result.count : rows.length
   const progress = typeof result.progress === 'number' ? result.progress : undefined

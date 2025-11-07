@@ -69,6 +69,8 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
         setError(json.error)
         return
       }
+
+      console.log(json)
       setPrevResults(json.data)
       setMeta(json.meta)
     } catch (e) {
