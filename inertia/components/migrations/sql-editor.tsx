@@ -41,9 +41,9 @@ export function SqlEditor(props: SqlEditorProps) {
         console.log('suggestions', props?.suggestions)
 
         const paramSuggestions = params.map((param, i) => ({
-          label: `{${param}}`,
+          label: `{params.${param}}`,
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: `${param}`,
+          insertText: `params.${param}`,
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           range,
           detail: 'Параметр',
@@ -53,9 +53,9 @@ export function SqlEditor(props: SqlEditorProps) {
 
         const prevResultSuggestions = Object.entries(fields).flatMap(([alias, cols]) =>
           (cols || []).map((c, i) => ({
-            label: `{${c}}`,
+            label: `{${alias}.${c}}`,
             kind: monaco.languages.CompletionItemKind.Snippet,
-            insertText: `${c}`,
+            insertText: `${alias}.${c}`,
             insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
             range,
             detail: `Из результата ${alias}`,

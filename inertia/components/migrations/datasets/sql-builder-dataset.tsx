@@ -59,8 +59,8 @@ export function SqlBuilderDataset({ config, ...props }: SqlBuilderProps) {
   const isLoading = useMemo(() => loading || props.isLoading, [loading, props.isLoading])
 
   const suggestions = useMemo(() => {
-    return Object.entries(props.suggestions || {}).flatMap(([_, cols]) =>
-      cols.map((col) => `{${col}}`)
+    return Object.entries(props.suggestions || {}).flatMap(([alias, cols]) =>
+      cols.map((col) => `{${alias}.${col}}`)
     )
   }, [props.suggestions])
 

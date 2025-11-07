@@ -63,13 +63,11 @@ export default class FetchConfigService {
     const suggestions: Record<string, string[]> = {}
     for (const item of resultList) {
       if (item.dataType === 'params') {
-        suggestions['params'] = Object.keys(item.data || {}).map((key) => `params.${key}`)
+        suggestions['params'] = Object.keys(item.data || {})
       }
 
       if (item.dataType === 'array_columns') {
-        suggestions[item.datasetId] = item.meta.columns.map(
-          (column) => `${item.datasetId}.${column}`
-        )
+        suggestions[item.datasetId] = item.meta.columns
       }
     }
 
