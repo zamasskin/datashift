@@ -1,12 +1,12 @@
 import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '~/components/ui/item'
 import { Button } from '~/components/ui/button'
 import { Settings, Trash } from 'lucide-react'
-import { ModificationDataset, DatasetConfig } from '../datasets/modification-dataset'
+import { ModificationDataset } from '../datasets/modification-dataset'
 import type { ModificationConfig } from '#interfaces/modification_config'
 
 export type ModificationCardProps = {
   config?: ModificationConfig
-  datasetsConfigs?: DatasetConfig[]
+  suggestions?: Record<string, string[]>
   isLoading?: boolean
   onRemove?: (id: string) => void
   onSave?: (config: ModificationConfig) => void
@@ -14,7 +14,7 @@ export type ModificationCardProps = {
 
 export function ModificationCard({
   config,
-  datasetsConfigs,
+  suggestions,
   isLoading,
   onRemove,
   onSave,
@@ -51,7 +51,7 @@ export function ModificationCard({
           <ModificationDataset
             saveBtnName="Сохранить"
             config={config}
-            datasetsConfigs={datasetsConfigs}
+            suggestions={suggestions}
             isLoading={isLoading}
             onSave={onSave}
           >

@@ -34,17 +34,11 @@ import {
   ModificationConfig,
 } from '#interfaces/modification_config'
 
-export type DatasetConfig = {
-  id: string
-  title: string
-  columns: string[]
-}
-
 export type ModificationDatasetProps = {
   children?: React.ReactNode
   saveBtnName?: string
   isLoading?: boolean
-  datasetsConfigs?: DatasetConfig[]
+  suggestions?: Record<string, string[]>
   config?: ModificationConfig
   onSave?: (config: ModificationConfig) => void
   onOpenChange?: (open: boolean) => void
@@ -57,26 +51,20 @@ export function ModificationDataset(props: ModificationDatasetProps) {
   const [open, setOpen] = useState(false)
   const [datasetId, setDatasetId] = useState(initial?.params?.datasetId || '')
 
-  const datasets = useMemo(
-    () => (props.datasetsConfigs || []).map((dc) => dc.id),
-    [props.datasetsConfigs]
-  )
+  const datasets = useMemo(() => {
+    const keys = Object.keys(props.suggestions || {})
+    return keys.filter((k) => k && k !== 'params')
+  }, [props.suggestions])
 
-  const datasetTitleMap = useMemo(
-    () =>
-      Object.fromEntries(
-        (props.datasetsConfigs || []).map((dc) => [
-          dc.id,
-          dc.title ? `${dc.title} (${dc.id})` : dc.id,
-        ])
-      ),
-    [props.datasetsConfigs]
-  )
+  const datasetTitleMap = useMemo(() => {
+    const ids = Object.keys(props.suggestions || {}).filter((k) => k && k !== 'params')
+    return Object.fromEntries(ids.map((id) => [id, id]))
+  }, [props.suggestions])
 
   const availableColumns = useMemo(() => {
-    const cfg = (props.datasetsConfigs || []).find((dc) => dc.id === datasetId)
-    return cfg?.columns || []
-  }, [props.datasetsConfigs, datasetId])
+    const columns = (props.suggestions || {})[datasetId]
+    return Array.isArray(columns) ? columns : []
+  }, [props.suggestions, datasetId])
 
   type RenamePair = { from: string; to: string }
   const [renamePairs, setRenamePairs] = useState<RenamePair[]>(() => {

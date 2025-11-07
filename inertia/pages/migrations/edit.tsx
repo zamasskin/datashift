@@ -277,11 +277,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                               isLoading={isLoading}
                               onRemove={handleRemove}
                               onSave={handleSave}
-                              datasetsConfigs={[
-                                { id: 'aa', title: 'sql', columns: ['aa1', 'aa2'] },
-                                { id: 'bb', title: 'dataset1', columns: ['bb1', 'bb2'] },
-                                { id: 'cc', title: 'custom', columns: ['cc1', 'cc2'] },
-                              ]}
+                              suggestions={suggestionsById[conf.id]}
                             />
                           )}
                         </div>
@@ -338,11 +334,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                       <ModificationDataset
                         open={newDatasetOpen == 'modification'}
                         onOpenChange={(val) => setNewDatasetOpen(val ? 'modification' : '')}
-                        datasetsConfigs={[
-                          { id: 'aa', title: 'sql', columns: ['aa1', 'aa2'] },
-                          { id: 'bb', title: 'dataset1', columns: ['bb1', 'bb2'] },
-                          { id: 'cc', title: 'custom', columns: ['cc1', 'cc2'] },
-                        ]}
+                        suggestions={meta?.suggestions || {}}
                         onSave={(config) => setFetchConfigs([...fetchConfigs, config])}
                       />
                     </div>
