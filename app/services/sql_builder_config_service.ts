@@ -18,11 +18,11 @@ export default class SqlBuilderConfigService {
       throw new Error(`DataSource not found: ${params.sourceId}`)
     }
 
-    const sql = this.buildSql(config)
-    const prepared = this.sqlService.replaceSqlPlaceholders(
-      sql,
-      this.sqlService.getSource(resultList)
-    )
+    // Источники для плейсхолдеров {dataset.col}
+    const sources = this.sqlService.getSource(resultList)
+    const sql = this.buildSql(config, sources)
+    console.log(sql)
+    const prepared = this.sqlService.replaceSqlPlaceholders(sql, sources)
 
     const count = await this.sqlService.countSql(ds.type, ds.config, prepared.sql, prepared.values)
     if (config.page) {
@@ -92,7 +92,7 @@ export default class SqlBuilderConfigService {
     // }
   }
 
-  private buildSql(config: SqlBuilderConfigExecute) {
+  private buildSql(config: SqlBuilderConfigExecute, sources?: Record<string, any>) {
     const p = config.params
     const baseAlias = p.alias || p.table
 
@@ -105,7 +105,7 @@ export default class SqlBuilderConfigService {
         ? ' ' + p.joins.map((j) => this.buildJoin(baseAlias, j)).join(' ')
         : ''
 
-    const where = p.where ? this.buildWhere(p.where) : ''
+    const where = p.where ? this.buildWhere(p.where, 'WHERE', sources) : ''
 
     const group =
       Array.isArray(p.group) && p.group.length > 0 ? ` GROUP BY ${p.group.join(', ')}` : ''
@@ -172,19 +172,65 @@ export default class SqlBuilderConfigService {
       $and?: Record<string, any>
       $or?: Record<string, any>
     },
-    keyword: 'WHERE' | 'HAVING' = 'WHERE'
+    keyword: 'WHERE' | 'HAVING' = 'WHERE',
+    sources?: Record<string, any>
   ) {
     const parts: string[] = []
 
     if (Array.isArray(where.fields)) {
       for (const f of where.fields) {
         const op = f.op || '='
+
+        const isPlaceholderString = (v: any): string | null => {
+          if (typeof v !== 'string') return null
+          const trimmed = v.trim()
+          return trimmed.startsWith('{') && trimmed.endsWith('}') ? trimmed : null
+        }
+
+        const resolveFromSources = (ph: string): any[] => {
+          const name = ph.slice(1, -1).trim()
+          const val = sources ? this.sqlService.getByPath(sources, name) : undefined
+          if (Array.isArray(val)) return val.filter((x) => x !== undefined && x !== null)
+          return val !== undefined && val !== null ? [val] : []
+        }
+
         if (op === 'in' || op === 'nin') {
-          const list = (f.values ?? []).map((v) => this.escapeLiteral(v)).join(', ')
+          const rawValues = Array.isArray(f.values) ? f.values : []
+          const pieces: string[] = []
+          for (const v of rawValues) {
+            const ph = isPlaceholderString(v)
+            if (ph) {
+              const resolved = resolveFromSources(ph)
+              if (resolved.length > 0) {
+                pieces.push(...resolved.map((x) => this.escapeLiteral(x)))
+              } else {
+                // не найдено в sources — трактуем как обычную строку
+                pieces.push(this.escapeLiteral(ph, { preservePlaceholder: false }))
+              }
+            } else {
+              pieces.push(this.escapeLiteral(v))
+            }
+          }
+          if (pieces.length === 0) {
+            continue
+          }
           const inSql = op === 'in' ? 'IN' : 'NOT IN'
-          parts.push(`${f.key} ${inSql} (${list})`)
+          parts.push(`${f.key} ${inSql} (${pieces.join(', ')})`)
         } else {
-          parts.push(`${f.key} ${op} ${this.escapeLiteral(f.value)}`)
+          const ph = isPlaceholderString(f.value)
+          let literal: string
+          if (ph) {
+            const resolved = resolveFromSources(ph)
+            if (resolved.length > 0) {
+              literal = this.escapeLiteral(resolved[0])
+            } else {
+              // не найдено в sources — трактуем как обычную строку
+              literal = this.escapeLiteral(ph, { preservePlaceholder: false })
+            }
+          } else {
+            literal = this.escapeLiteral(f.value)
+          }
+          parts.push(`${f.key} ${op} ${literal}`)
         }
       }
     }
@@ -205,18 +251,18 @@ export default class SqlBuilderConfigService {
     return parts.length ? ` ${keyword} ${parts.join(' AND ')}` : ''
   }
 
-  private escapeLiteral(val: any): string {
+  private escapeLiteral(val: any, opts?: { preservePlaceholder?: boolean }): string {
     if (val === null || val === undefined) return 'NULL'
     if (typeof val === 'number') return Number.isFinite(val) ? String(val) : 'NULL'
     if (typeof val === 'boolean') return val ? 'TRUE' : 'FALSE'
     if (val instanceof Date) return `'${this.formatDate(val)}'`
     // массив значений для IN
-    if (Array.isArray(val)) return val.map((v) => this.escapeLiteral(v)).join(', ')
+    if (Array.isArray(val)) return val.map((v) => this.escapeLiteral(v, opts)).join(', ')
 
     const s = String(val)
     const trimmed = s.trim()
     // если это плейсхолдер вида {source.path} — не обрамляем кавычками
-    if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+    if ((opts?.preservePlaceholder ?? true) && trimmed.startsWith('{') && trimmed.endsWith('}')) {
       return trimmed
     }
 
