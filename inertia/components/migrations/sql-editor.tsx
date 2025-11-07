@@ -43,7 +43,7 @@ export function SqlEditor(props: SqlEditorProps) {
         const paramSuggestions = params.map((param, i) => ({
           label: `{${param}}`,
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: `{${param}}`,
+          insertText: `${param}`,
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           range,
           detail: 'Параметр',
@@ -55,7 +55,7 @@ export function SqlEditor(props: SqlEditorProps) {
           (cols || []).map((c, i) => ({
             label: `{${c}}`,
             kind: monaco.languages.CompletionItemKind.Snippet,
-            insertText: `{${c}}`,
+            insertText: `${c}`,
             insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
             range,
             detail: `Из результата ${alias}`,
