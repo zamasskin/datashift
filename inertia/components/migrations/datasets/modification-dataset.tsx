@@ -9,7 +9,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '~/components/ui/select'
-import { ScrollArea } from '~/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 import {
   Dialog,
@@ -33,6 +32,7 @@ import {
   ColumnValue,
   ModificationConfig,
 } from '#interfaces/modification_config'
+import { ScrollArea } from '~/components/ui/scroll-area'
 
 export type ModificationDatasetProps = {
   children?: React.ReactNode
@@ -66,6 +66,11 @@ export function ModificationDataset(props: ModificationDatasetProps) {
     return Array.isArray(columns) ? columns : []
   }, [props.suggestions, datasetId])
 
+  const availableParams = useMemo(() => {
+    const params = (props.suggestions || {})['params']
+    return Array.isArray(params) ? params : []
+  }, [props.suggestions])
+
   type RenamePair = { from: string; to: string }
   const [renamePairs, setRenamePairs] = useState<RenamePair[]>(() => {
     const map = initial?.params?.renameColumns || {}
@@ -79,9 +84,14 @@ export function ModificationDataset(props: ModificationDatasetProps) {
     return raw.map((item) =>
       item && typeof item === 'object' && 'type' in item
         ? { name: '', value: item as ColumnValue }
-        : { name: String(item?.name || ''), value: (item?.value || { type: 'reference', value: '' }) as ColumnValue }
+        : {
+            name: String(item?.name || ''),
+            value: (item?.value || { type: 'reference', value: '' }) as ColumnValue,
+          }
     )
   })
+
+  const [activeNewIdx, setActiveNewIdx] = useState<number | null>(null)
 
   const dropOptions = useMemo(
     () => availableColumns.filter((c) => !dropColumns.includes(c)),
@@ -108,7 +118,10 @@ export function ModificationDataset(props: ModificationDatasetProps) {
     const normalized = raw.map((item) =>
       item && typeof item === 'object' && 'type' in item
         ? { name: '', value: item as ColumnValue }
-        : { name: String(item?.name || ''), value: (item?.value || { type: 'reference', value: '' }) as ColumnValue }
+        : {
+            name: String(item?.name || ''),
+            value: (item?.value || { type: 'reference', value: '' }) as ColumnValue,
+          }
     )
     setNewColumns(normalized)
   }, [initial?.params?.newColumns])
@@ -158,7 +171,14 @@ export function ModificationDataset(props: ModificationDatasetProps) {
   }
 
   const addNewColumn = () => {
-    setNewColumns((prev) => [...prev, { name: '', value: { type: 'reference', value: '' } as ColumnReference }])
+    setNewColumns((prev) => {
+      const next = [
+        ...prev,
+        { name: '', value: { type: 'reference', value: '' } as ColumnReference },
+      ]
+      setActiveNewIdx(next.length - 1)
+      return next
+    })
   }
 
   const patchNewColumnValue = (idx: number, patch: ColumnValue) => {
@@ -178,7 +198,16 @@ export function ModificationDataset(props: ModificationDatasetProps) {
   }
 
   const removeNewColumn = (idx: number) => {
-    setNewColumns((prev) => prev.filter((_, i) => i !== idx))
+    setNewColumns((prev) => {
+      const next = prev.filter((_, i) => i !== idx)
+      setActiveNewIdx((active) => {
+        if (active == null) return active
+        if (active === idx) return next.length ? Math.min(idx, next.length - 1) : null
+        if (active > idx) return active - 1
+        return active
+      })
+      return next
+    })
   }
 
   return (
@@ -223,29 +252,58 @@ export function ModificationDataset(props: ModificationDatasetProps) {
             <TabsContent value="new" className="mt-3">
               <Field>
                 <FieldLabel>Новые колонки</FieldLabel>
-                <div className="max-h-72 max-w-full overflow-scroll">
-                  <ScrollArea>
-                    <div className="space-y-2 py-2">
-                      {newColumns.map((col, idx) => (
-                        <div key={idx} className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <Input
-                              placeholder="new_column_name"
-                              value={col.name}
-                              onChange={(e) => patchNewColumnName(idx, e.target.value)}
-                              className="h-8"
-                            />
-                          </div>
-                          <ColumnValueEditor
-                            value={col.value}
-                            onChange={(v) => patchNewColumnValue(idx, v)}
-                            onRemove={() => removeNewColumn(idx)}
-                            columns={availableColumns}
-                          />
-                        </div>
-                      ))}
+                <div className="space-y-2 py-2">
+                  {newColumns.map((col, idx) => (
+                    <div key={idx} className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Input
+                          placeholder="new_column_name"
+                          value={col.name}
+                          onChange={(e) => patchNewColumnName(idx, e.target.value)}
+                          className="h-8"
+                        />
+                        {activeNewIdx === idx ? (
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => setActiveNewIdx(null)}
+                          >
+                            Скрыть
+                          </Button>
+                        ) : (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setActiveNewIdx(idx)}
+                          >
+                            Редактировать
+                          </Button>
+                        )}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          title="Удалить колонку"
+                          onClick={() => removeNewColumn(idx)}
+                          className="h-7 w-7"
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      {activeNewIdx === idx && (
+                        <ColumnValueEditor
+                          value={col.value}
+                          onChange={(v) => patchNewColumnValue(idx, v)}
+                          onRemove={() => removeNewColumn(idx)}
+                          columns={availableColumns}
+                          params={availableParams}
+                        />
+                      )}
                     </div>
-                  </ScrollArea>
+                  ))}
                 </div>
 
                 <Button type="button" variant="outline" onClick={addNewColumn}>
@@ -420,11 +478,13 @@ function ColumnValueEditor({
   onChange,
   onRemove,
   columns,
+  params,
 }: {
   value: ColumnValue
   onChange: (v: ColumnValue) => void
   onRemove: () => void
   columns?: string[]
+  params?: string[]
 }) {
   const type = value.type
 
@@ -541,6 +601,7 @@ function ColumnValueEditor({
           <ExpressionEditor
             value={(value as ColumnExpression).value as string}
             columns={columns || []}
+            params={params || []}
             onChange={(val) => setExpressionValue(val)}
           />
         )}

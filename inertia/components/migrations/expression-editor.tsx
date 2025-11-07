@@ -5,10 +5,16 @@ import { useTheme } from '../theme-provider'
 export type ExpressionEditorProps = {
   value: string
   columns?: string[]
+  params?: string[]
   onChange: (val: string) => void
 }
 
-export function ExpressionEditor({ value, columns = [], onChange }: ExpressionEditorProps) {
+export function ExpressionEditor({
+  value,
+  columns = [],
+  params = [],
+  onChange,
+}: ExpressionEditorProps) {
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
 
@@ -31,19 +37,7 @@ export function ExpressionEditor({ value, columns = [], onChange }: ExpressionEd
           endColumn: word.endColumn,
         }
 
-        const line = model.getLineContent(position.lineNumber)
-        const prefix = line.slice(0, Math.max(0, position.column - 1))
-        const afterColumnPrefix = /(?:^|\W)column\.$/.test(prefix)
-        const afterColumnBracketPrefix = /(?:^|\W)column\["?$/.test(prefix)
-
-        const columnSuggestionsDot = (columns || []).map((c, i) => ({
-          label: `column.${c}`,
-          kind: monaco.languages.CompletionItemKind.Property,
-          insertText: `column.${c}`,
-          range,
-          detail: 'Колонка (точечная запись)',
-          sortText: `01${i}`,
-        }))
+        // We no longer differentiate by typing context; Monaco filters suggestions.
 
         const columnSuggestionsBracket = (columns || []).map((c, i) => ({
           label: `column["${c}"]`,
@@ -54,14 +48,23 @@ export function ExpressionEditor({ value, columns = [], onChange }: ExpressionEd
           sortText: `00${i}`,
         }))
 
-        const baseSuggestion = {
-          label: 'column.',
-          kind: monaco.languages.CompletionItemKind.Keyword,
-          insertText: 'column.',
+        const paramsSuggestionsDot = (params || []).map((p, i) => ({
+          label: `params.${p}`,
+          kind: monaco.languages.CompletionItemKind.Property,
+          insertText: `params.${p}`,
           range,
-          detail: 'Префикс колонок',
-          sortText: '000',
-        }
+          detail: 'Параметр (точечная запись)',
+          sortText: `11${i}`,
+        }))
+
+        const paramsSuggestionsBracket = (params || []).map((p, i) => ({
+          label: `params["${p}"]`,
+          kind: monaco.languages.CompletionItemKind.Property,
+          insertText: `params["${p}"]`,
+          range,
+          detail: 'Параметр (скобочная запись — безопасно для ключей с точками)',
+          sortText: `10${i}`,
+        }))
 
         const baseBracketSuggestion = {
           label: 'column["..."]',
@@ -72,23 +75,39 @@ export function ExpressionEditor({ value, columns = [], onChange }: ExpressionEd
           sortText: '000',
         }
 
-        const suggestions = afterColumnBracketPrefix
-          ? columnSuggestionsBracket
-          : afterColumnPrefix
-            ? [...columnSuggestionsBracket, ...columnSuggestionsDot]
-            : [
-                baseSuggestion,
-                baseBracketSuggestion,
-                ...columnSuggestionsBracket,
-                ...columnSuggestionsDot,
-              ]
+        const baseParamsSuggestion = {
+          label: 'params.',
+          kind: monaco.languages.CompletionItemKind.Keyword,
+          insertText: 'params.',
+          range,
+          detail: 'Префикс параметров',
+          sortText: '100',
+        }
+
+        const baseParamsBracketSuggestion = {
+          label: 'params["..."]',
+          kind: monaco.languages.CompletionItemKind.Keyword,
+          insertText: 'params[""]',
+          range,
+          detail: 'Скобочная запись параметров',
+          sortText: '100',
+        }
+
+        const suggestions = [
+          baseBracketSuggestion,
+          baseParamsSuggestion,
+          baseParamsBracketSuggestion,
+          ...columnSuggestionsBracket,
+          ...paramsSuggestionsBracket,
+          ...paramsSuggestionsDot,
+        ]
 
         return { suggestions }
       },
     })
 
     return () => provider.dispose()
-  }, [monaco, columns])
+  }, [monaco, columns, params])
 
   useEffect(() => {
     if (!mounted) return
