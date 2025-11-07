@@ -355,6 +355,10 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                       error={error}
                       isLoading={isLoading}
                       fetchConfigsLength={fetchConfigs.length}
+                      resultColumns={prevResults?.dataType === 'array_columns' ? prevResults?.meta?.columns || [] : []}
+                      sources={[]}
+                      tables={[]}
+                      fields={[]}
                     />
                   </div>
                 </CardContent>
