@@ -22,18 +22,14 @@ import {
   DialogTrigger,
 } from '~/components/ui/dialog'
 import { MergeConfig, MergeOn } from '#interfaces/merge_config'
-
-export type DatasetConfig = {
-  id: string
-  title: string
-  columns: string[]
-}
+import { FetchConfigMeta } from '#interfaces/fetchсonfigs'
+import _ from 'lodash'
 
 export type MergeDatasetProps = {
   children?: React.ReactNode
   saveBtnName?: string
   config?: MergeConfig
-  datasetsConfigs?: DatasetConfig[]
+  suggestions?: FetchConfigMeta['suggestions']
   isLoading?: boolean
   onSave?: (config: MergeConfig) => void
   onOpenChange?: (open: boolean) => void
@@ -45,20 +41,14 @@ export function MergeDataset(props: MergeDatasetProps) {
   const conds = ['and', 'or'] as const
 
   const datasets = useMemo(
-    () => (props.datasetsConfigs || []).map((dc) => dc.id),
-    [props.datasetsConfigs]
+    () => Object.keys(_.omit(props.suggestions, ['params'])),
+    [props.suggestions]
   )
 
-  const datasetTitleMap = useMemo(
-    () =>
-      Object.fromEntries(
-        (props.datasetsConfigs || []).map((dc) => [
-          dc.id,
-          dc.title ? `${dc.title} (${dc.id})` : dc.id,
-        ])
-      ),
-    [props.datasetsConfigs]
-  )
+  const datasetTitleMap = useMemo(() => {
+    const ids = Object.keys(_.omit(props.suggestions, ['params']))
+    return Object.fromEntries(ids.map((id) => [id, id]))
+  }, [props.suggestions])
 
   const [open, setOpen] = useState(false)
   const initialConfig = props.config
@@ -116,13 +106,11 @@ export function MergeDataset(props: MergeDatasetProps) {
   }
 
   const suggestionsCombined = useMemo(() => {
-    const leftCfg = (props.datasetsConfigs || []).find((dc) => dc.id === datasetLeftId)
-    const rightCfg = (props.datasetsConfigs || []).find((dc) => dc.id === datasetRightId)
-    const left = (leftCfg?.columns || []).map((c) => `${datasetLeftId}.${c}`)
-    const right = (rightCfg?.columns || []).map((c) => `${datasetRightId}.${c}`)
+    const left = (props.suggestions?.[datasetLeftId] || []).map((c) => `${datasetLeftId}.${c}`)
+    const right = (props.suggestions?.[datasetRightId] || []).map((c) => `${datasetRightId}.${c}`)
     const merged = [...left, ...right].filter((s) => s && !s.startsWith('.'))
     return Array.from(new Set(merged))
-  }, [props.datasetsConfigs, datasetLeftId, datasetRightId])
+  }, [props.suggestions, datasetLeftId, datasetRightId])
 
   return (
     <Dialog open={props.open || open} onOpenChange={props.onOpenChange || setOpen}>

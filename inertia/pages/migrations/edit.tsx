@@ -264,15 +264,11 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                           )}
                           {conf?.type == 'merge' && (
                             <MergeCard
+                              suggestions={suggestionsById[conf.id]}
                               config={conf}
                               isLoading={isLoading}
                               onRemove={handleRemove}
                               onSave={handleSave}
-                              datasetsConfigs={[
-                                { id: 'aa', title: 'sql', columns: ['aa1', 'aa2'] },
-                                { id: 'bb', title: 'dataset1', columns: ['bb1', 'bb2'] },
-                                { id: 'cc', title: 'custom', columns: ['cc1', 'cc2'] },
-                              ]}
                             />
                           )}
                           {conf?.type == 'modification' && (
@@ -333,13 +329,9 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
 
                       <MergeDataset
                         open={newDatasetOpen == 'merge'}
+                        suggestions={meta?.suggestions || {}}
                         onOpenChange={(val) => setNewDatasetOpen(val ? 'merge' : '')}
                         isLoading={isLoading}
-                        datasetsConfigs={[
-                          { id: 'aa', title: 'sql', columns: ['aa1', 'aa2'] },
-                          { id: 'bb', title: 'dataset1', columns: ['bb1', 'bb2'] },
-                          { id: 'cc', title: 'custom', columns: ['cc1', 'cc2'] },
-                        ]}
                         onSave={(config) => setFetchConfigs([...fetchConfigs, config])}
                       />
 

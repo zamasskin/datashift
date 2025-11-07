@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Button } from './button'
 import { Input } from './input'
 // Собственный поповер без Radix
@@ -159,48 +160,66 @@ export function Autocomplete({
         }}
       />
 
-      {open && filteredValueSuggestions.length > 0 && (
-        <div
-          role="listbox"
-          className="absolute left-0 z-50 inline-block border rounded-md bg-popover text-popover-foreground shadow-md"
-          style={
-            placement === 'bottom'
-              ? { top: 'calc(100% + 8px)' }
-              : { bottom: 'calc(100% + 8px)' }
-          }
-        >
-          <div
-            className="overflow-auto p-2 overscroll-contain pointer-events-auto"
-            style={{ maxHeight: maxHeightPx, WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
-            onWheelCapture={(e) => {
-              // Не даём событию прокрутки пройти к родителю страницы
-              e.stopPropagation()
-            }}
-          >
-            <div className="flex flex-col gap-2">
-              {filteredValueSuggestions.map((s, i) => (
-                <Button
-                  key={s}
-                  ref={(el) => {
-                    itemRefs.current[i] = el
+      {open && filteredValueSuggestions.length > 0 &&
+        typeof window !== 'undefined' &&
+        containerRef.current &&
+        createPortal(
+          (() => {
+            const rect = containerRef.current!.getBoundingClientRect()
+            const top = placement === 'bottom' ? rect.bottom + 8 : rect.top - 8
+            const style: React.CSSProperties = {
+              position: 'fixed',
+              left: rect.left,
+              top,
+              width: rect.width,
+              zIndex: 1000,
+              transform: placement === 'top' ? 'translateY(-100%)' : undefined,
+            }
+            return (
+              <div
+                role="listbox"
+                className="inline-block border rounded-md bg-popover text-popover-foreground shadow-md"
+                style={style}
+              >
+                <div
+                  className="overflow-auto p-2 overscroll-contain pointer-events-auto"
+                  style={{
+                    maxHeight: maxHeightPx,
+                    WebkitOverflowScrolling: 'touch',
+                    touchAction: 'pan-y',
                   }}
-                  data-active={i === activeIndex || undefined}
-                  className={(i === activeIndex ? 'bg-accent ' : '') + 'justify-start px-3 py-2'}
-                  variant="ghost"
-                  size="sm"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => {
-                    onValueChange && onValueChange(s)
-                    setOpen(false)
+                  onWheelCapture={(e) => {
+                    // Не даём событию прокрутки пройти к родителю страницы
+                    e.stopPropagation()
                   }}
                 >
-                  {s}
-                </Button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+                  <div className="flex flex-col gap-2">
+                    {filteredValueSuggestions.map((s, i) => (
+                      <Button
+                        key={s}
+                        ref={(el) => {
+                          itemRefs.current[i] = el
+                        }}
+                        data-active={i === activeIndex || undefined}
+                        className={(i === activeIndex ? 'bg-accent ' : '') + 'justify-start px-3 py-2'}
+                        variant="ghost"
+                        size="sm"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => {
+                          onValueChange && onValueChange(s)
+                          setOpen(false)
+                        }}
+                      >
+                        {s}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )
+          })(),
+          document.body
+        )}
     </div>
   )
 }

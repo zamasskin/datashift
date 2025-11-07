@@ -1,23 +1,18 @@
 import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '~/components/ui/item'
-import { DatasetConfig, MergeDataset } from '../datasets/merge-dataset'
+import { MergeDataset } from '../datasets/merge-dataset'
 import { Button } from '~/components/ui/button'
 import { Settings, Trash } from 'lucide-react'
 import { MergeConfig } from '#interfaces/merge_config'
+import { FetchConfigMeta } from '#interfaces/fetchсonfigs'
 
 export type MergeCardProps = {
   config?: MergeConfig
-  datasetsConfigs?: DatasetConfig[]
   isLoading?: boolean
+  suggestions?: FetchConfigMeta['suggestions']
   onRemove?: (id: string) => void
   onSave?: (config: MergeConfig) => void
 }
-export function MergeCard({
-  config,
-  datasetsConfigs,
-  isLoading,
-  onRemove,
-  onSave,
-}: MergeCardProps) {
+export function MergeCard({ config, isLoading, suggestions, onRemove, onSave }: MergeCardProps) {
   const handleRemove = () => {
     if (onRemove) {
       onRemove(config?.id || '')
@@ -52,7 +47,7 @@ export function MergeCard({
           <MergeDataset
             saveBtnName="Сохранить"
             config={config}
-            datasetsConfigs={datasetsConfigs}
+            suggestions={suggestions}
             isLoading={isLoading}
             onSave={onSave}
           >
