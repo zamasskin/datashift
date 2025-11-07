@@ -22,11 +22,11 @@ import {
 } from '~/components/ui/dialog'
 import { PlusIcon, TrashIcon } from 'lucide-react'
 import { Item, ItemContent } from '~/components/ui/item'
+import { Checkbox } from '~/components/ui/checkbox'
 import { ExpressionEditor } from '../expression-editor'
 import { TemplateEditor } from '../template-editor'
 import {
   ColumnExpression,
-  ColumnFunction,
   ColumnLiteral,
   ColumnReference,
   ColumnTemplate,
@@ -72,6 +72,7 @@ export function ModificationDataset(props: ModificationDatasetProps) {
     return Object.keys(map).map((k) => ({ from: k, to: map[k] }))
   })
   const [dropColumns, setDropColumns] = useState<string[]>(initial?.params?.dropColumns || [])
+  const [bulkDropSelection, setBulkDropSelection] = useState<string[]>([])
   const [newColumns, setNewColumns] = useState<ColumnValue[]>(initial?.params?.newColumns || [])
 
   const dropOptions = useMemo(
@@ -120,14 +121,6 @@ export function ModificationDataset(props: ModificationDatasetProps) {
       if (props?.onOpenChange) props.onOpenChange(false)
       setOpen(false)
     }
-  }
-
-  const [newDropName, setNewDropName] = useState('')
-  const addDropColumn = () => {
-    const v = newDropName.trim()
-    if (!v) return
-    setDropColumns((prev) => (prev.includes(v) ? prev : [...prev, v]))
-    setNewDropName('')
   }
 
   const removeDropColumn = (idx: number) => {
@@ -290,27 +283,63 @@ export function ModificationDataset(props: ModificationDatasetProps) {
             <TabsContent value="drop" className="mt-3">
               <Field>
                 <FieldLabel>Удалить колонки</FieldLabel>
-                <div className="flex gap-2">
-                  <Select value={newDropName} onValueChange={setNewDropName}>
-                    <SelectTrigger className="min-w-40 h-8" title="Колонка">
-                      <SelectValue placeholder="Выберите колонку" />
-                    </SelectTrigger>
-                    <SelectContent>
+                <div className="max-h-48 max-w-full overflow-scroll border rounded-md p-2">
+                  <ScrollArea>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 py-1">
                       {dropOptions.length > 0 ? (
                         dropOptions.map((c) => (
-                          <SelectItem key={c} value={c}>
-                            {c}
-                          </SelectItem>
+                          <label key={c} className="flex items-center gap-2">
+                            <Checkbox
+                              checked={bulkDropSelection.includes(c)}
+                              onCheckedChange={(val) => {
+                                const checked = Boolean(val)
+                                setBulkDropSelection((prev) =>
+                                  checked
+                                    ? [...prev, c].filter((v, i, arr) => arr.indexOf(v) === i)
+                                    : prev.filter((x) => x !== c)
+                                )
+                              }}
+                              aria-label={c}
+                            />
+                            <span className="text-sm font-mono">{c}</span>
+                          </label>
                         ))
                       ) : (
-                        <SelectItem value="__no_columns__" disabled>
-                          Нет колонок
-                        </SelectItem>
+                        <div className="text-sm text-muted-foreground">Нет колонок</div>
                       )}
-                    </SelectContent>
-                  </Select>
-                  <Button type="button" variant="secondary" onClick={addDropColumn}>
-                    Добавить
+                    </div>
+                  </ScrollArea>
+                </div>
+                <div className="mt-2 flex gap-2">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => setBulkDropSelection(dropOptions)}
+                    disabled={dropOptions.length === 0}
+                  >
+                    Выделить все
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => {
+                      setDropColumns((prev) => [
+                        ...prev,
+                        ...bulkDropSelection.filter((c) => !prev.includes(c)),
+                      ])
+                      setBulkDropSelection([])
+                    }}
+                    disabled={bulkDropSelection.length === 0}
+                  >
+                    Добавить выбранные
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={() => setDropColumns([])}
+                    disabled={dropColumns.length === 0}
+                  >
+                    Очистить список
                   </Button>
                 </div>
                 <div className="max-h-72 max-w-full overflow-scroll">
@@ -402,22 +431,6 @@ function ColumnValueEditor({
   const setTemplateValue = (v: string) => onChange({ type: 'template', value: v })
   const setExpressionValue = (v: string) => onChange({ type: 'expression', value: v })
   const setReferenceValue = (v: string) => onChange({ type: 'reference', value: v })
-  const setFunctionName = (v: string) =>
-    onChange({ type: 'function', name: v, args: (value as ColumnFunction).args || [] })
-  const setFunctionArgsJson = (text: string) => {
-    try {
-      const parsed = JSON.parse(text)
-      if (Array.isArray(parsed)) {
-        onChange({
-          type: 'function',
-          name: (value as ColumnFunction).name || '',
-          args: parsed as ColumnValue[],
-        })
-      }
-    } catch (e) {
-      // ignore parse errors
-    }
-  }
 
   return (
     <Item variant="outline" className="w-full items-start gap-1 py-3 px-3">
