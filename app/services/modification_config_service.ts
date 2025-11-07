@@ -136,8 +136,8 @@ export default class ModificationConfigService {
 
   private renderTemplate(template: string, row: Record<string, any>, params: Record<string, any>) {
     if (!template) return ''
-    return template.replace(/\{\{\s*([a-zA-Z0-9_\.]+)\s*\}\}/g, (_, key: string) => {
-      const k = String(key || '').trim()
+    const resolve = (rawKey: string) => {
+      const k = String(rawKey || '').trim()
       if (!k) return ''
       if (k.startsWith('params.')) {
         const pKey = k.slice('params.'.length)
@@ -146,7 +146,13 @@ export default class ModificationConfigService {
       }
       const v = row[k]
       return v === null || typeof v === 'undefined' ? '' : String(v)
-    })
+    }
+
+    // 1) Mustache-style double braces {{key}}
+    let out = template.replace(/\{\{\s*([a-zA-Z0-9_\.]+)\s*\}\}/g, (_, key: string) => resolve(key))
+    // 2) Single-brace placeholders {key} (UI hints used single braces)
+    out = out.replace(/\{\s*([a-zA-Z0-9_\.]+)\s*\}/g, (_, key: string) => resolve(key))
+    return out
   }
 
   private evalExpression(expr: string, row: Record<string, any>, params: Record<string, any>) {
