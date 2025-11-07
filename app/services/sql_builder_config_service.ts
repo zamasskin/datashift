@@ -47,6 +47,22 @@ export default class SqlBuilderConfigService {
       }
     } else {
       const countPages = Math.ceil(count / this.limit)
+
+      // Если данных нет, то возвращаем пустой массив
+      if (countPages === 0) {
+        yield {
+          datasetId: config.id,
+          dataType: 'array_columns',
+          data: [],
+          count: 0,
+          meta: {
+            name: 'SqlBuilder',
+            columns: [],
+          },
+        }
+        return
+      }
+
       for (let page = 1; page <= countPages; page++) {
         const { rows, columns } = await this.sqlService.executeSql(
           ds.type,

@@ -23,8 +23,6 @@ export default class SqlConfigService {
       this.sqlService.getSource(resultList)
     )
 
-    console.log(prepared.sql, prepared.values, config)
-
     const count = await this.sqlService.countSql(ds.type, ds.config, prepared.sql, prepared.values)
     if (config.page) {
       const { rows, columns } = await this.sqlService.executeSql(
@@ -48,6 +46,22 @@ export default class SqlConfigService {
       }
     } else {
       const countPages = Math.ceil(count / this.limit)
+
+      // Если данных нет, то возвращаем пустой массив
+      if (countPages === 0) {
+        yield {
+          datasetId: config.id,
+          dataType: 'array_columns',
+          data: [],
+          count: 0,
+          meta: {
+            name: 'Sql',
+            columns: [],
+          },
+        }
+        return
+      }
+
       for (let page = 1; page <= countPages; page++) {
         const { rows, columns } = await this.sqlService.executeSql(
           ds.type,
