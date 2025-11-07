@@ -67,7 +67,7 @@ export function MappingEditor({
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 max-h-[75vh] overflow-y-auto pr-1">
       <Field>
         <FieldLabel>Название соответствия</FieldLabel>
         <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="например: связывание пользователей" className="h-8" />
@@ -119,7 +119,7 @@ export function MappingEditor({
         </Field>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <Field>
           <FieldLabel>Поля источника</FieldLabel>
           <div className="flex flex-col gap-2">
@@ -163,7 +163,7 @@ export function MappingEditor({
 
       <Field>
         <FieldLabel>Условия совпадения</FieldLabel>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 max-h-[32vh] overflow-y-auto pr-1">
           {conditions.map((cond, idx) => (
             <div key={idx} className="flex items-center gap-2">
               <Select value={cond.leftField} onValueChange={(v) => patchCondition(idx, { leftField: v })}>

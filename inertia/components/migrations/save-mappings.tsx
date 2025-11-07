@@ -59,7 +59,7 @@ export function SaveMappings({
         <>
           <Button variant="outline" onClick={() => setOpen(true)}>Добавить соответствие</Button>
           <Dialog open={open} onOpenChange={setOpen}>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="w-[95vw] md:max-w-2xl max-h-[85vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Создание соответствия</DialogTitle>
               </DialogHeader>
