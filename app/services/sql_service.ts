@@ -99,7 +99,8 @@ export default class SqlService {
         connectTimeout: 3000,
       })
       try {
-        const [rows, fields] = await connection.execute(wrappedSql, variables)
+        // console.log('wrappedSql', wrappedSql, 'variables', variables)
+        const [rows, fields] = await connection.query(wrappedSql, variables)
         const columns = Array.isArray(fields)
           ? (fields as any[]).map((f: any) => f?.name).filter(Boolean)
           : undefined
