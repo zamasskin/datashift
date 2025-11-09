@@ -329,8 +329,6 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                           ? prevResults?.meta?.columns || []
                           : []
                       }
-                      tables={[]}
-                      fields={[]}
                       onSave={(mapping) => setSaveMappings((old) => [...old, mapping])}
                     />
                   </div>

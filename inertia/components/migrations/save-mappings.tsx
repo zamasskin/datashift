@@ -5,23 +5,20 @@ import { Spinner } from '~/components/ui/spinner'
 import { FileWarning } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '~/components/ui/dialog'
 import { MappingEditor } from './mapping-editor'
+import type { SaveMapping } from '#interfaces/save_mapping'
 
 export function SaveMappings({
   error,
   isLoading,
   fetchConfigsLength,
   resultColumns = [],
-  tables = [],
-  fields = [],
   onSave,
 }: {
   error?: string | null
   isLoading?: boolean
   fetchConfigsLength: number
   resultColumns?: string[]
-  tables?: string[]
-  fields?: string[]
-  onSave?: (mapping: any) => void
+  onSave?: (mapping: SaveMapping) => void
 }) {
   const [open, setOpen] = useState(false)
   if (error) {
@@ -65,8 +62,6 @@ export function SaveMappings({
               </DialogHeader>
               <MappingEditor
                 resultColumns={resultColumns}
-                tables={tables}
-                fields={fields}
                 onCancel={() => setOpen(false)}
                 onSave={(mapping) => {
                   onSave?.(mapping)
