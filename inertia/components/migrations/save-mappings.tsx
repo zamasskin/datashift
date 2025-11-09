@@ -12,12 +12,14 @@ export function SaveMappings({
   isLoading,
   fetchConfigsLength,
   resultColumns = [],
+  saveMappings = [],
   onSave,
 }: {
   error?: string | null
   isLoading?: boolean
   fetchConfigsLength: number
   resultColumns?: string[]
+  saveMappings?: SaveMapping[]
   onSave?: (mapping: SaveMapping) => void
 }) {
   const [open, setOpen] = useState(false)

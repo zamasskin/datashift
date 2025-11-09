@@ -329,7 +329,15 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                           ? prevResults?.meta?.columns || []
                           : []
                       }
-                      onSave={(mapping) => setSaveMappings((old) => [...old, mapping])}
+                      saveMappings={saveMappings}
+                      onSave={(mapping) =>
+                        setSaveMappings((old) => {
+                          const exists = old.some((m) => m.id === mapping.id)
+                          return exists
+                            ? old.map((m) => (m.id === mapping.id ? mapping : m))
+                            : [...old, mapping]
+                        })
+                      }
                     />
                   </div>
                 </CardContent>
