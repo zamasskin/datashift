@@ -3,9 +3,9 @@ import { Field, FieldLabel } from '~/components/ui/field'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select'
 import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
+import { DataSourceSelect } from '~/components/datasource/data-source-select'
 
 export type MappingEditorProps = {
-  sources?: string[]
   tables?: string[]
   fields?: string[]
   resultColumns?: string[]
@@ -20,14 +20,13 @@ export type MappingEditorProps = {
 }
 
 export function MappingEditor({
-  sources = [],
   tables = [],
   fields = [],
   resultColumns = [],
   onSave,
   onCancel,
 }: MappingEditorProps) {
-  const [source, setSource] = useState<string>('')
+  const [sourceId, setSourceId] = useState<number | undefined>(undefined)
   const [table, setTable] = useState<string>('')
 
   const [fieldMappings, setFieldMappings] = useState<{ sourceField: string; targetColumn?: string }[]>(
@@ -35,7 +34,7 @@ export function MappingEditor({
   )
   const [conditions, setConditions] = useState<{ leftField: string; operator: '='; rightColumn: string }[]>([])
 
-  const canSave = useMemo(() => !!source && !!table && fieldMappings.length > 0, [source, table, fieldMappings])
+  const canSave = useMemo(() => !!sourceId && !!table && fieldMappings.length > 0, [sourceId, table, fieldMappings])
 
   const addCondition = () => {
     setConditions((prev) => [...prev, { leftField: '', operator: '=', rightColumn: '' }])
@@ -62,7 +61,7 @@ export function MappingEditor({
   }
 
   const handleSave = () => {
-    onSave?.({ source, table, fieldMappings, conditions })
+    onSave?.({ source: sourceId != null ? String(sourceId) : undefined, table, fieldMappings, conditions })
   }
 
   return (
@@ -70,27 +69,9 @@ export function MappingEditor({
       {/* Поле названия удалено по требованию для экономии вертикального пространства */}
 
       <div className="flex gap-3">
-        <Field className="flex-1">
-          <FieldLabel>Источник данных</FieldLabel>
-          <Select value={source} onValueChange={setSource}>
-            <SelectTrigger className="h-8 min-w-40">
-              <SelectValue placeholder="Выберите источник" />
-            </SelectTrigger>
-            <SelectContent>
-              {sources.length > 0 ? (
-                sources.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    {s}
-                  </SelectItem>
-                ))
-              ) : (
-                <SelectItem value="__no_sources__" disabled>
-                  Нет источников
-                </SelectItem>
-              )}
-            </SelectContent>
-          </Select>
-        </Field>
+        <div className="flex-1">
+          <DataSourceSelect value={sourceId} onChange={setSourceId} />
+        </div>
 
         <Field className="flex-1">
           <FieldLabel>Таблица</FieldLabel>

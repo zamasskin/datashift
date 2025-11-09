@@ -11,17 +11,17 @@ export function SaveMappings({
   isLoading,
   fetchConfigsLength,
   resultColumns = [],
-  sources = [],
   tables = [],
   fields = [],
+  onSave,
 }: {
   error?: string | null
   isLoading?: boolean
   fetchConfigsLength: number
   resultColumns?: string[]
-  sources?: string[]
   tables?: string[]
   fields?: string[]
+  onSave?: (mapping: any) => void
 }) {
   const [open, setOpen] = useState(false)
   if (error) {
@@ -65,11 +65,13 @@ export function SaveMappings({
               </DialogHeader>
               <MappingEditor
                 resultColumns={resultColumns}
-                sources={sources}
                 tables={tables}
                 fields={fields}
                 onCancel={() => setOpen(false)}
-                onSave={() => setOpen(false)}
+                onSave={(mapping) => {
+                  onSave?.(mapping)
+                  setOpen(false)
+                }}
               />
             </DialogContent>
           </Dialog>
