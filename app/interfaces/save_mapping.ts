@@ -6,6 +6,7 @@ export type UpdateOn = {
 }
 
 export type SaveMapping = {
+  id: string
   sourceId: number
   savedMapping: Record<string, string>[]
   updateOn: UpdateOn[]
