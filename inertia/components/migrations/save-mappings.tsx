@@ -56,22 +56,18 @@ export function SaveMappings({
 
       {fetchConfigsLength > 0 && (
         <>
-          <Button variant="outline" onClick={() => setOpen(true)}>Добавить соответствие</Button>
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogContent className="w-[95vw] sm:max-w-xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl max-h-[95vh] overflow-hidden">
-              <DialogHeader>
-                <DialogTitle>Создание соответствия</DialogTitle>
-              </DialogHeader>
-              <MappingEditor
-                resultColumns={resultColumns}
-                onCancel={() => setOpen(false)}
-                onSave={(mapping) => {
-                  onSave?.(mapping)
-                  setOpen(false)
-                }}
-              />
-            </DialogContent>
-          </Dialog>
+          <MappingEditor
+            resultColumns={resultColumns}
+            // onCancel={() => setOpen(false)}
+            onSave={(mapping) => {
+              onSave?.(mapping)
+              setOpen(false)
+            }}
+          >
+            <Button variant="outline" onClick={() => setOpen(true)}>
+              Добавить соответствие
+            </Button>
+          </MappingEditor>
         </>
       )}
     </>
