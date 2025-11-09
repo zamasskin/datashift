@@ -27,7 +27,6 @@ export function MappingEditor({
   onSave,
   onCancel,
 }: MappingEditorProps) {
-  const [name, setName] = useState('')
   const [source, setSource] = useState<string>('')
   const [table, setTable] = useState<string>('')
 
@@ -63,15 +62,12 @@ export function MappingEditor({
   }
 
   const handleSave = () => {
-    onSave?.({ source, table, fieldMappings, conditions, name: name.trim() })
+    onSave?.({ source, table, fieldMappings, conditions })
   }
 
   return (
     <div className="flex flex-col gap-4 max-h-[75vh] overflow-y-auto pr-1">
-      <Field>
-        <FieldLabel>Название соответствия</FieldLabel>
-        <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="например: связывание пользователей" className="h-8" />
-      </Field>
+      {/* Поле названия удалено по требованию для экономии вертикального пространства */}
 
       <div className="flex gap-3">
         <Field className="flex-1">
