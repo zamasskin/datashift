@@ -26,6 +26,7 @@ export function MappingEditor({ config, children, resultColumns }: MappingEditor
   const [sourceId, setSourceId] = useState<number>(config?.sourceId || 0)
   const [loading, setLoading] = useState(false)
   const [table, setTable] = useState<string>('')
+  const [columns, setColumns] = useState<string[]>([])
 
   const [open, setOpen] = useState(false)
   const [tables, setTables] = useState<string[]>([])
@@ -55,6 +56,32 @@ export function MappingEditor({ config, children, resultColumns }: MappingEditor
     } catch (e) {
       console.error('Не удалось загрузить таблицы', e)
       setTables([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchColumnsTable = async (table: string) => {
+    if (!table) return
+    try {
+      setLoading(true)
+      const res = await fetch('/sql/columns', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}),
+        },
+        body: JSON.stringify({ table }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err?.error || `HTTP ${res.status}`)
+      }
+      const data = await res.json()
+      setColumns(Array.isArray(data?.columns) ? data.columns : [])
+    } catch (e) {
+      console.error('Не удалось загрузить столбцы', e)
+      setColumns([])
     } finally {
       setLoading(false)
     }
