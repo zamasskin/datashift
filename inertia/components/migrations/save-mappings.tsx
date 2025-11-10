@@ -55,7 +55,7 @@ export function SaveMappings({
 
       {fetchConfigsLength > 0 && (
         <>
-          {saveMappings.map((mapping) => (
+          {saveMappings.map((mapping, idx) => (
             <Item key={mapping.id} variant="outline">
               <ItemContent>
                 <ScrollArea className="h-30 w-full">
@@ -114,7 +114,12 @@ export function SaveMappings({
               <ItemActions>
                 <MappingEditor
                   config={mapping}
-                  resultColumns={resultColumns}
+                  resultColumns={Array.from(
+                    new Set([
+                      ...resultColumns,
+                      ...saveMappings.slice(0, idx).map((m) => `${m.id}.ID`),
+                    ])
+                  )}
                   saveBtnName="Сохранить"
                   onSave={(updated) => {
                     if (onSave) {
@@ -146,7 +151,9 @@ export function SaveMappings({
             </Item>
           ))}
           <MappingEditor
-            resultColumns={resultColumns}
+            resultColumns={Array.from(
+              new Set([...resultColumns, ...saveMappings.map((m) => `${m.id}.ID`)])
+            )}
             // onCancel={() => setOpen(false)}
             onSave={(mapping) => {
               if (onSave) {
