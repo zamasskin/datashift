@@ -13,6 +13,7 @@ import { DataSourceSelect } from '../datasource/data-source-select'
 import { usePage } from '@inertiajs/react'
 import { TableSelect } from './table-select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog'
+import { X } from 'lucide-react'
 import _ from 'lodash'
 
 export type MappingEditorProps = {
@@ -165,24 +166,24 @@ export function MappingEditor({ config, children, resultColumns, onSave }: Mappi
             )}
 
             {savedMappingState.length > 0 && (
-              <div className="space-y-2">
+              <div className="flex flex-wrap gap-2">
                 {savedMappingState.map((item, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center justify-between gap-3 border rounded-md p-2"
+                    className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs"
+                    title={`${(item as any).tableColumn || ''} → ${(item as any).resultColumn || ''}`}
                   >
-                    <div className="text-sm">
-                      {(item as any).tableColumn || ''} → {(item as any).resultColumn || ''}
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() =>
-                        setSavedMappingState((prev) => prev.filter((_, i) => i !== idx))
-                      }
+                    <span>{(item as any).tableColumn || ''}</span>
+                    <span>→</span>
+                    <span>{(item as any).resultColumn || ''}</span>
+                    <button
+                      type="button"
+                      onClick={() => setSavedMappingState((prev) => prev.filter((_, i) => i !== idx))}
+                      className="ml-1 text-muted-foreground hover:text-destructive"
+                      aria-label="Удалить соответствие"
                     >
-                      Удалить
-                    </Button>
+                      <X className="w-3 h-3" />
+                    </button>
                   </div>
                 ))}
               </div>
