@@ -13,7 +13,7 @@ import { DataSourceSelect } from '../datasource/data-source-select'
 import { usePage } from '@inertiajs/react'
 import { TableSelect } from './table-select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog'
-import { X } from 'lucide-react'
+import { X, Loader2 } from 'lucide-react'
 import _ from 'lodash'
 
 export type MappingEditorProps = {
@@ -21,9 +21,16 @@ export type MappingEditorProps = {
   children?: React.ReactNode
   config?: SaveMapping
   onSave?: (mapping: SaveMapping) => void
+  saveBtnName?: string
 }
 
-export function MappingEditor({ config, children, resultColumns, onSave }: MappingEditorProps) {
+export function MappingEditor({
+  config,
+  children,
+  resultColumns,
+  onSave,
+  saveBtnName = 'Добавить',
+}: MappingEditorProps) {
   const { csrfToken } = usePage().props as any
   const [sourceId, setSourceId] = useState<number>(config?.sourceId || 0)
   const [loading, setLoading] = useState(false)
@@ -38,12 +45,13 @@ export function MappingEditor({ config, children, resultColumns, onSave }: Mappi
   const [updateOpen, setUpdateOpen] = useState(false)
   const [newUpdateTableColumn, setNewUpdateTableColumn] = useState('')
   const [newUpdateAliasColumn, setNewUpdateAliasColumn] = useState('')
-  const [newUpdateOperator, setNewUpdateOperator] = useState<'=' | '!=' | '<' | '<=' | '>' | '>='>('=')
+  const [newUpdateOperator, setNewUpdateOperator] = useState<'=' | '!=' | '<' | '<=' | '>' | '>='>(
+    '='
+  )
   const [newUpdateCond, setNewUpdateCond] = useState<'and' | 'or' | undefined>('and')
 
   const [open, setOpen] = useState(false)
   const [tables, setTables] = useState<string[]>([])
-  const [source, setSource] = useState<string>('')
   const [addOpen, setAddOpen] = useState(false)
   const [newTableColumn, setNewTableColumn] = useState('')
   const [newResultColumn, setNewResultColumn] = useState('')
@@ -144,7 +152,13 @@ export function MappingEditor({ config, children, resultColumns, onSave }: Mappi
         <DialogHeader>
           <DialogTitle>Создание соответствия</DialogTitle>
         </DialogHeader>
-        <div className="flex flex-col gap-4 max-h-[75vh] overflow-y-auto pr-1">
+        {loading && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Загрузка данных...
+          </div>
+        )}
+        <div className="flex flex-col gap-4 max-h-[75vh] overflow-y-auto pr-1" aria-busy={loading}>
           <div className="flex gap-3">
             <div className="flex-1">
               <DataSourceSelect value={sourceId} onChange={setSourceId} />
@@ -162,8 +176,11 @@ export function MappingEditor({ config, children, resultColumns, onSave }: Mappi
 
           <div className="mt-2 space-y-3">
             <div className="flex items-center justify-between">
-              <div className="font-medium">Соответствия колонок</div>
-              <Button variant="outline" onClick={() => setAddOpen(true)}>
+              <div className="font-medium flex items-center gap-2">
+                Соответствия колонок
+                {loading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+              </div>
+              <Button variant="outline" onClick={() => setAddOpen(true)} disabled={loading}>
                 Добавить соответствие
               </Button>
             </div>
@@ -185,7 +202,9 @@ export function MappingEditor({ config, children, resultColumns, onSave }: Mappi
                     <span>{(item as any).resultColumn || ''}</span>
                     <button
                       type="button"
-                      onClick={() => setSavedMappingState((prev) => prev.filter((_, i) => i !== idx))}
+                      onClick={() =>
+                        setSavedMappingState((prev) => prev.filter((_, i) => i !== idx))
+                      }
                       className="ml-1 text-muted-foreground hover:text-destructive"
                       aria-label="Удалить соответствие"
                     >
@@ -199,8 +218,11 @@ export function MappingEditor({ config, children, resultColumns, onSave }: Mappi
 
           <div className="mt-4 space-y-3">
             <div className="flex items-center justify-between">
-              <div className="font-medium">Условия обновления</div>
-              <Button variant="outline" onClick={() => setUpdateOpen(true)}>
+              <div className="font-medium flex items-center gap-2">
+                Условия обновления
+                {loading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+              </div>
+              <Button variant="outline" onClick={() => setUpdateOpen(true)} disabled={loading}>
                 Добавить условие
               </Button>
             </div>
@@ -220,7 +242,9 @@ export function MappingEditor({ config, children, resultColumns, onSave }: Mappi
                     <span>{item.tableColumn || ''}</span>
                     <span>{item.operator || ''}</span>
                     <span>{item.aliasColumn || ''}</span>
-                    {item.cond && <span className="ml-1 text-muted-foreground">({item.cond})</span>}
+                    {idx > 0 && item.cond && (
+                      <span className="ml-1 text-muted-foreground">({item.cond})</span>
+                    )}
                     <button
                       type="button"
                       onClick={() => setUpdateOnState((prev) => prev.filter((_, i) => i !== idx))}
@@ -237,7 +261,7 @@ export function MappingEditor({ config, children, resultColumns, onSave }: Mappi
 
           <div className="flex items-center gap-2">
             <Button type="button" onClick={handleSave}>
-              Сохранить соответствие
+              {saveBtnName}
             </Button>
             <Button type="button" variant="ghost" onClick={handleCancel}>
               Отмена
@@ -259,7 +283,9 @@ export function MappingEditor({ config, children, resultColumns, onSave }: Mappi
                   <SelectValue placeholder="Выберите колонку" />
                 </SelectTrigger>
                 <SelectContent>
-                  {columns.filter((c) => !savedMappingState.some((m) => (m as any).tableColumn === c)).length > 0 ? (
+                  {columns.filter(
+                    (c) => !savedMappingState.some((m) => (m as any).tableColumn === c)
+                  ).length > 0 ? (
                     columns
                       .filter((c) => !savedMappingState.some((m) => (m as any).tableColumn === c))
                       .map((c) => (
@@ -283,7 +309,10 @@ export function MappingEditor({ config, children, resultColumns, onSave }: Mappi
                   <SelectValue placeholder="Выберите колонку" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Array.isArray(resultColumns) && resultColumns.filter((c) => !savedMappingState.some((m) => (m as any).resultColumn === c)).length > 0 ? (
+                  {Array.isArray(resultColumns) &&
+                  resultColumns.filter(
+                    (c) => !savedMappingState.some((m) => (m as any).resultColumn === c)
+                  ).length > 0 ? (
                     resultColumns
                       .filter((c) => !savedMappingState.some((m) => (m as any).resultColumn === c))
                       .map((c) => (
@@ -379,7 +408,10 @@ export function MappingEditor({ config, children, resultColumns, onSave }: Mappi
               <div className="flex-1">
                 <Field>
                   <FieldLabel>Оператор</FieldLabel>
-                  <Select value={newUpdateOperator} onValueChange={(v) => setNewUpdateOperator(v as any)}>
+                  <Select
+                    value={newUpdateOperator}
+                    onValueChange={(v) => setNewUpdateOperator(v as any)}
+                  >
                     <SelectTrigger className="h-8">
                       <SelectValue placeholder="Выберите оператор" />
                     </SelectTrigger>
@@ -393,23 +425,28 @@ export function MappingEditor({ config, children, resultColumns, onSave }: Mappi
                   </Select>
                 </Field>
               </div>
-              <div className="flex-1">
-                <Field>
-                  <FieldLabel>Условие (cond)</FieldLabel>
-                  <Select value={newUpdateCond ?? ''} onValueChange={(v) => setNewUpdateCond((v as any) || undefined)}>
-                    <SelectTrigger className="h-8">
-                      <SelectValue placeholder="and / or" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {['and', 'or'].map((c) => (
-                        <SelectItem key={c} value={c}>
-                          {c}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
-              </div>
+              {updateOnState.length > 0 && (
+                <div className="flex-1">
+                  <Field>
+                    <FieldLabel>Условие (cond)</FieldLabel>
+                    <Select
+                      value={newUpdateCond ?? ''}
+                      onValueChange={(v) => setNewUpdateCond((v as any) || undefined)}
+                    >
+                      <SelectTrigger className="h-8">
+                        <SelectValue placeholder="and / or" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {['and', 'or'].map((c) => (
+                          <SelectItem key={c} value={c}>
+                            {c}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-2">
@@ -420,7 +457,7 @@ export function MappingEditor({ config, children, resultColumns, onSave }: Mappi
                     tableColumn: newUpdateTableColumn,
                     aliasColumn: newUpdateAliasColumn,
                     operator: newUpdateOperator,
-                    cond: newUpdateCond,
+                    cond: updateOnState.length > 0 ? newUpdateCond : undefined,
                   }
                   setUpdateOnState((prev) => [...prev, entry])
                   setNewUpdateTableColumn('')
