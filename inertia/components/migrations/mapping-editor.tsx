@@ -56,6 +56,12 @@ export function MappingEditor({
   const [newTableColumn, setNewTableColumn] = useState('')
   const [newResultColumn, setNewResultColumn] = useState('')
 
+  const resetForm = () => {
+    setSourceId(config?.sourceId || 0)
+    setSavedMappingState(config?.savedMapping ?? [])
+    setUpdateOnState(config?.updateOn ?? [])
+  }
+
   const onSelectSourceId = async (value: number) => {
     if (!value) {
       setTables([])
@@ -138,10 +144,11 @@ export function MappingEditor({
     }
     if (typeof onSave === 'function') onSave(payload)
     setOpen(false)
+    resetForm()
   }
 
   const handleCancel = () => {
-    // TODO: Продумать как сбрасывать состояние формы
+    resetForm()
     setOpen(false)
   }
 
