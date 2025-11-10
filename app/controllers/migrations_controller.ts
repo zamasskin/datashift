@@ -16,9 +16,9 @@ import { SaveMapping } from '#interfaces/save_mapping'
 // Узкий тип данных для запуска миграции из валидированного тела запроса
 type RunMigrateData = {
   id: number
-  fetchConfigs: any[]
+  fetchConfigs: FetchConfig[]
   saveMappings: SaveMapping[]
-  params: any[]
+  params: Param[]
 }
 export default class MigrationsController {
   async index({ inertia }: HttpContext) {
@@ -222,13 +222,17 @@ export default class MigrationsController {
 
     const body = request.all()
     const data = await schema.validate(body)
-    return this.migrate(data)
+    const normalized: RunMigrateData = {
+      id: Number(data.id),
+      fetchConfigs: this.normalizeFetchConfigs(data.fetchConfigs),
+      saveMappings: Array.isArray(data.saveMappings) ? data.saveMappings : [],
+      params: this.normalizeParams(data.params),
+    }
+    return this.migrate(normalized)
   }
 
-  async migrate(data: RunMigrateData) {
-    const params = this.normalizeParams(data.params)
-    const fetchConfigs = this.normalizeFetchConfigs(data.fetchConfigs)
-
+  async migrate({ id, params, fetchConfigs, saveMappings }: RunMigrateData) {
+    console.log(id)
     const paramsService = new ParamsService()
     const fetchConfigService = new FetchConfigService()
     const sqlService = new SqlService()
@@ -249,7 +253,7 @@ export default class MigrationsController {
 
       // Последовательное применение правил сохранения к текущему датасету
       // Всегда используем валидированные правила из запроса
-      const mappings: any[] = Array.isArray(data.saveMappings) ? data.saveMappings : []
+      const mappings: any[] = Array.isArray(saveMappings) ? saveMappings : []
       const rows: Record<string, any>[] = Array.isArray(result.data) ? result.data : []
       for (const mapping of mappings) {
         const count = await sqlService.applySaveMappingToRows(mapping, rows)
@@ -307,9 +311,10 @@ export default class MigrationsController {
    * Преобразует (и аффинирует типы) массива конфигов из валидатора
    * в строго типизированный `FetchConfig[]` (дискриминированный union).
    */
-  private normalizeFetchConfigs(items: any[]): FetchConfig[] {
-    return items.map((c) => {
-      switch (c?.type) {
+  private normalizeFetchConfigs(items: unknown[]): FetchConfig[] {
+    const list = Array.isArray(items) ? (items as any[]) : []
+    return list.map((c: any) => {
+      switch (c?.type as string) {
         case 'sql': {
           const cfg: SqlConfig = {
             type: 'sql',
@@ -387,10 +392,11 @@ export default class MigrationsController {
   /**
    * Нормализует элементы params из валидатора в строго типизированный массив `Param[]`.
    */
-  private normalizeParams(items: any[]): Param[] {
-    return (Array.isArray(items) ? items : []).map((p) => {
+  private normalizeParams(items: unknown[]): Param[] {
+    const list = Array.isArray(items) ? (items as any[]) : []
+    return list.map((p: any) => {
       const key = String(p?.key)
-      switch (p?.type) {
+      switch (p?.type as string) {
         case 'string':
           return { key, type: 'string', value: p?.value as string }
         case 'number':
