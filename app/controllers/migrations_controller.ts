@@ -210,7 +210,7 @@ export default class MigrationsController {
     }
   }
 
-  async runMigrate({ request }: HttpContext) {
+  async run({ request }: HttpContext) {
     const schema = vine.compile(
       vine.object({
         id: vine.number().positive(),
@@ -231,7 +231,7 @@ export default class MigrationsController {
     return this.migrate(normalized)
   }
 
-  async migrate({ id, params, fetchConfigs, saveMappings }: RunMigrateData) {
+  private async migrate({ id, params, fetchConfigs, saveMappings }: RunMigrateData) {
     console.log(id)
     const paramsService = new ParamsService()
     const fetchConfigService = new FetchConfigService()

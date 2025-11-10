@@ -35,6 +35,7 @@ router
     router.put('/migrations/:id', [MigrationsController, 'update'])
     router.delete('/migrations', [MigrationsController, 'destroy'])
     router.post('/migrations/fetch-config-test', [MigrationsController, 'fetchConfigTest'])
+    router.post('/migrations/run', [MigrationsController, 'run'])
 
     // Data sources
     router.get('/sources', [DataSourcesController, 'index'])
