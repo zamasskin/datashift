@@ -101,6 +101,7 @@ export default class MigrationsController {
           vine.object({
             id: vine.string().trim(),
             sourceId: vine.number().withoutDecimals().positive(),
+            table: vine.string().trim(),
             savedMapping: vine.array(
               vine.object({
                 tableColumn: vine.string().trim(),
