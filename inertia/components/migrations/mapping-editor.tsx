@@ -214,12 +214,14 @@ export function MappingEditor({ config, children, resultColumns, onSave }: Mappi
                   <SelectValue placeholder="Выберите колонку" />
                 </SelectTrigger>
                 <SelectContent>
-                  {columns.length > 0 ? (
-                    columns.map((c) => (
-                      <SelectItem key={c} value={c}>
-                        {c}
-                      </SelectItem>
-                    ))
+                  {columns.filter((c) => !savedMappingState.some((m) => (m as any).tableColumn === c)).length > 0 ? (
+                    columns
+                      .filter((c) => !savedMappingState.some((m) => (m as any).tableColumn === c))
+                      .map((c) => (
+                        <SelectItem key={c} value={c}>
+                          {c}
+                        </SelectItem>
+                      ))
                   ) : (
                     <SelectItem value="__no_cols__" disabled>
                       Нет колонок
@@ -236,12 +238,14 @@ export function MappingEditor({ config, children, resultColumns, onSave }: Mappi
                   <SelectValue placeholder="Выберите колонку" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Array.isArray(resultColumns) && resultColumns.length > 0 ? (
-                    resultColumns.map((c) => (
-                      <SelectItem key={c} value={c}>
-                        {c}
-                      </SelectItem>
-                    ))
+                  {Array.isArray(resultColumns) && resultColumns.filter((c) => !savedMappingState.some((m) => (m as any).resultColumn === c)).length > 0 ? (
+                    resultColumns
+                      .filter((c) => !savedMappingState.some((m) => (m as any).resultColumn === c))
+                      .map((c) => (
+                        <SelectItem key={c} value={c}>
+                          {c}
+                        </SelectItem>
+                      ))
                   ) : (
                     <SelectItem value="__no_cols__" disabled>
                       Нет колонок
