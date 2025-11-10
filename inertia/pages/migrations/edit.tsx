@@ -1,6 +1,6 @@
 import type Migration from '#models/migration'
 import { Head, router, usePage } from '@inertiajs/react'
-import { ArrowDownUp, FileWarning, Plus, Save, Settings, Trash } from 'lucide-react'
+import { ArrowDownUp, Play, Plus, Save, Settings, Trash } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { MergeCard } from '~/components/migrations/cards/merge-card'
 import { ModificationCard } from '~/components/migrations/cards/modification-card'
@@ -49,10 +49,6 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
 
   const [saveLoading, setSaveLoading] = useState(false)
   const [saveErrors, setSaveErrors] = useState<Record<string, string>>({})
-
-  const suggestions = ['main', 'database']
-
-  const paramKeys = useMemo(() => params.map((p) => p.key as string), [params])
 
   const loadData = async () => {
     try {
@@ -162,16 +158,24 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
           </ItemContent>
         </Item>
 
-        <div className="space-y-2">
-          <div className="grid w-full max-w-sm items-center gap-3">
-            <Label htmlFor="name">Название</Label>
-            <Input
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-[320px]"
-            />
-            {saveErrors?.name && <p className="text-sm text-destructive">{saveErrors.name}</p>}
+        <div className="grid grid-cols-1 items-end md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <div className="grid w-full max-w-sm items-center gap-3">
+              <Label htmlFor="name">Название</Label>
+              <Input
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-[320px]"
+              />
+              {saveErrors?.name && <p className="text-sm text-destructive">{saveErrors.name}</p>}
+            </div>
+          </div>
+          <div className="flex justify-start md:justify-end">
+            <Button variant="secondary">
+              <Play />
+              Запустить
+            </Button>
           </div>
         </div>
 
