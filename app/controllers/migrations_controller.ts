@@ -12,6 +12,7 @@ import { ParamsService } from '#services/params_service'
 import FetchConfigService from '#services/fetchсonfigs'
 import SqlService from '#services/sql_service'
 import { SaveMapping } from '#interfaces/save_mapping'
+import { progressBus } from '#start/events'
 
 // Узкий тип данных для запуска миграции из валидированного тела запроса
 type RunMigrateData = {
@@ -217,6 +218,7 @@ export default class MigrationsController {
         fetchConfigs: vine.array(this.makeFetchConfigSchema()),
         saveMappings: vine.array(this.makeSaveMappingSchema()),
         params: this.makeParamsSchema(),
+        channelId: vine.string().optional(),
       })
     )
 
@@ -228,11 +230,69 @@ export default class MigrationsController {
       saveMappings: Array.isArray(data.saveMappings) ? data.saveMappings : [],
       params: this.normalizeParams(data.params),
     }
-    return this.migrate(normalized)
+
+    const channelId = data.channelId || `migration:${normalized.id}:${Date.now()}`
+
+    // Запускаем миграцию в фоне: эмитим прогресс через EventEmitter
+    void (async () => {
+      try {
+        const result = await this.migrate(normalized, channelId)
+        progressBus.emit(`done:${channelId}`, result)
+      } catch (err: any) {
+        progressBus.emit(`error:${channelId}`, { message: err?.message ?? 'Unknown error' })
+      }
+    })()
+
+    // Быстрый ответ REST-запуска
+    return { started: true, id: normalized.id, channelId }
   }
 
-  private async migrate({ id, params, fetchConfigs, saveMappings }: RunMigrateData) {
-    console.log(id)
+  async stream({ request, response }: HttpContext) {
+    const channelId = String(request.input('channelId') || '')
+    if (!channelId) {
+      response.status(400)
+      return response.send({ error: 'Missing channelId' })
+    }
+
+    response.response.setHeader('Content-Type', 'text/event-stream')
+    response.response.setHeader('Cache-Control', 'no-cache')
+    response.response.setHeader('Connection', 'keep-alive')
+
+    const write = (event: string, payload: any) => {
+      response.response.write(
+        `${event ? `event: ${event}\n` : ''}data: ${JSON.stringify(payload)}\n\n`
+      )
+    }
+
+    const onProgress = (p: { stage: string; details?: any }) => write('progress', p)
+    const onDone = (payload: any) => {
+      write('done', payload)
+      cleanup()
+    }
+    const onError = (payload: any) => {
+      write('error', payload)
+      cleanup()
+    }
+
+    const cleanup = () => {
+      progressBus.off(`progress:${channelId}`, onProgress)
+      progressBus.off(`done:${channelId}`, onDone)
+      progressBus.off(`error:${channelId}`, onError)
+      response.response.end()
+    }
+
+    progressBus.on(`progress:${channelId}`, onProgress)
+    progressBus.once(`done:${channelId}`, onDone)
+    progressBus.once(`error:${channelId}`, onError)
+
+    write('', { status: 'listening', channelId })
+    response.response.on('close', cleanup)
+  }
+
+  private async migrate(
+    { id, params, fetchConfigs, saveMappings }: RunMigrateData,
+    channelId?: string
+  ) {
     const paramsService = new ParamsService()
     const fetchConfigService = new FetchConfigService()
     const sqlService = new SqlService()
@@ -244,28 +304,38 @@ export default class MigrationsController {
     }
 
     const saveSummary: Record<string, number> = {}
-    // Будем обогащать строки промежуточными значениями (например, <mappingId>.ID)
-    // чтобы их можно было использовать в последующих правилах saveMappings
-    for await (const { data: result } of fetchConfigService.execute(fetchConfigs, initialResults)) {
-      if (result.dataType !== 'array_columns') {
+
+    for await (const { data, meta } of fetchConfigService.execute(fetchConfigs, initialResults)) {
+      if (channelId) {
+        progressBus.emit(`progress:${channelId}`, {
+          stage: 'fetch',
+          details: { ...meta, migrationId: id },
+        })
+      }
+
+      if (data.dataType !== 'array_columns') {
         continue
       }
 
-      // Последовательное применение правил сохранения к текущему датасету
-      // Всегда используем валидированные правила из запроса
       const mappings: any[] = Array.isArray(saveMappings) ? saveMappings : []
-      const rows: Record<string, any>[] = Array.isArray(result.data) ? result.data : []
+      const rows: Record<string, any>[] = Array.isArray(data.data) ? data.data : []
+
       for (const mapping of mappings) {
         const count = await sqlService.applySaveMappingToRows(mapping, rows)
         if (mapping && mapping.id) {
           saveSummary[mapping.id] = (saveSummary[mapping.id] || 0) + count
+        }
+        if (channelId) {
+          progressBus.emit(`progress:${channelId}`, {
+            stage: 'save',
+            details: { ...meta, migrationId: id, mappingId: mapping?.id, count },
+          })
         }
       }
     }
 
     return { ok: true, summary: saveSummary }
   }
-
   /**
    * Преобразует ошибки Vine в { field: message }.
    * Добавляет префикс "config." для вложенных полей конфигурации.

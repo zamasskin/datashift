@@ -1,7 +1,7 @@
 import type Migration from '#models/migration'
 import { Head, router, usePage } from '@inertiajs/react'
 import { ArrowDownUp, Play, Plus, Save, Settings, Trash } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { MergeCard } from '~/components/migrations/cards/merge-card'
 import { ModificationCard } from '~/components/migrations/cards/modification-card'
 import { SqlBuilderCard } from '~/components/migrations/cards/sql-builder-card'
@@ -45,6 +45,8 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const [prevResults, setPrevResults] = useState<FetchConfigResult>()
   const [meta, setMeta] = useState<FetchConfigMeta>()
   const [previewPages, setPreviewPages] = useState<Record<string, number>>({})
+  const esRef = useRef<EventSource | null>(null)
+  const channelId = `migration:${migration.id}`
 
   const [newDatasetOpen, setNewDatasetOpen] = useState('')
 
@@ -121,18 +123,51 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
     setFetchConfigs((old) => old.map((item) => (item.id == config.id ? config : item)))
   }
 
-  const handleRun = async () => {
-    try {
-      const response = await fetch('/migrations/run', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': props.csrfToken || '' },
-        body: JSON.stringify({ id: migration.id, saveMappings, fetchConfigs, params }),
-      })
-      const json = await response.json()
-      console.log(json)
-    } catch (e) {
-      console.log(e)
+  const closeStream = () => {
+    esRef.current?.close()
+    esRef.current = null
+  }
+
+  const openStream = () => {
+    closeStream()
+    const es = new EventSource(`/migrations/stream?channelId=${channelId}`)
+    es.onmessage = (e) => {
+      // Общие события без имени
+      // Можно показать статус «listening»
+      console.log('message', e.data)
     }
+    es.addEventListener('progress', (e: MessageEvent) => {
+      const payload = JSON.parse(e.data)
+      console.log('progress', payload.details.progressList)
+    })
+    es.addEventListener('done', (e: MessageEvent) => {
+      console.log('done', e.data)
+      closeStream()
+    })
+    es.addEventListener('error', (e: MessageEvent) => {
+      console.error('error', e.data)
+      closeStream()
+    })
+    esRef.current = es
+  }
+
+  useEffect(() => {
+    openStream()
+    return () => closeStream()
+  }, [])
+
+  const handleRun = async () => {
+    await fetch('/migrations/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': props.csrfToken || '' },
+      body: JSON.stringify({
+        id: migration.id,
+        saveMappings,
+        fetchConfigs,
+        params,
+        channelId,
+      }),
+    })
   }
 
   const suggestionsById = useMemo(() => {

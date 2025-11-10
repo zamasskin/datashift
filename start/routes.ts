@@ -31,6 +31,7 @@ router
 
     router.get('/', [MigrationsController, 'index'])
     router.post('/migrations', [MigrationsController, 'store'])
+    router.get('/migrations/stream', [MigrationsController, 'stream'])
     router.get('/migrations/:id', [MigrationsController, 'edit'])
     router.put('/migrations/:id', [MigrationsController, 'update'])
     router.delete('/migrations', [MigrationsController, 'destroy'])
