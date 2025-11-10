@@ -47,6 +47,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const [previewPages, setPreviewPages] = useState<Record<string, number>>({})
   const esRef = useRef<EventSource | null>(null)
   const channelId = `migration:${migration.id}`
+  const [isRunning, setIsRunning] = useState(false)
 
   const [newDatasetOpen, setNewDatasetOpen] = useState('')
 
@@ -124,11 +125,13 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
   }
 
   const closeStream = () => {
+    setIsRunning(false)
     esRef.current?.close()
     esRef.current = null
   }
 
   const openStream = () => {
+    setIsRunning(true)
     closeStream()
     const es = new EventSource(`/migrations/stream?channelId=${channelId}`)
     es.onmessage = (e) => {
