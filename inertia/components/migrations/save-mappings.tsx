@@ -1,9 +1,7 @@
-import { useState } from 'react'
 import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert'
 import { Button } from '~/components/ui/button'
 import { Spinner } from '~/components/ui/spinner'
 import { FileWarning } from 'lucide-react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '~/components/ui/dialog'
 import { MappingEditor } from './mapping-editor'
 import type { SaveMapping } from '#interfaces/save_mapping'
 
@@ -20,9 +18,8 @@ export function SaveMappings({
   fetchConfigsLength: number
   resultColumns?: string[]
   saveMappings?: SaveMapping[]
-  onSave?: (mapping: SaveMapping) => void
+  onSave?: (mapping: SaveMapping[]) => void
 }) {
-  const [open, setOpen] = useState(false)
   if (error) {
     return (
       <Alert variant="destructive">
@@ -60,13 +57,12 @@ export function SaveMappings({
             resultColumns={resultColumns}
             // onCancel={() => setOpen(false)}
             onSave={(mapping) => {
-              onSave?.(mapping)
-              setOpen(false)
+              if (onSave) {
+                onSave([...saveMappings, mapping])
+              }
             }}
           >
-            <Button variant="outline" onClick={() => setOpen(true)}>
-              Добавить соответствие
-            </Button>
+            <Button variant="outline">Добавить соответствие</Button>
           </MappingEditor>
         </>
       )}
