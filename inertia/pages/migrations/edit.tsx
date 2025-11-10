@@ -121,6 +121,20 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
     setFetchConfigs((old) => old.map((item) => (item.id == config.id ? config : item)))
   }
 
+  const handleRun = async () => {
+    try {
+      const response = await fetch('/migrations/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': props.csrfToken || '' },
+        body: JSON.stringify({ id: migration.id, saveMappings, fetchConfigs, params }),
+      })
+      const json = await response.json()
+      console.log(json)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   const suggestionsById = useMemo(() => {
     const map: Record<string, Record<string, string[]>> = {}
     const prefix: FetchConfig[] = []
@@ -174,7 +188,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
           </div>
           {showPlay && (
             <div className="flex justify-start md:justify-end">
-              <Button variant="secondary">
+              <Button variant="secondary" onClick={handleRun}>
                 <Play />
                 Запустить
               </Button>
