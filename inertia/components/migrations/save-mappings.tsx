@@ -1,10 +1,10 @@
 import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert'
 import { Button } from '~/components/ui/button'
 import { Spinner } from '~/components/ui/spinner'
-import { FileWarning } from 'lucide-react'
+import { FileWarning, Edit, Trash2 } from 'lucide-react'
 import { MappingEditor } from './mapping-editor'
 import type { SaveMapping } from '#interfaces/save_mapping'
-import { Item } from '../ui/item'
+import { Item, ItemContent } from '../ui/item'
 
 export function SaveMappings({
   error,
@@ -55,7 +55,90 @@ export function SaveMappings({
       {fetchConfigsLength > 0 && (
         <>
           {saveMappings.map((mapping) => (
-            <Item key={mapping.id}>{mapping.sourceId}</Item>
+            <Item key={mapping.id} variant="outline">
+              <ItemContent>
+                <div className="space-y-2">
+                  <div className="text-sm text-muted-foreground">Источник: {mapping.sourceId}</div>
+
+                  <div className="space-y-1">
+                    <div className="font-medium">Соответствия колонок</div>
+                    {mapping.savedMapping?.length ? (
+                      <div className="flex flex-wrap gap-2">
+                        {mapping.savedMapping.map((m: any, idx: number) => (
+                          <div
+                            key={idx}
+                            className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs"
+                            title={`${m?.tableColumn || ''} → ${m?.resultColumn || ''}`}
+                          >
+                            <span>{m?.tableColumn || ''}</span>
+                            <span>→</span>
+                            <span>{m?.resultColumn || ''}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-sm text-muted-foreground">Нет соответствий</div>
+                    )}
+                  </div>
+
+                  <div className="space-y-1">
+                    <div className="font-medium">Условия обновления</div>
+                    {mapping.updateOn?.length ? (
+                      <div className="flex flex-wrap gap-2">
+                        {mapping.updateOn.map((u: any, idx: number) => (
+                          <div
+                            key={idx}
+                            className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs"
+                            title={`${u?.tableColumn || ''} ${u?.operator || ''} ${u?.aliasColumn || ''}${u?.cond ? ` (${u?.cond})` : ''}`}
+                          >
+                            <span>{u?.tableColumn || ''}</span>
+                            <span>{u?.operator || ''}</span>
+                            <span>{u?.aliasColumn || ''}</span>
+                            {idx > 0 && u?.cond && (
+                              <span className="ml-1 text-muted-foreground">({u?.cond})</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-sm text-muted-foreground">Нет условий</div>
+                    )}
+                  </div>
+                </div>
+              </ItemContent>
+              <ItemContent>
+                <div className="flex items-center gap-2">
+                  <MappingEditor
+                    config={mapping}
+                    resultColumns={resultColumns}
+                    saveBtnName="Сохранить"
+                    onSave={(updated) => {
+                      if (onSave) {
+                        const next = saveMappings.map((m) => (m.id === updated.id ? updated : m))
+                        onSave(next)
+                      }
+                    }}
+                  >
+                    <Button variant="outline" size="icon-sm">
+                      <Edit />
+                    </Button>
+                  </MappingEditor>
+
+                  <Button
+                    variant="outline"
+                    size="icon-sm"
+                    onClick={() => {
+                      if (onSave) {
+                        const next = saveMappings.filter((m) => m.id !== mapping.id)
+                        onSave(next)
+                      }
+                    }}
+                  >
+                    <Trash2 />
+                  </Button>
+                </div>
+              </ItemContent>
+            </Item>
           ))}
           <MappingEditor
             resultColumns={resultColumns}
