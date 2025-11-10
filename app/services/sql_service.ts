@@ -1,6 +1,7 @@
 import path from 'node:path'
 import app from '@adonisjs/core/services/app'
 import { ArrayColumnsResult, FetchConfigResult, ParamsResult } from '#interfaces/fetchсonfigs'
+import DataSource from '#models/data_source'
 
 export type PlaceholderResult = {
   sql: string
@@ -233,5 +234,215 @@ export default class SqlService {
     }
 
     return result
+  }
+
+  /**
+   * Применяет одно правило SaveMapping к массиву строк результата.
+   * Выполняет UPDATE по условию updateOn, при отсутствии совпадений — INSERT.
+   * После успешного INSERT добавляет в строку поле `<mapping.id>.ID` для использования в последующих правилах.
+   */
+  async applySaveMappingToRows(mapping: any, rows: Record<string, any>[]): Promise<number> {
+    if (!mapping || typeof mapping !== 'object') return 0
+    const sourceId = Number(mapping.sourceId)
+    const table = String(mapping.table || '')
+    const savedMapping: Array<{ tableColumn: string; resultColumn: string }> = Array.isArray(
+      mapping.savedMapping
+    )
+      ? mapping.savedMapping
+      : []
+    const updateOn: Array<{
+      tableColumn: string
+      aliasColumn: string
+      operator: string
+      cond?: 'and' | 'or'
+    }> = Array.isArray(mapping.updateOn) ? mapping.updateOn : []
+
+    if (!sourceId || !table || savedMapping.length === 0) return 0
+
+    const ds = await DataSource.find(sourceId)
+    if (!ds) {
+      throw new Error(`DataSource not found: ${sourceId}`)
+    }
+
+    const type = String(ds.type)
+    const config = ds.config
+
+    let savedCount = 0
+    if (type === 'sqlite') {
+      const sqlite3Module = await import('sqlite3')
+      const sqlite3 = sqlite3Module.default
+      const fileVal = String(config?.file || '')
+      const absFile = path.isAbsolute(fileVal) ? fileVal : app.makePath(fileVal)
+
+      await new Promise<void>((resolve, reject) => {
+        const db = new sqlite3.Database(
+          absFile,
+          sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,
+          (err) => {
+            if (err) return reject(err)
+            resolve()
+          }
+        )
+        db.close()
+      })
+
+      const db = new sqlite3.Database(absFile, sqlite3.OPEN_READWRITE)
+      try {
+        for (const row of rows) {
+          const { setSql, setValues } = this.buildSet(savedMapping, row)
+          const { whereSql, whereValues } = this.buildWhere(updateOn, row)
+
+          let affected = 0
+          if (whereSql) {
+            const updateSql = `UPDATE ${table} SET ${setSql} WHERE ${whereSql}`
+            affected = await new Promise<number>((resolve, reject) => {
+              db.run(updateSql, [...setValues, ...whereValues], function (err: any) {
+                if (err) return reject(err)
+                resolve(Number(this.changes || 0))
+              })
+            })
+          }
+
+          if (affected === 0) {
+            const insertCols = savedMapping.map((m) => m.tableColumn).join(', ')
+            const placeholders = savedMapping.map(() => '?').join(', ')
+            const insertSql = `INSERT INTO ${table} (${insertCols}) VALUES (${placeholders})`
+            const insertId: number = await new Promise<number>((resolve, reject) => {
+              db.run(insertSql, setValues, function (err: any) {
+                if (err) return reject(err)
+                resolve(Number(this.lastID || 0))
+              })
+            })
+            if (insertId) {
+              row[`${mapping.id}.ID`] = insertId
+            }
+            savedCount++
+          } else {
+            savedCount++
+          }
+        }
+      } finally {
+        db.close()
+      }
+    } else if (type === 'mysql') {
+      const mysql = await import('mysql2/promise')
+      const connection = await mysql.createConnection({
+        host: String(config?.host),
+        port: Number(config?.port),
+        user: String(config?.username),
+        password: String(config?.password),
+        database: String(config?.database),
+        connectTimeout: 3000,
+      })
+      try {
+        for (const row of rows) {
+          const { setSql, setValues } = this.buildSet(savedMapping, row)
+          const { whereSql, whereValues } = this.buildWhere(updateOn, row)
+
+          let affected = 0
+          if (whereSql) {
+            const updateSql = `UPDATE ${table} SET ${setSql} WHERE ${whereSql}`
+            const [res]: any = await connection.execute(updateSql, [...setValues, ...whereValues])
+            affected = Number(res?.affectedRows || 0)
+          }
+
+          if (affected === 0) {
+            const insertCols = savedMapping.map((m) => m.tableColumn).join(', ')
+            const placeholders = savedMapping.map(() => '?').join(', ')
+            const insertSql = `INSERT INTO ${table} (${insertCols}) VALUES (${placeholders})`
+            const [res]: any = await connection.execute(insertSql, setValues)
+            const insertId = Number(res?.insertId || 0)
+            if (insertId) {
+              row[`${mapping.id}.ID`] = insertId
+            }
+            savedCount++
+          } else {
+            savedCount++
+          }
+        }
+      } finally {
+        await connection.end()
+      }
+    } else if (type === 'postgres') {
+      const pg = await import('pg')
+      const client = new pg.Client({
+        host: String(config?.host),
+        port: Number(config?.port),
+        user: String(config?.username),
+        password: String(config?.password),
+        database: String(config?.database),
+        connectionTimeoutMillis: 3000,
+      })
+      await client.connect()
+      try {
+        for (const row of rows) {
+          const { setSql, setValues } = this.buildSet(savedMapping, row)
+          const { whereSql, whereValues } = this.buildWhere(updateOn, row, 'pg')
+
+          let affected = 0
+          if (whereSql) {
+            const updateSql = `UPDATE ${table} SET ${setSql} WHERE ${whereSql}`
+            const res = await client.query(updateSql, [...setValues, ...whereValues])
+            affected = Number(res?.rowCount || 0)
+          }
+
+          if (affected === 0) {
+            const insertCols = savedMapping.map((m) => m.tableColumn).join(', ')
+            const placeholders = savedMapping.map((_, i) => `$${i + 1}`).join(', ')
+            const insertSql = `INSERT INTO ${table} (${insertCols}) VALUES (${placeholders})`
+            await client.query(insertSql, setValues)
+            savedCount++
+          } else {
+            savedCount++
+          }
+        }
+      } finally {
+        await client.end()
+      }
+    } else {
+      throw new Error(`Тип источника не поддерживается для сохранения: ${type}`)
+    }
+
+    return savedCount
+  }
+
+  /**
+   * Построение части SET для UPDATE/INSERT
+   */
+  private buildSet(
+    savedMapping: Array<{ tableColumn: string; resultColumn: string }>,
+    row: Record<string, any>
+  ): { setSql: string; setValues: any[] } {
+    const cols = savedMapping.map((m) => m.tableColumn)
+    const vals = savedMapping.map((m) => row[m.resultColumn])
+    const setSql = cols.map((c) => `${c} = ?`).join(', ')
+    return { setSql, setValues: vals }
+  }
+
+  /**
+   * Построение WHERE согласно updateOn. Для Postgres генерируем $n вместо ?.
+   */
+  private buildWhere(
+    updateOn: Array<{
+      tableColumn: string
+      aliasColumn: string
+      operator: string
+      cond?: 'and' | 'or'
+    }>,
+    row: Record<string, any>,
+    dialect: 'default' | 'pg' = 'default'
+  ): { whereSql: string; whereValues: any[] } {
+    if (!updateOn || updateOn.length === 0) return { whereSql: '', whereValues: [] }
+    const parts: string[] = []
+    const values: any[] = []
+    updateOn.forEach((u, idx) => {
+      const op = u.operator || '='
+      const cond = idx > 0 && u.cond ? u.cond.toUpperCase() : idx > 0 ? 'AND' : ''
+      const placeholder = dialect === 'pg' ? `$${values.length + 1}` : '?'
+      parts.push(`${cond ? cond + ' ' : ''}${u.tableColumn} ${op} ${placeholder}`)
+      values.push(row[u.aliasColumn])
+    })
+    const whereSql = parts.join(' ')
+    return { whereSql, whereValues: values }
   }
 }

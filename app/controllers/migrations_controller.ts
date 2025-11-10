@@ -10,6 +10,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import vine from '@vinejs/vine'
 import { ParamsService } from '#services/params_service'
 import FetchConfigService from '#services/fetchсonfigs'
+import SqlService from '#services/sql_service'
 
 export default class MigrationsController {
   async index({ inertia }: HttpContext) {
@@ -204,21 +205,21 @@ export default class MigrationsController {
   async runMigrate({ request }: HttpContext) {
     const schema = vine.compile(
       vine.object({
+        id: vine.number().positive(),
         fetchConfigs: vine.array(this.makeFetchConfigSchema()),
         saveMappings: vine.array(this.makeSaveMappingSchema()),
         params: this.makeParamsSchema(),
-        pages: vine.record(vine.number()).optional(),
       })
     )
 
     const body = request.all()
     const data = await schema.validate(body)
     const params = this.normalizeParams(data.params)
-    const fetchConfigsBase = this.normalizeFetchConfigs(data.fetchConfigs)
-    const fetchConfigs = this.applyPreviewPages(fetchConfigsBase, data.pages || {})
+    const fetchConfigs = this.normalizeFetchConfigs(data.fetchConfigs)
 
     const paramsService = new ParamsService()
     const fetchConfigService = new FetchConfigService()
+    const sqlService = new SqlService()
 
     const paramsSource = paramsService.getSource(params)
     const initialResults: FetchConfigResult[] = [{ dataType: 'params', data: paramsSource }]
@@ -226,8 +227,27 @@ export default class MigrationsController {
       throw new Error('Нет конфигураций для выполнения')
     }
 
-    for await (const result of fetchConfigService.execute(fetchConfigs, initialResults)) {
+    const saveSummary: Record<string, number> = {}
+    // Будем обогащать строки промежуточными значениями (например, <mappingId>.ID)
+    // чтобы их можно было использовать в последующих правилах saveMappings
+    for await (const { data: result } of fetchConfigService.execute(fetchConfigs, initialResults)) {
+      if (result.dataType !== 'array_columns') {
+        continue
+      }
+
+      // Последовательное применение правил сохранения к текущему датасету
+      // Всегда используем валидированные правила из запроса
+      const mappings: any[] = Array.isArray(data.saveMappings) ? data.saveMappings : []
+      const rows: Record<string, any>[] = Array.isArray(result.data) ? result.data : []
+      for (const mapping of mappings) {
+        const count = await sqlService.applySaveMappingToRows(mapping, rows)
+        if (mapping && mapping.id) {
+          saveSummary[mapping.id] = (saveSummary[mapping.id] || 0) + count
+        }
+      }
     }
+
+    return { ok: true, summary: saveSummary }
   }
 
   /**
