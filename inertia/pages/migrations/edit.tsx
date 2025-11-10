@@ -30,6 +30,7 @@ import { FetchConfig, FetchConfigMeta, FetchConfigResult } from '#interfaces/fet
 import { SaveMappings } from '~/components/migrations/save-mappings'
 import { FetchConfigResultCard } from '~/components/migrations/fetch_config_result_card'
 import _ from 'lodash'
+import { cn } from '~/lib/utils'
 
 const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const { props } = usePage<{ csrfToken?: string }>()
@@ -49,6 +50,11 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
 
   const [saveLoading, setSaveLoading] = useState(false)
   const [saveErrors, setSaveErrors] = useState<Record<string, string>>({})
+
+  const showPlay = useMemo(
+    () => fetchConfigs.length > 0 && saveMappings.length > 0,
+    [fetchConfigs, saveMappings]
+  )
 
   const loadData = async () => {
     try {
@@ -158,25 +164,22 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
           </ItemContent>
         </Item>
 
-        <div className="grid grid-cols-1 items-end md:grid-cols-2 gap-4">
+        <div className={cn('grid grid-cols-1 items-end gap-4', showPlay ? 'md:grid-cols-2' : '')}>
           <div className="space-y-2">
             <div className="grid w-full max-w-sm items-center gap-3">
               <Label htmlFor="name">Название</Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-[320px]"
-              />
+              <Input value={name} onChange={(e) => setName(e.target.value)} className="w-[320px]" />
               {saveErrors?.name && <p className="text-sm text-destructive">{saveErrors.name}</p>}
             </div>
           </div>
-          <div className="flex justify-start md:justify-end">
-            <Button variant="secondary">
-              <Play />
-              Запустить
-            </Button>
-          </div>
+          {showPlay && (
+            <div className="flex justify-start md:justify-end">
+              <Button variant="secondary">
+                <Play />
+                Запустить
+              </Button>
+            </div>
+          )}
         </div>
 
         <Tabs defaultValue="migrations" className="mt-6">
