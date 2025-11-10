@@ -13,6 +13,7 @@ import { DataSourceSelect } from '../datasource/data-source-select'
 import { usePage } from '@inertiajs/react'
 import { TableSelect } from './table-select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog'
+import _ from 'lodash'
 
 export type MappingEditorProps = {
   resultColumns?: string[]
@@ -21,16 +22,23 @@ export type MappingEditorProps = {
   onSave?: (mapping: SaveMapping) => void
 }
 
-export function MappingEditor({ config, children, resultColumns }: MappingEditorProps) {
+export function MappingEditor({ config, children, resultColumns, onSave }: MappingEditorProps) {
   const { csrfToken } = usePage().props as any
   const [sourceId, setSourceId] = useState<number>(config?.sourceId || 0)
   const [loading, setLoading] = useState(false)
   const [table, setTable] = useState<string>('')
   const [columns, setColumns] = useState<string[]>([])
+  const [savedMappingState, setSavedMappingState] = useState<Record<string, string>[]>(
+    () => config?.savedMapping ?? []
+  )
+  const [updateOnState, setUpdateOnState] = useState(config?.updateOn ?? [])
 
   const [open, setOpen] = useState(false)
   const [tables, setTables] = useState<string[]>([])
   const [source, setSource] = useState<string>('')
+  const [addOpen, setAddOpen] = useState(false)
+  const [newTableColumn, setNewTableColumn] = useState('')
+  const [newResultColumn, setNewResultColumn] = useState('')
 
   const onSelectSourceId = async (value: number) => {
     if (!value) {
@@ -71,14 +79,15 @@ export function MappingEditor({ config, children, resultColumns }: MappingEditor
           'Content-Type': 'application/json',
           ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}),
         },
-        body: JSON.stringify({ table }),
+        body: JSON.stringify({ dataSourceId: sourceId, table }),
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
         throw new Error(err?.error || `HTTP ${res.status}`)
       }
       const data = await res.json()
-      setColumns(Array.isArray(data?.columns) ? data.columns : [])
+      const columns = _.first(Object.values(data?.columns))
+      setColumns(_.isArray(columns) ? columns : [])
     } catch (e) {
       console.error('Не удалось загрузить столбцы', e)
       setColumns([])
@@ -91,16 +100,28 @@ export function MappingEditor({ config, children, resultColumns }: MappingEditor
     onSelectSourceId(sourceId)
   }, [sourceId])
 
+  useEffect(() => {
+    if (table) fetchColumnsTable(table)
+  }, [sourceId, table])
+
+  useEffect(() => {
+    if (config) {
+      setSavedMappingState(config.savedMapping ?? [])
+      setUpdateOnState(config.updateOn ?? [])
+      setSourceId(config.sourceId || 0)
+    }
+  }, [config])
+
   const handleSave = () => {
-    // const id = Number(datasetIdInput)
-    // if (!Number.isFinite(id) || id <= 0 || !source) return
-    // const payload: SaveMapping = {
-    //   id: Date.now().toString(36),
-    //   sourceId: id,
-    //   savedMapping: [],
-    //   updateOn: [],
-    // }
-    // onSave?.(payload)
+    if (!sourceId) return
+    const payload: SaveMapping = {
+      id: config?.id ?? Date.now().toString(36),
+      sourceId,
+      savedMapping: savedMappingState,
+      updateOn: updateOnState,
+    }
+    if (typeof onSave === 'function') onSave(payload)
+    setOpen(false)
   }
 
   const handleCancel = () => {
@@ -131,6 +152,43 @@ export function MappingEditor({ config, children, resultColumns }: MappingEditor
             </div>
           </div>
 
+          <div className="mt-2 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="font-medium">Соответствия колонок</div>
+              <Button variant="outline" onClick={() => setAddOpen(true)}>
+                Добавить соответствие
+              </Button>
+            </div>
+
+            {savedMappingState.length === 0 && (
+              <div className="text-sm text-muted-foreground">Пока нет добавленных соответствий</div>
+            )}
+
+            {savedMappingState.length > 0 && (
+              <div className="space-y-2">
+                {savedMappingState.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between gap-3 border rounded-md p-2"
+                  >
+                    <div className="text-sm">
+                      {(item as any).tableColumn || ''} → {(item as any).resultColumn || ''}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        setSavedMappingState((prev) => prev.filter((_, i) => i !== idx))
+                      }
+                    >
+                      Удалить
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           <div className="flex items-center gap-2">
             <Button type="button" onClick={handleSave}>
               Сохранить соответствие
@@ -141,6 +199,81 @@ export function MappingEditor({ config, children, resultColumns }: MappingEditor
           </div>
         </div>
       </DialogContent>
+
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Добавить соответствие</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Field>
+              <FieldLabel>Колонка таблицы</FieldLabel>
+              <Select value={newTableColumn} onValueChange={setNewTableColumn}>
+                <SelectTrigger className="h-8">
+                  <SelectValue placeholder="Выберите колонку" />
+                </SelectTrigger>
+                <SelectContent>
+                  {columns.length > 0 ? (
+                    columns.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="__no_cols__" disabled>
+                      Нет колонок
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+            </Field>
+
+            <Field>
+              <FieldLabel>Колонка результата</FieldLabel>
+              <Select value={newResultColumn} onValueChange={setNewResultColumn}>
+                <SelectTrigger className="h-8">
+                  <SelectValue placeholder="Выберите колонку" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.isArray(resultColumns) && resultColumns.length > 0 ? (
+                    resultColumns.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="__no_cols__" disabled>
+                      Нет колонок
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+            </Field>
+
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={() => {
+                  if (!newTableColumn || !newResultColumn) return
+                  const entry: Record<string, string> = {
+                    tableColumn: newTableColumn,
+                    resultColumn: newResultColumn,
+                  }
+                  setSavedMappingState((prev) => [...prev, entry])
+                  setNewTableColumn('')
+                  setNewResultColumn('')
+                  setAddOpen(false)
+                }}
+                disabled={!newTableColumn || !newResultColumn}
+              >
+                Добавить
+              </Button>
+              <Button variant="ghost" onClick={() => setAddOpen(false)}>
+                Отмена
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   )
 }
