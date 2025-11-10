@@ -125,13 +125,11 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
   }
 
   const closeStream = () => {
-    setIsRunning(false)
     esRef.current?.close()
     esRef.current = null
   }
 
   const openStream = () => {
-    setIsRunning(true)
     closeStream()
     const es = new EventSource(`/migrations/stream?channelId=${channelId}`)
     es.onmessage = (e) => {
@@ -142,14 +140,15 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
     es.addEventListener('progress', (e: MessageEvent) => {
       const payload = JSON.parse(e.data)
       console.log('progress', payload.details.progressList)
+      setIsRunning(true)
     })
     es.addEventListener('done', (e: MessageEvent) => {
       console.log('done', e.data)
-      closeStream()
+      setIsRunning(false)
     })
     es.addEventListener('error', (e: MessageEvent) => {
       console.error('error', e.data)
-      closeStream()
+      setIsRunning(false)
     })
     esRef.current = es
   }
@@ -160,6 +159,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
   }, [])
 
   const handleRun = async () => {
+    setIsRunning(true)
     await fetch('/migrations/run', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': props.csrfToken || '' },
@@ -170,6 +170,14 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
         params,
         channelId,
       }),
+    })
+  }
+
+  const handleStop = async () => {
+    await fetch('/migrations/stop', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': props.csrfToken || '' },
+      body: JSON.stringify({ channelId }),
     })
   }
 
@@ -226,10 +234,15 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
           </div>
           {showPlay && (
             <div className="flex justify-start md:justify-end">
-              <Button variant="secondary" onClick={handleRun}>
-                <Play />
-                Запустить
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="secondary" onClick={handleRun}>
+                  <Play />
+                  Запустить
+                </Button>
+                <Button variant="destructive" onClick={handleStop} disabled={!isRunning}>
+                  Остановить
+                </Button>
+              </div>
             </div>
           )}
         </div>

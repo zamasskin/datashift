@@ -14,6 +14,11 @@ import SqlService from '#services/sql_service'
 import { SaveMapping } from '#interfaces/save_mapping'
 import { progressBus } from '#start/events'
 
+// Реестр запущенных миграций для поддержки остановки по channelId
+const runningMigrations = new Map<string, { aborted: boolean }>()
+const isAborted = (channelId?: string) =>
+  !!channelId && runningMigrations.get(channelId)?.aborted === true
+
 // Узкий тип данных для запуска миграции из валидированного тела запроса
 type RunMigrateData = {
   id: number
@@ -233,6 +238,9 @@ export default class MigrationsController {
 
     const channelId = data.channelId || `migration:${normalized.id}:${Date.now()}`
 
+    // Регистрируем миграцию как активную
+    runningMigrations.set(channelId, { aborted: false })
+
     // Запускаем миграцию в фоне: эмитим прогресс через EventEmitter
     void (async () => {
       try {
@@ -240,6 +248,9 @@ export default class MigrationsController {
         progressBus.emit(`done:${channelId}`, result)
       } catch (err: any) {
         progressBus.emit(`error:${channelId}`, { message: err?.message ?? 'Unknown error' })
+      } finally {
+        // Убираем из реестра по завершению/ошибке
+        runningMigrations.delete(channelId)
       }
     })()
 
@@ -289,6 +300,28 @@ export default class MigrationsController {
     response.response.on('close', cleanup)
   }
 
+  async stop({ request, response }: HttpContext) {
+    const channelId = String(request.input('channelId') || '')
+    if (!channelId) {
+      response.status(400)
+      return response.send({ error: 'Missing channelId' })
+    }
+
+    const state = runningMigrations.get(channelId)
+    if (!state) {
+      return response.status(404).send({ error: 'Migration not running', channelId })
+    }
+
+    // Помечаем миграцию как остановленную
+    state.aborted = true
+    runningMigrations.set(channelId, state)
+
+    // Отправляем быстрый прогресс, чтобы UI получил сигнал
+    progressBus.emit(`progress:${channelId}`, { stage: 'stopping', details: { channelId } })
+
+    return response.ok({ stopped: true, channelId })
+  }
+
   private async migrate(
     { id, params, fetchConfigs, saveMappings }: RunMigrateData,
     channelId?: string
@@ -306,6 +339,9 @@ export default class MigrationsController {
     const saveSummary: Record<string, number> = {}
 
     for await (const { data, meta } of fetchConfigService.execute(fetchConfigs, initialResults)) {
+      if (isAborted(channelId)) {
+        return { ok: false, cancelled: true, summary: saveSummary }
+      }
       if (channelId) {
         progressBus.emit(`progress:${channelId}`, {
           stage: 'fetch',
@@ -321,6 +357,9 @@ export default class MigrationsController {
       const rows: Record<string, any>[] = Array.isArray(data.data) ? data.data : []
 
       for (const mapping of mappings) {
+        if (isAborted(channelId)) {
+          return { ok: false, cancelled: true, summary: saveSummary }
+        }
         const count = await sqlService.applySaveMappingToRows(mapping, rows)
         if (mapping && mapping.id) {
           saveSummary[mapping.id] = (saveSummary[mapping.id] || 0) + count
@@ -332,6 +371,10 @@ export default class MigrationsController {
           })
         }
       }
+    }
+
+    if (isAborted(channelId)) {
+      return { ok: false, cancelled: true, summary: saveSummary }
     }
 
     return { ok: true, summary: saveSummary }
