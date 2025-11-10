@@ -4,7 +4,7 @@ import { Spinner } from '~/components/ui/spinner'
 import { FileWarning, Edit, Trash2 } from 'lucide-react'
 import { MappingEditor } from './mapping-editor'
 import type { SaveMapping } from '#interfaces/save_mapping'
-import { Item, ItemContent } from '../ui/item'
+import { Item, ItemActions, ItemContent } from '../ui/item'
 
 export function SaveMappings({
   error,
@@ -58,7 +58,9 @@ export function SaveMappings({
             <Item key={mapping.id} variant="outline">
               <ItemContent>
                 <div className="space-y-2">
-                  <div className="text-sm text-muted-foreground">Источник: {mapping.sourceId}</div>
+                  <div className="text-sm text-muted-foreground">
+                    ID: {mapping.id} · Источник: {mapping.sourceId}
+                  </div>
 
                   <div className="space-y-1">
                     <div className="font-medium">Соответствия колонок</div>
@@ -106,38 +108,38 @@ export function SaveMappings({
                   </div>
                 </div>
               </ItemContent>
-              <ItemContent>
-                <div className="flex items-center gap-2">
-                  <MappingEditor
-                    config={mapping}
-                    resultColumns={resultColumns}
-                    saveBtnName="Сохранить"
-                    onSave={(updated) => {
-                      if (onSave) {
-                        const next = saveMappings.map((m) => (m.id === updated.id ? updated : m))
-                        onSave(next)
-                      }
-                    }}
-                  >
-                    <Button variant="outline" size="icon-sm">
-                      <Edit />
-                    </Button>
-                  </MappingEditor>
-
-                  <Button
-                    variant="outline"
-                    size="icon-sm"
-                    onClick={() => {
-                      if (onSave) {
-                        const next = saveMappings.filter((m) => m.id !== mapping.id)
-                        onSave(next)
-                      }
-                    }}
-                  >
-                    <Trash2 />
+              <ItemActions>
+                <MappingEditor
+                  config={mapping}
+                  resultColumns={resultColumns}
+                  saveBtnName="Сохранить"
+                  onSave={(updated) => {
+                    if (onSave) {
+                      const next = saveMappings.map((m) => (m.id === updated.id ? updated : m))
+                      onSave(next)
+                    }
+                  }}
+                >
+                  <Button variant="outline" size="sm">
+                    <Edit />
+                    Редактировать
                   </Button>
-                </div>
-              </ItemContent>
+                </MappingEditor>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (onSave) {
+                      const next = saveMappings.filter((m) => m.id !== mapping.id)
+                      onSave(next)
+                    }
+                  }}
+                >
+                  <Trash2 />
+                  Удалить
+                </Button>
+              </ItemActions>
             </Item>
           ))}
           <MappingEditor
