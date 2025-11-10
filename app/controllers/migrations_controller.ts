@@ -87,37 +87,14 @@ export default class MigrationsController {
         field.report('Invalid cronExpression', 'invalid_cron_expression', field)
       })
 
-    // Дискретный union по полю type через vine.group
-    const fetchConfigSchema = this.makeFetchConfigSchema()
-
     const schema = vine.compile(
       vine.object({
         name: vine.string().trim().minLength(3).maxLength(64),
         cronExpression: vine.any().optional(),
         isActive: vine.boolean(),
-        fetchConfigs: vine.array(fetchConfigSchema),
+        fetchConfigs: vine.array(this.makeFetchConfigSchema()),
         // Validate SaveMapping[] according to app/interfaces/save_mapping.ts
-        saveMappings: vine.array(
-          vine.object({
-            id: vine.string().trim(),
-            sourceId: vine.number().withoutDecimals().positive(),
-            table: vine.string().trim(),
-            savedMapping: vine.array(
-              vine.object({
-                tableColumn: vine.string().trim(),
-                resultColumn: vine.string().trim(),
-              })
-            ),
-            updateOn: vine.array(
-              vine.object({
-                tableColumn: vine.string().trim(),
-                aliasColumn: vine.string().trim(),
-                operator: vine.enum(['=', '!=', '<', '<=', '>', '>=']),
-                cond: vine.enum(['and', 'or']).optional(),
-              })
-            ),
-          })
-        ),
+        saveMappings: vine.array(this.makeSaveMappingSchema()),
         params: this.makeParamsSchema(),
       })
     )
@@ -434,6 +411,31 @@ export default class MigrationsController {
     )
 
     return vine.array(paramSchema)
+  }
+
+  /**
+   * Построение схемы SaveMapping согласно app/interfaces/save_mapping.ts
+   */
+  private makeSaveMappingSchema() {
+    const updateOnSchema = vine.object({
+      tableColumn: vine.string().trim(),
+      aliasColumn: vine.string().trim(),
+      operator: vine.enum(['=', '!=', '<', '<=', '>', '>=']),
+      cond: vine.enum(['and', 'or']).optional(),
+    })
+
+    return vine.object({
+      id: vine.string().trim(),
+      sourceId: vine.number().withoutDecimals().positive(),
+      table: vine.string().trim(),
+      savedMapping: vine.array(
+        vine.object({
+          tableColumn: vine.string().trim(),
+          resultColumn: vine.string().trim(),
+        })
+      ),
+      updateOn: vine.array(updateOnSchema),
+    })
   }
 
   /**
