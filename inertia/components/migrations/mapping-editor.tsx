@@ -152,12 +152,6 @@ export function MappingEditor({
         <DialogHeader>
           <DialogTitle>Создание соответствия</DialogTitle>
         </DialogHeader>
-        {loading && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Загрузка данных...
-          </div>
-        )}
         <div className="flex flex-col gap-4 max-h-[75vh] overflow-y-auto pr-1" aria-busy={loading}>
           <div className="flex gap-3">
             <div className="flex-1">
@@ -266,6 +260,13 @@ export function MappingEditor({
             <Button type="button" variant="ghost" onClick={handleCancel}>
               Отмена
             </Button>
+
+            {loading && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Загрузка данных...
+              </div>
+            )}
           </div>
         </div>
       </DialogContent>
