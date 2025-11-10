@@ -55,6 +55,7 @@ export function MappingEditor({
   const [addOpen, setAddOpen] = useState(false)
   const [newTableColumn, setNewTableColumn] = useState('')
   const [newResultColumn, setNewResultColumn] = useState('')
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   const resetForm = () => {
     setSourceId(config?.sourceId || 0)
@@ -136,6 +137,24 @@ export function MappingEditor({
 
   const handleSave = () => {
     if (!sourceId) return
+    const resultCols = Array.isArray(resultColumns) ? resultColumns : []
+    const hasInvalidMappings = savedMappingState.some((item: any) => {
+      const t = item?.tableColumn
+      const r = item?.resultColumn
+      return !columns.includes(t) || !resultCols.includes(r)
+    })
+    const hasInvalidUpdateOns = updateOnState.some((item: any) => {
+      const t = item?.tableColumn
+      const a = item?.aliasColumn
+      return !columns.includes(t) || !resultCols.includes(a)
+    })
+    if (hasInvalidMappings || hasInvalidUpdateOns) {
+      setErrorMsg(
+        'Найдены выбранные колонки, которых нет в доступных списках. Исправьте соответствия/условия перед сохранением.'
+      )
+      return
+    }
+    setErrorMsg(null)
     const payload: SaveMapping = {
       id: config?.id ?? Date.now().toString(36),
       sourceId,
@@ -192,27 +211,39 @@ export function MappingEditor({
 
             {savedMappingState.length > 0 && (
               <div className="flex flex-wrap gap-2">
-                {savedMappingState.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs"
-                    title={`${(item as any).tableColumn || ''} → ${(item as any).resultColumn || ''}`}
-                  >
-                    <span>{(item as any).tableColumn || ''}</span>
-                    <span>→</span>
-                    <span>{(item as any).resultColumn || ''}</span>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setSavedMappingState((prev) => prev.filter((_, i) => i !== idx))
-                      }
-                      className="ml-1 text-muted-foreground hover:text-destructive"
-                      aria-label="Удалить соответствие"
+                {savedMappingState.map((item: any, idx) => {
+                  const invalidTable = !columns.includes(item?.tableColumn)
+                  const invalidResult = !(
+                    Array.isArray(resultColumns) && resultColumns.includes(item?.resultColumn)
+                  )
+                  return (
+                    <div
+                      key={idx}
+                      className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs"
+                      title={`${item?.tableColumn || ''} → ${item?.resultColumn || ''}${
+                        invalidTable || invalidResult ? ' (есть недоступные колонки)' : ''
+                      }`}
                     >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
+                      <span className={invalidTable ? 'text-destructive' : ''}>
+                        {item?.tableColumn || ''}
+                      </span>
+                      <span>→</span>
+                      <span className={invalidResult ? 'text-destructive' : ''}>
+                        {item?.resultColumn || ''}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setSavedMappingState((prev) => prev.filter((_, i) => i !== idx))
+                        }
+                        className="ml-1 text-muted-foreground hover:text-destructive"
+                        aria-label="Удалить соответствие"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )
+                })}
               </div>
             )}
           </div>
@@ -234,32 +265,45 @@ export function MappingEditor({
 
             {updateOnState.length > 0 && (
               <div className="flex flex-wrap gap-2">
-                {updateOnState.map((item: any, idx: number) => (
-                  <div
-                    key={idx}
-                    className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs"
-                    title={`${item.tableColumn || ''} ${item.operator || ''} ${item.aliasColumn || ''}${item.cond ? ` (${item.cond})` : ''}`}
-                  >
-                    <span>{item.tableColumn || ''}</span>
-                    <span>{item.operator || ''}</span>
-                    <span>{item.aliasColumn || ''}</span>
-                    {idx > 0 && item.cond && (
-                      <span className="ml-1 text-muted-foreground">({item.cond})</span>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => setUpdateOnState((prev) => prev.filter((_, i) => i !== idx))}
-                      className="ml-1 text-muted-foreground hover:text-destructive"
-                      aria-label="Удалить условие"
+                {updateOnState.map((item: any, idx: number) => {
+                  const invalidTable = !columns.includes(item?.tableColumn)
+                  const invalidAlias = !(
+                    Array.isArray(resultColumns) && resultColumns.includes(item?.aliasColumn)
+                  )
+                  return (
+                    <div
+                      key={idx}
+                      className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs"
+                      title={`${item.tableColumn || ''} ${item.operator || ''} ${item.aliasColumn || ''}${
+                        idx > 0 && item.cond ? ` (${item.cond})` : ''
+                      }${invalidTable || invalidAlias ? ' (есть недоступные колонки)' : ''}`}
                     >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
+                      <span className={invalidTable ? 'text-destructive' : ''}>
+                        {item.tableColumn || ''}
+                      </span>
+                      <span>{item.operator || ''}</span>
+                      <span className={invalidAlias ? 'text-destructive' : ''}>
+                        {item.aliasColumn || ''}
+                      </span>
+                      {idx > 0 && item.cond && (
+                        <span className="ml-1 text-muted-foreground">({item.cond})</span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setUpdateOnState((prev) => prev.filter((_, i) => i !== idx))}
+                        className="ml-1 text-muted-foreground hover:text-destructive"
+                        aria-label="Удалить условие"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )
+                })}
               </div>
             )}
           </div>
 
+          {errorMsg && <div className="text-sm text-destructive">{errorMsg}</div>}
           <div className="flex items-center gap-2">
             <Button type="button" onClick={handleSave}>
               {saveBtnName}
