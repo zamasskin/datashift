@@ -96,10 +96,25 @@ export default class MigrationsController {
         cronExpression: vine.any().optional(),
         isActive: vine.boolean(),
         fetchConfigs: vine.array(fetchConfigSchema),
+        // Validate SaveMapping[] according to app/interfaces/save_mapping.ts
         saveMappings: vine.array(
           vine.object({
-            datasetId: vine.number().withoutDecimals().positive(),
-            source: vine.string(),
+            id: vine.string().trim(),
+            sourceId: vine.number().withoutDecimals().positive(),
+            savedMapping: vine.array(
+              vine.object({
+                tableColumn: vine.string().trim(),
+                resultColumn: vine.string().trim(),
+              })
+            ),
+            updateOn: vine.array(
+              vine.object({
+                tableColumn: vine.string().trim(),
+                aliasColumn: vine.string().trim(),
+                operator: vine.enum(['=', '!=', '<', '<=', '>', '>=']),
+                cond: vine.enum(['and', 'or']).optional(),
+              })
+            ),
           })
         ),
         params: this.makeParamsSchema(),
