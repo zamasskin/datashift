@@ -34,7 +34,7 @@ export function MappingEditor({
   const { csrfToken } = usePage().props as any
   const [sourceId, setSourceId] = useState<number>(config?.sourceId || 0)
   const [loading, setLoading] = useState(false)
-  const [table, setTable] = useState<string>('')
+  const [table, setTable] = useState<string>(config?.table || '')
   const [columns, setColumns] = useState<string[]>([])
   const [savedMappingState, setSavedMappingState] = useState<Record<string, string>[]>(
     () => config?.savedMapping ?? []
@@ -59,6 +59,7 @@ export function MappingEditor({
 
   const resetForm = () => {
     setSourceId(config?.sourceId || 0)
+    setTable(config?.table || '')
     setSavedMappingState(config?.savedMapping ?? [])
     setUpdateOnState(config?.updateOn ?? [])
   }
@@ -163,6 +164,7 @@ export function MappingEditor({
     const payload: SaveMapping = {
       id: config?.id ?? Date.now().toString(36),
       sourceId,
+      table,
       savedMapping: savedMappingState,
       updateOn: updateOnState,
     }

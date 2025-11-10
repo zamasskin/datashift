@@ -8,6 +8,7 @@ export type UpdateOn = {
 export type SaveMapping = {
   id: string
   sourceId: number
+  table: string
   savedMapping: Record<string, string>[]
   updateOn: UpdateOn[]
 }
