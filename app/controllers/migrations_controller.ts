@@ -11,7 +11,15 @@ import vine from '@vinejs/vine'
 import { ParamsService } from '#services/params_service'
 import FetchConfigService from '#services/fetchсonfigs'
 import SqlService from '#services/sql_service'
+import { SaveMapping } from '#interfaces/save_mapping'
 
+// Узкий тип данных для запуска миграции из валидированного тела запроса
+type RunMigrateData = {
+  id: number
+  fetchConfigs: any[]
+  saveMappings: SaveMapping[]
+  params: any[]
+}
 export default class MigrationsController {
   async index({ inertia }: HttpContext) {
     const migrations = await Migration.query().preload('user')
@@ -214,6 +222,10 @@ export default class MigrationsController {
 
     const body = request.all()
     const data = await schema.validate(body)
+    return this.migrate(data)
+  }
+
+  async migrate(data: RunMigrateData) {
     const params = this.normalizeParams(data.params)
     const fetchConfigs = this.normalizeFetchConfigs(data.fetchConfigs)
 
