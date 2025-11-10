@@ -137,6 +137,11 @@ export function MappingEditor({
 
   const handleSave = () => {
     if (!sourceId) return
+    // Require at least one mapping before saving
+    if (savedMappingState.length === 0) {
+      setErrorMsg('Добавьте хотя бы одно соответствие колонок перед сохранением.')
+      return
+    }
     const resultCols = Array.isArray(resultColumns) ? resultColumns : []
     const hasInvalidMappings = savedMappingState.some((item: any) => {
       const t = item?.tableColumn
