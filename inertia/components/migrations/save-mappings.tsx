@@ -4,6 +4,7 @@ import { Spinner } from '~/components/ui/spinner'
 import { FileWarning } from 'lucide-react'
 import { MappingEditor } from './mapping-editor'
 import type { SaveMapping } from '#interfaces/save_mapping'
+import { Item } from '../ui/item'
 
 export function SaveMappings({
   error,
@@ -53,6 +54,9 @@ export function SaveMappings({
 
       {fetchConfigsLength > 0 && (
         <>
+          {saveMappings.map((mapping) => (
+            <Item key={mapping.id}>{mapping.sourceId}</Item>
+          ))}
           <MappingEditor
             resultColumns={resultColumns}
             // onCancel={() => setOpen(false)}
