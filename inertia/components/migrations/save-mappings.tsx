@@ -5,6 +5,7 @@ import { FileWarning, Edit, Trash2 } from 'lucide-react'
 import { MappingEditor } from './mapping-editor'
 import type { SaveMapping } from '#interfaces/save_mapping'
 import { Item, ItemActions, ItemContent } from '../ui/item'
+import { ScrollArea } from '~/components/ui/scroll-area'
 
 export function SaveMappings({
   error,
@@ -57,56 +58,58 @@ export function SaveMappings({
           {saveMappings.map((mapping) => (
             <Item key={mapping.id} variant="outline">
               <ItemContent>
-                <div className="space-y-2">
-                  <div className="text-sm text-muted-foreground">
-                    ID: {mapping.id} · Источник: {mapping.sourceId}
-                  </div>
+                <ScrollArea className="h-30 w-full">
+                  <div className="space-y-2 p-1">
+                    <div className="text-sm text-muted-foreground">
+                      ID: {mapping.id} · Источник: {mapping.sourceId}
+                    </div>
 
-                  <div className="space-y-1">
-                    <div className="font-medium">Соответствия колонок</div>
-                    {mapping.savedMapping?.length ? (
-                      <div className="flex flex-wrap gap-2">
-                        {mapping.savedMapping.map((m: any, idx: number) => (
-                          <div
-                            key={idx}
-                            className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs"
-                            title={`${m?.tableColumn || ''} → ${m?.resultColumn || ''}`}
-                          >
-                            <span>{m?.tableColumn || ''}</span>
-                            <span>→</span>
-                            <span>{m?.resultColumn || ''}</span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-sm text-muted-foreground">Нет соответствий</div>
-                    )}
-                  </div>
+                    <div className="space-y-1">
+                      <div className="font-medium">Соответствия колонок</div>
+                      {mapping.savedMapping?.length ? (
+                        <div className="flex flex-wrap gap-2">
+                          {mapping.savedMapping.map((m: any, idx: number) => (
+                            <div
+                              key={idx}
+                              className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs"
+                              title={`${m?.tableColumn || ''} → ${m?.resultColumn || ''}`}
+                            >
+                              <span>{m?.tableColumn || ''}</span>
+                              <span>→</span>
+                              <span>{m?.resultColumn || ''}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-sm text-muted-foreground">Нет соответствий</div>
+                      )}
+                    </div>
 
-                  <div className="space-y-1">
-                    <div className="font-medium">Условия обновления</div>
-                    {mapping.updateOn?.length ? (
-                      <div className="flex flex-wrap gap-2">
-                        {mapping.updateOn.map((u: any, idx: number) => (
-                          <div
-                            key={idx}
-                            className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs"
-                            title={`${u?.tableColumn || ''} ${u?.operator || ''} ${u?.aliasColumn || ''}${u?.cond ? ` (${u?.cond})` : ''}`}
-                          >
-                            <span>{u?.tableColumn || ''}</span>
-                            <span>{u?.operator || ''}</span>
-                            <span>{u?.aliasColumn || ''}</span>
-                            {idx > 0 && u?.cond && (
-                              <span className="ml-1 text-muted-foreground">({u?.cond})</span>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-sm text-muted-foreground">Нет условий</div>
-                    )}
+                    <div className="space-y-1">
+                      <div className="font-medium">Условия обновления</div>
+                      {mapping.updateOn?.length ? (
+                        <div className="flex flex-wrap gap-2">
+                          {mapping.updateOn.map((u: any, idx: number) => (
+                            <div
+                              key={idx}
+                              className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs"
+                              title={`${u?.tableColumn || ''} ${u?.operator || ''} ${u?.aliasColumn || ''}${u?.cond ? ` (${u?.cond})` : ''}`}
+                            >
+                              <span>{u?.tableColumn || ''}</span>
+                              <span>{u?.operator || ''}</span>
+                              <span>{u?.aliasColumn || ''}</span>
+                              {idx > 0 && u?.cond && (
+                                <span className="ml-1 text-muted-foreground">({u?.cond})</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-sm text-muted-foreground">Нет условий</div>
+                      )}
+                    </div>
                   </div>
-                </div>
+                </ScrollArea>
               </ItemContent>
               <ItemActions>
                 <MappingEditor
