@@ -268,6 +268,10 @@ export default class MigrationsController {
     response.response.setHeader('Content-Type', 'text/event-stream')
     response.response.setHeader('Cache-Control', 'no-cache')
     response.response.setHeader('Connection', 'keep-alive')
+    // Flush headers immediately to establish SSE
+    if (typeof (response.response as any).flushHeaders === 'function') {
+      ;(response.response as any).flushHeaders()
+    }
 
     const write = (event: string, payload: any) => {
       response.response.write(
@@ -277,15 +281,23 @@ export default class MigrationsController {
 
     const onProgress = (p: { stage: string; details?: any }) => write('progress', p)
     const onDone = (payload: any) => {
+      // Сообщаем о завершении, но соединение не закрываем — поток длительный
       write('done', payload)
-      cleanup()
     }
     const onError = (payload: any) => {
+      // Сообщаем об ошибке, но не закрываем — клиент может переподключиться
       write('error', payload)
-      cleanup()
     }
 
+    // Heartbeat для поддержки долгоживущего соединения
+    const heartbeat = setInterval(() => {
+      try {
+        response.response.write(':keep-alive\n\n')
+      } catch {}
+    }, 30000)
+
     const cleanup = () => {
+      clearInterval(heartbeat)
       progressBus.off(`progress:${channelId}`, onProgress)
       progressBus.off(`done:${channelId}`, onDone)
       progressBus.off(`error:${channelId}`, onError)

@@ -132,6 +132,9 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const openStream = () => {
     closeStream()
     const es = new EventSource(`/migrations/stream?channelId=${channelId}`)
+    es.onopen = () => {
+      setIsRunning(true)
+    }
     es.onmessage = (e) => {
       // Общие события без имени
       // Можно показать статус «listening»
@@ -144,11 +147,16 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
     })
     es.addEventListener('done', (e: MessageEvent) => {
       console.log('done', e.data)
+      // Поток не закрываем — клиент остаётся слушать следующие запуски
       setIsRunning(false)
     })
     es.addEventListener('error', (e: MessageEvent) => {
-      console.error('error', e.data)
-      setIsRunning(false)
+      console.error('error', e)
+      // При остановке/завершении сервер может закрыть соединение — браузер
+      // сгенерирует error и затем переподключится. Не закрываем вручную.
+      if (es.readyState === 2 /* EventSource.CLOSED */) {
+        setIsRunning(false)
+      }
     })
     esRef.current = es
   }
