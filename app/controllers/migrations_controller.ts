@@ -201,6 +201,35 @@ export default class MigrationsController {
     }
   }
 
+  async runMigrate({ request }: HttpContext) {
+    const schema = vine.compile(
+      vine.object({
+        fetchConfigs: vine.array(this.makeFetchConfigSchema()),
+        saveMappings: vine.array(this.makeSaveMappingSchema()),
+        params: this.makeParamsSchema(),
+        pages: vine.record(vine.number()).optional(),
+      })
+    )
+
+    const body = request.all()
+    const data = await schema.validate(body)
+    const params = this.normalizeParams(data.params)
+    const fetchConfigsBase = this.normalizeFetchConfigs(data.fetchConfigs)
+    const fetchConfigs = this.applyPreviewPages(fetchConfigsBase, data.pages || {})
+
+    const paramsService = new ParamsService()
+    const fetchConfigService = new FetchConfigService()
+
+    const paramsSource = paramsService.getSource(params)
+    const initialResults: FetchConfigResult[] = [{ dataType: 'params', data: paramsSource }]
+    if (fetchConfigs.length === 0) {
+      throw new Error('Нет конфигураций для выполнения')
+    }
+
+    for await (const result of fetchConfigService.execute(fetchConfigs, initialResults)) {
+    }
+  }
+
   /**
    * Преобразует ошибки Vine в { field: message }.
    * Добавляет префикс "config." для вложенных полей конфигурации.
