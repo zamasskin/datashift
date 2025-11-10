@@ -34,6 +34,13 @@ export function MappingEditor({ config, children, resultColumns, onSave }: Mappi
   )
   const [updateOnState, setUpdateOnState] = useState(config?.updateOn ?? [])
 
+  // UI state for adding UpdateOn items
+  const [updateOpen, setUpdateOpen] = useState(false)
+  const [newUpdateTableColumn, setNewUpdateTableColumn] = useState('')
+  const [newUpdateAliasColumn, setNewUpdateAliasColumn] = useState('')
+  const [newUpdateOperator, setNewUpdateOperator] = useState<'=' | '!=' | '<' | '<=' | '>' | '>='>('=')
+  const [newUpdateCond, setNewUpdateCond] = useState<'and' | 'or' | undefined>('and')
+
   const [open, setOpen] = useState(false)
   const [tables, setTables] = useState<string[]>([])
   const [source, setSource] = useState<string>('')
@@ -190,6 +197,44 @@ export function MappingEditor({ config, children, resultColumns, onSave }: Mappi
             )}
           </div>
 
+          <div className="mt-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="font-medium">Условия обновления</div>
+              <Button variant="outline" onClick={() => setUpdateOpen(true)}>
+                Добавить условие
+              </Button>
+            </div>
+
+            {updateOnState.length === 0 && (
+              <div className="text-sm text-muted-foreground">Пока нет добавленных условий</div>
+            )}
+
+            {updateOnState.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {updateOnState.map((item: any, idx: number) => (
+                  <div
+                    key={idx}
+                    className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs"
+                    title={`${item.tableColumn || ''} ${item.operator || ''} ${item.aliasColumn || ''}${item.cond ? ` (${item.cond})` : ''}`}
+                  >
+                    <span>{item.tableColumn || ''}</span>
+                    <span>{item.operator || ''}</span>
+                    <span>{item.aliasColumn || ''}</span>
+                    {item.cond && <span className="ml-1 text-muted-foreground">({item.cond})</span>}
+                    <button
+                      type="button"
+                      onClick={() => setUpdateOnState((prev) => prev.filter((_, i) => i !== idx))}
+                      className="ml-1 text-muted-foreground hover:text-destructive"
+                      aria-label="Удалить условие"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           <div className="flex items-center gap-2">
             <Button type="button" onClick={handleSave}>
               Сохранить соответствие
@@ -273,6 +318,122 @@ export function MappingEditor({ config, children, resultColumns, onSave }: Mappi
                 Добавить
               </Button>
               <Button variant="ghost" onClick={() => setAddOpen(false)}>
+                Отмена
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={updateOpen} onOpenChange={setUpdateOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Добавить условие обновления</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Field>
+              <FieldLabel>Колонка таблицы</FieldLabel>
+              <Select value={newUpdateTableColumn} onValueChange={setNewUpdateTableColumn}>
+                <SelectTrigger className="h-8">
+                  <SelectValue placeholder="Выберите колонку" />
+                </SelectTrigger>
+                <SelectContent>
+                  {columns.length > 0 ? (
+                    columns.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="__no_cols__" disabled>
+                      Нет колонок
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+            </Field>
+
+            <Field>
+              <FieldLabel>Alias колонка</FieldLabel>
+              <Select value={newUpdateAliasColumn} onValueChange={setNewUpdateAliasColumn}>
+                <SelectTrigger className="h-8">
+                  <SelectValue placeholder="Выберите колонку" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.isArray(resultColumns) && resultColumns.length > 0 ? (
+                    resultColumns.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="__no_cols__" disabled>
+                      Нет колонок
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+            </Field>
+
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <Field>
+                  <FieldLabel>Оператор</FieldLabel>
+                  <Select value={newUpdateOperator} onValueChange={(v) => setNewUpdateOperator(v as any)}>
+                    <SelectTrigger className="h-8">
+                      <SelectValue placeholder="Выберите оператор" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {['=', '!=', '<', '<=', '>', '>='].map((op) => (
+                        <SelectItem key={op} value={op}>
+                          {op}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+              </div>
+              <div className="flex-1">
+                <Field>
+                  <FieldLabel>Условие (cond)</FieldLabel>
+                  <Select value={newUpdateCond ?? ''} onValueChange={(v) => setNewUpdateCond((v as any) || undefined)}>
+                    <SelectTrigger className="h-8">
+                      <SelectValue placeholder="and / or" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {['and', 'or'].map((c) => (
+                        <SelectItem key={c} value={c}>
+                          {c}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={() => {
+                  if (!newUpdateTableColumn || !newUpdateAliasColumn || !newUpdateOperator) return
+                  const entry = {
+                    tableColumn: newUpdateTableColumn,
+                    aliasColumn: newUpdateAliasColumn,
+                    operator: newUpdateOperator,
+                    cond: newUpdateCond,
+                  }
+                  setUpdateOnState((prev) => [...prev, entry])
+                  setNewUpdateTableColumn('')
+                  setNewUpdateAliasColumn('')
+                  setNewUpdateOperator('=')
+                  setNewUpdateCond('and')
+                  setUpdateOpen(false)
+                }}
+                disabled={!newUpdateTableColumn || !newUpdateAliasColumn || !newUpdateOperator}
+              >
+                Добавить
+              </Button>
+              <Button variant="ghost" onClick={() => setUpdateOpen(false)}>
                 Отмена
               </Button>
             </div>
