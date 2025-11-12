@@ -14,6 +14,8 @@ import SqlService from '#services/sql_service'
 import { SaveMapping } from '#interfaces/save_mapping'
 import { progressBus } from '#start/events'
 import { PubSubHub } from '#services/pubsub_hub'
+import MigrationRun from '#models/migration_run'
+import { DateTime } from 'luxon'
 
 // Реестр запущенных миграций для поддержки остановки по channelId
 const runningMigrations = new Map<string, { aborted: boolean }>()
@@ -345,6 +347,24 @@ export default class MigrationsController {
     { id, params, fetchConfigs, saveMappings }: RunMigrateData,
     channelId?: string
   ) {
+    const lastRun = await MigrationRun.query()
+      .where('migrationId', id)
+      .where('status', 'running')
+      .orderBy('createdAt', 'desc')
+      .first()
+
+    if (lastRun) {
+      throw new Error('Migration is already running')
+    }
+
+    const migrationRun = await MigrationRun.create({
+      migrationId: id,
+      status: 'running',
+      progress: [],
+      trigger: 'manual',
+      metadata: { id, params, fetchConfigs, saveMappings },
+    })
+
     const pubSubHub = new PubSubHub()
     try {
       pubSubHub.writeJson({
@@ -366,7 +386,8 @@ export default class MigrationsController {
       const saveSummary: Record<string, number> = {}
 
       for await (const { data, meta } of fetchConfigService.execute(fetchConfigs, initialResults)) {
-        if (isAborted(channelId)) {
+        await migrationRun.refresh()
+        if (migrationRun.status === 'canceled') {
           return { ok: false, cancelled: true, summary: saveSummary }
         }
         if (channelId) {
@@ -415,7 +436,17 @@ export default class MigrationsController {
         data: { id, params, fetchConfigs, saveMappings },
       })
 
+      migrationRun.status = 'success'
+      migrationRun.finishedAt = DateTime.now()
+      await migrationRun.save()
+
       return { ok: true, summary: saveSummary }
+    } catch (error) {
+      migrationRun.status = 'failed'
+      migrationRun.finishedAt = DateTime.now()
+      migrationRun.error = String(error)
+      await migrationRun.save()
+      throw error
     } finally {
       pubSubHub.dispose()
     }
