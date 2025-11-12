@@ -319,13 +319,15 @@ export default class MigrationsController {
       .first()
 
     if (!lastRun) {
-      return response.status(404).send({ error: 'Migration not running', migrationId })
+      return response
+        .status(404)
+        .send({ error: `Migration not running with trigger ${trigger}`, migrationId })
     }
 
     await lastRun.merge({ status: 'canceled' })
     await lastRun.save()
 
-    return response.ok({ stopped: true, migrationId })
+    return response.ok({ stopped: true, migrationId, trigger })
   }
 
   private async migrate(
