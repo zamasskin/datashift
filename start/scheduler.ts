@@ -1,14 +1,21 @@
 import logger from '@adonisjs/core/services/logger'
 import CronSchedulerService from '#services/cron_scheduler_service'
 
-const scheduler = new CronSchedulerService()
-logger.info('[cron] scheduler started')
+declare global {
+  var DATASHIFT_CRON_SCHEDULER: CronSchedulerService | undefined
+}
 
-// Start scheduler when application boots
-await scheduler.start()
+if (globalThis.DATASHIFT_CRON_SCHEDULER) {
+  logger.info('[cron] scheduler already running, skip re-init')
+} else {
+  const scheduler = new CronSchedulerService()
+  globalThis.DATASHIFT_CRON_SCHEDULER = scheduler
+  logger.info('[cron] scheduler started')
+  await scheduler.start()
 
-// Expose stop on process exit (optional)
-process.on('SIGTERM', () => {
-  scheduler.stop().catch(() => {})
-})
+  // Expose stop on process exit (optional)
+  process.on('SIGTERM', () => {
+    scheduler.stop().catch(() => {})
+  })
+}
 //

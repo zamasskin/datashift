@@ -2,6 +2,7 @@ import Migration from '#models/migration'
 import type { CronConfig } from '#interfaces/cron_config'
 import MigrationRunnerService from '#services/migration_runner_service'
 import { DateTime } from 'luxon'
+import MigrationRun from '#models/migration_run'
 
 type TimerHandle = ReturnType<typeof setInterval> | ReturnType<typeof setTimeout>
 
@@ -71,6 +72,11 @@ export default class CronSchedulerService {
   private refreshHandle: TimerHandle | null = null
 
   async start() {
+    if (this.refreshHandle) {
+      console.log('[cron] scheduler already started, skipping second start')
+      return
+    }
+    console.log('[cron] starting scheduler')
     await this.loadAndScheduleAll()
     // Periodically refresh schedules to pick up DB changes
     this.refreshHandle = setInterval(() => {
@@ -92,17 +98,20 @@ export default class CronSchedulerService {
 
   private async loadAndScheduleAll() {
     const migrations = await Migration.query().where('isActive', true)
+    console.log('[cron] active migrations:', migrations.length)
     for (const m of migrations) {
       const cfg = m.cronExpression as CronConfig | null
       const hasTimer = this.timers.has(m.id)
       if (!cfg) {
         if (hasTimer) this.cancel(m.id)
+        console.log(`[cron][${m.id}] no cronExpression, skipping`)
         continue
       }
       // Recreate timer if config changed or missing
       if (hasTimer) {
         this.cancel(m.id)
       }
+      console.log(`[cron][${m.id}] schedule`, cfg)
       this.schedule(m.id, cfg)
     }
   }
@@ -113,29 +122,48 @@ export default class CronSchedulerService {
       clearInterval(t as any)
       clearTimeout(t as any)
       this.timers.delete(id)
+      console.log(`[cron][${id}] cancel existing timer`)
     }
+  }
+
+  // Добавлено: проверка, что миграция уже запущена c триггером 'cron'
+  private async isRunning(id: number): Promise<boolean> {
+    const lastRun = await MigrationRun.query()
+      .where('migrationId', id)
+      .where('status', 'running')
+      .where('trigger', 'cron')
+      .orderBy('createdAt', 'desc')
+      .first()
+    return !!lastRun
   }
 
   private schedule(id: number, cfg: CronConfig) {
     switch (cfg.type) {
       case 'interval': {
         const ms = toMs(cfg.count, cfg.units)
-        const h = setInterval(() => {
-          this.runner
-            .runById(id, 'cron')
-            .catch((e) => console.warn(`[cron][${id}] run skipped/error:`, e?.message || e))
+        console.log(`[cron][${id}] interval to ${ms}ms`)
+        const h = setInterval(async () => {
+          console.log(`[cron][${id}] interval run`)
+          try {
+            if (await this.isRunning(id)) return
+            await this.runner.runById(id, 'cron')
+          } catch (e: any) {
+            console.warn(`[cron][${id}] run skipped/error:`, e?.message || e)
+          }
         }, ms)
         this.timers.set(id, h)
         break
       }
       case 'interval-time': {
         const periodMs = cfg.timeUnits * 60_000
-        const h = setInterval(() => {
-          const now = DateTime.local()
-          if (isWithinWindow(cfg.days || [], cfg.timeStart, cfg.timeEnd, now)) {
-            this.runner
-              .runById(id, 'cron')
-              .catch((e) => console.warn(`[cron][${id}] run skipped/error:`, e?.message || e))
+        const h = setInterval(async () => {
+          try {
+            const now = DateTime.local()
+            if (!isWithinWindow(cfg.days || [], cfg.timeStart, cfg.timeEnd, now)) return
+            if (await this.isRunning(id)) return
+            await this.runner.runById(id, 'cron')
+          } catch (e: any) {
+            console.warn(`[cron][${id}] run skipped/error:`, e?.message || e)
           }
         }, periodMs)
         this.timers.set(id, h)
@@ -148,6 +176,11 @@ export default class CronSchedulerService {
           const diffMs = Math.max(0, next.toMillis() - from.toMillis())
           const t = setTimeout(async () => {
             try {
+              if (await this.isRunning(id)) {
+                // Пропускаем запуск и просто планируем следующий
+                scheduleNext()
+                return
+              }
               await this.runner.runById(id, 'cron')
             } catch (e: any) {
               console.warn(`[cron][${id}] run skipped/error:`, e?.message || e)
@@ -165,4 +198,3 @@ export default class CronSchedulerService {
     }
   }
 }
-//
