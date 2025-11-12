@@ -13,7 +13,6 @@ import FetchConfigService from '#services/fetchсonfigs'
 import SqlService from '#services/sql_service'
 import { SaveMapping } from '#interfaces/save_mapping'
 import { progressBus } from '#start/events'
-import { PubSubHub } from '#services/pubsub_hub'
 import MigrationRun from '#models/migration_run'
 import { DateTime } from 'luxon'
 
@@ -244,16 +243,11 @@ export default class MigrationsController {
   }
 
   async stream({ request, response }: HttpContext) {
-    const pubSubHub = new PubSubHub()
     const channelId = String(request.input('channelId') || '')
     if (!channelId) {
       response.status(400)
       return response.send({ error: 'Missing channelId' })
     }
-
-    pubSubHub.on('data', (data) => {
-      console.log('client', data.toString())
-    })
 
     response.response.setHeader('Content-Type', 'text/event-stream')
     response.response.setHeader('Cache-Control', 'no-cache')
@@ -288,7 +282,6 @@ export default class MigrationsController {
 
     const cleanup = () => {
       clearInterval(heartbeat)
-      pubSubHub.dispose()
       progressBus.off(`progress:${channelId}`, onProgress)
       progressBus.off(`done:${channelId}`, onDone)
       progressBus.off(`error:${channelId}`, onError)
@@ -354,9 +347,8 @@ export default class MigrationsController {
       metadata: { id, params, fetchConfigs, saveMappings },
     })
 
-    const pubSubHub = new PubSubHub()
     try {
-      pubSubHub.writeJson({
+      progressBus.emit('migration:start', {
         type: 'migration',
         subject: id,
         stage: 'start',
@@ -380,7 +372,7 @@ export default class MigrationsController {
           return { ok: false, cancelled: true, summary: saveSummary }
         }
         if (channelId) {
-          pubSubHub.writeJson({
+          progressBus.emit('migration:fetch', {
             type: 'migration',
             subject: id,
             stage: 'fetch',
@@ -405,7 +397,7 @@ export default class MigrationsController {
             saveSummary[mapping.id] = (saveSummary[mapping.id] || 0) + count
           }
           if (channelId) {
-            pubSubHub.writeJson({
+            progressBus.emit('migration:save', {
               type: 'migration',
               subject: id,
               stage: 'save',
@@ -420,7 +412,7 @@ export default class MigrationsController {
         return { ok: false, cancelled: true, summary: saveSummary }
       }
 
-      pubSubHub.writeJson({
+      progressBus.emit('migration:done', {
         type: 'migration',
         subject: id,
         stage: 'done',
@@ -433,13 +425,17 @@ export default class MigrationsController {
 
       return { ok: true, summary: saveSummary }
     } catch (error) {
+      progressBus.emit('migration:error', {
+        type: 'migration',
+        subject: id,
+        stage: 'error',
+        data: { id, params, fetchConfigs, saveMappings, error: String(error) },
+      })
       migrationRun.status = 'failed'
       migrationRun.finishedAt = DateTime.now()
       migrationRun.error = String(error)
       await migrationRun.save()
       throw error
-    } finally {
-      pubSubHub.dispose()
     }
   }
   /**
