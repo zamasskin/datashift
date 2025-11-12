@@ -35,4 +35,8 @@ export default class MigrationRun extends BaseModel {
 
   @column.dateTime()
   declare finishedAt: DateTime | null
+
+  isCanceled() {
+    return this.status === 'canceled'
+  }
 }

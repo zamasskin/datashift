@@ -17,11 +17,6 @@ import { PubSubHub } from '#services/pubsub_hub'
 import MigrationRun from '#models/migration_run'
 import { DateTime } from 'luxon'
 
-// Реестр запущенных миграций для поддержки остановки по channelId
-const runningMigrations = new Map<string, { aborted: boolean }>()
-const isAborted = (channelId?: string) =>
-  !!channelId && runningMigrations.get(channelId)?.aborted === true
-
 // Узкий тип данных для запуска миграции из валидированного тела запроса
 type RunMigrateData = {
   id: number
@@ -241,21 +236,8 @@ export default class MigrationsController {
 
     const channelId = data.channelId || `migration:${normalized.id}:${Date.now()}`
 
-    // Регистрируем миграцию как активную
-    runningMigrations.set(channelId, { aborted: false })
-
-    // Запускаем миграцию в фоне: эмитим прогресс через EventEmitter
-    void (async () => {
-      try {
-        const result = await this.migrate(normalized, channelId)
-        progressBus.emit(`done:${channelId}`, result)
-      } catch (err: any) {
-        progressBus.emit(`error:${channelId}`, { message: err?.message ?? 'Unknown error' })
-      } finally {
-        // Убираем из реестра по завершению/ошибке
-        runningMigrations.delete(channelId)
-      }
-    })()
+    // Запускаем миграцию в фоне
+    this.migrate(normalized, channelId)
 
     // Быстрый ответ REST-запуска
     return { started: true, id: normalized.id, channelId }
@@ -322,25 +304,26 @@ export default class MigrationsController {
   }
 
   async stop({ request, response }: HttpContext) {
-    const channelId = String(request.input('channelId') || '')
-    if (!channelId) {
+    const migrationId = String(request.input('migrationId') || '')
+    if (!migrationId) {
       response.status(400)
-      return response.send({ error: 'Missing channelId' })
+      return response.send({ error: 'Missing migrationId' })
     }
 
-    const state = runningMigrations.get(channelId)
-    if (!state) {
-      return response.status(404).send({ error: 'Migration not running', channelId })
+    const lastRun = await MigrationRun.query()
+      .where('migrationId', migrationId)
+      .where('status', 'running')
+      .orderBy('createdAt', 'desc')
+      .first()
+
+    if (!lastRun) {
+      return response.status(404).send({ error: 'Migration not running', migrationId })
     }
 
-    // Помечаем миграцию как остановленную
-    state.aborted = true
-    runningMigrations.set(channelId, state)
+    await lastRun.merge({ status: 'canceled' })
+    await lastRun.save()
 
-    // Отправляем быстрый прогресс, чтобы UI получил сигнал
-    progressBus.emit(`progress:${channelId}`, { stage: 'stopping', details: { channelId } })
-
-    return response.ok({ stopped: true, channelId })
+    return response.ok({ stopped: true, migrationId })
   }
 
   private async migrate(
@@ -387,7 +370,7 @@ export default class MigrationsController {
 
       for await (const { data, meta } of fetchConfigService.execute(fetchConfigs, initialResults)) {
         await migrationRun.refresh()
-        if (migrationRun.status === 'canceled') {
+        if (migrationRun.isCanceled()) {
           return { ok: false, cancelled: true, summary: saveSummary }
         }
         if (channelId) {
@@ -407,7 +390,8 @@ export default class MigrationsController {
         const rows: Record<string, any>[] = Array.isArray(data.data) ? data.data : []
 
         for (const mapping of mappings) {
-          if (isAborted(channelId)) {
+          await migrationRun.refresh()
+          if (migrationRun.isCanceled()) {
             return { ok: false, cancelled: true, summary: saveSummary }
           }
           const count = await sqlService.applySaveMappingToRows(mapping, rows)
@@ -425,7 +409,8 @@ export default class MigrationsController {
         }
       }
 
-      if (isAborted(channelId)) {
+      await migrationRun.refresh()
+      if (migrationRun.isCanceled()) {
         return { ok: false, cancelled: true, summary: saveSummary }
       }
 
