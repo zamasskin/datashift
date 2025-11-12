@@ -33,6 +33,7 @@ import _ from 'lodash'
 import { cn } from '~/lib/utils'
 import { useMigrationRuns } from '~/store/migrations'
 import { Progress } from '~/components/ui/progress'
+import { Spinner } from '~/components/ui/spinner'
 
 const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const { props } = usePage<{ csrfToken?: string }>()
@@ -49,6 +50,8 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const [previewPages, setPreviewPages] = useState<Record<string, number>>({})
   const channelId = `migration:${migration.id}`
   const [newDatasetOpen, setNewDatasetOpen] = useState('')
+  const [fetchRunning, setFetchRunning] = useState(false)
+  const [fetchStopped, setFetchStopped] = useState(false)
 
   const [saveLoading, setSaveLoading] = useState(false)
   const [saveErrors, setSaveErrors] = useState<Record<string, string>>({})
@@ -134,25 +137,35 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
   }
 
   const handleRun = async () => {
-    await fetch('/migrations/run', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': props.csrfToken || '' },
-      body: JSON.stringify({
-        id: migration.id,
-        saveMappings,
-        fetchConfigs,
-        params,
-        channelId,
-      }),
-    })
+    setFetchRunning(true)
+    try {
+      await fetch('/migrations/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': props.csrfToken || '' },
+        body: JSON.stringify({
+          id: migration.id,
+          saveMappings,
+          fetchConfigs,
+          params,
+          channelId,
+        }),
+      })
+    } finally {
+      setTimeout(() => setFetchRunning(false), 300)
+    }
   }
 
   const handleStop = async () => {
-    await fetch('/migrations/stop', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': props.csrfToken || '' },
-      body: JSON.stringify({ migrationId: migration.id, trigger: 'manual' }),
-    })
+    setFetchStopped(true)
+    try {
+      await fetch('/migrations/stop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': props.csrfToken || '' },
+        body: JSON.stringify({ migrationId: migration.id, trigger: 'manual' }),
+      })
+    } finally {
+      setTimeout(() => setFetchStopped(false), 300)
+    }
   }
 
   const suggestionsById = useMemo(() => {
@@ -210,13 +223,15 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
             <div className="flex justify-start md:justify-end">
               <div className="flex gap-2">
                 {running ? (
-                  <Button variant="destructive" onClick={handleStop}>
+                  <Button variant="destructive" onClick={handleStop} disabled={fetchStopped}>
                     Остановить
+                    {fetchStopped && <Spinner className="h-4 w-4 animate-spin" />}
                   </Button>
                 ) : (
-                  <Button variant="secondary" onClick={handleRun}>
+                  <Button variant="secondary" onClick={handleRun} disabled={fetchRunning}>
                     <Play />
                     Запустить
+                    {fetchRunning && <Spinner className="h-4 w-4 animate-spin" />}
                   </Button>
                 )}
               </div>
