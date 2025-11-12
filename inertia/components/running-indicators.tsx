@@ -1,5 +1,5 @@
 import type MigrationRun from '#models/migration_run'
-import { Link } from '@inertiajs/react'
+import { Link, usePage } from '@inertiajs/react'
 import { Progress } from './ui/progress'
 import {
   DropdownMenu,
@@ -10,6 +10,9 @@ import {
   DropdownMenuSeparator,
 } from './ui/dropdown-menu'
 import { ScrollArea } from './ui/scroll-area'
+import { Button } from './ui/button'
+import { useState } from 'react'
+import { StopCircle } from 'lucide-react'
 
 type Props = {
   runnings: MigrationRun[]
@@ -17,6 +20,27 @@ type Props = {
 
 export function RunningIndicators({ runnings }: Props) {
   if (runnings.length === 0) return null
+
+  const {
+    props: { csrfToken },
+  } = usePage<{ csrfToken: string }>()
+  const [stopping, setStopping] = useState<Record<number, boolean>>({})
+
+  const stopRun = async (r: MigrationRun) => {
+    setStopping((prev) => ({ ...prev, [r.id]: true }))
+    try {
+      await fetch('/migrations/stop', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': csrfToken,
+        },
+        body: JSON.stringify({ migrationId: r.migrationId, trigger: r.trigger }),
+      })
+    } finally {
+      setStopping((prev) => ({ ...prev, [r.id]: false }))
+    }
+  }
 
   return (
     <div className="mt-4 p-2 rounded-md border border-[hsl(var(--sidebar-border))]">
@@ -32,32 +56,57 @@ export function RunningIndicators({ runnings }: Props) {
                   <span className="inline-block size-2 rounded-full bg-emerald-500 animate-pulse" />
                   <span className="text-sm text-foreground">Миграция #{r.migrationId}</span>
                 </Link>
+
                 <span className="text-xs text-muted-foreground">{r.trigger}</span>
               </div>
-              {r.progress.length > 0 && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
+
+              <div className="flex items-center gap-2">
+                {r.progress.length > 0 ? (
+                  <div className="flex-1">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <div className="cursor-pointer">
+                          <Progress value={r.progress[0]} />
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-muted-foreground">Прогресс</span>
+                            <span className="text-xs text-foreground">{r.progress[0]}%</span>
+                          </div>
+                        </div>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" side="right">
+                        <DropdownMenuLabel>Потоки</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        {r.progress.map((percent, idx) => (
+                          <DropdownMenuItem key={idx} className="flex flex-col gap-1">
+                            <span className="text-xs text-muted-foreground">{`Поток ${idx + 1}`}</span>
+                            <Progress value={percent} />
+                            <span className="text-xs text-foreground">{`${percent}%`}</span>
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                ) : (
+                  <div className="flex-1">
                     <div className="cursor-pointer">
-                      <Progress value={r.progress[0]} />
+                      <Progress value={0} />
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">Прогресс</span>
-                        <span className="text-xs text-foreground">{r.progress[0]}%</span>
+                        <span className="text-xs text-foreground">{0}%</span>
                       </div>
                     </div>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" side="right">
-                    <DropdownMenuLabel>Потоки</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    {r.progress.map((percent, idx) => (
-                      <DropdownMenuItem key={idx} className="flex flex-col gap-1">
-                        <span className="text-xs text-muted-foreground">{`Поток ${idx + 1}`}</span>
-                        <Progress value={percent} />
-                        <span className="text-xs text-foreground">{`${percent}%`}</span>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
+                  </div>
+                )}
+
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  disabled={!!stopping[r.id]}
+                  onClick={() => stopRun(r)}
+                >
+                  <StopCircle className="text-destructive" />
+                </Button>
+              </div>
             </li>
           ))}
         </ul>
