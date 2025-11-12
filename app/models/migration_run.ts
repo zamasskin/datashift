@@ -46,12 +46,14 @@ export default class MigrationRun extends BaseModel {
   }
 
   @afterCreate()
-  static emitStart(migrationRun: MigrationRun) {
+  static async emitStart(migrationRun: MigrationRun) {
+    await migrationRun.load('migration')
     MigrationRunChange.dispatch(migrationRun)
   }
 
   @afterUpdate()
-  public static emitUpdate(migrationRun: MigrationRun) {
+  public static async emitUpdate(migrationRun: MigrationRun) {
+    await migrationRun.load('migration')
     MigrationRunChange.dispatch(migrationRun)
   }
 }
