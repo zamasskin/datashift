@@ -2,6 +2,7 @@ import { DateTime } from 'luxon'
 import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
 import Migration from '#models/migration'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import { jsonColumn } from '../helpers/json_column.js'
 
 export default class MigrationRun extends BaseModel {
   @column({ isPrimary: true })
@@ -18,7 +19,7 @@ export default class MigrationRun extends BaseModel {
   @column()
   declare status: 'pending' | 'running' | 'success' | 'failed' | 'canceled'
 
-  @column()
+  @column(jsonColumn())
   declare progress: number[]
 
   @column()
@@ -27,7 +28,7 @@ export default class MigrationRun extends BaseModel {
   @column()
   declare error: string | null
 
-  @column()
+  @column(jsonColumn())
   declare metadata: any
 
   @column()
