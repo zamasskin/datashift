@@ -102,6 +102,14 @@ export default class CronSchedulerService {
     emitter.off(MigrationUpdate, this.onUpdateHandler)
     emitter.off(MigrationRemove, this.onRemoveHandler)
 
+    // Mark all currently running migrations as 'cancelled'
+    logger.info('[cron] canceling all existing timers')
+
+    await MigrationRun.query()
+      .where('status', 'running')
+      .where('trigger', 'cron')
+      .update({ status: 'canceled', finishedAt: DateTime.now() })
+
     for (const t of this.timers.values()) {
       clearInterval(t as any)
       clearTimeout(t as any)
