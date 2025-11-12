@@ -73,66 +73,111 @@ export default class CronSchedulerService {
   private timers = new Map<number, TimerHandle>()
   private runner = new MigrationRunnerService()
   private refreshHandle: TimerHandle | null = null
+  private started = false
+  private configs = new Map<number, string>()
+  private onCreateHandler = this.updateMigrationSchedule.bind(this)
+  private onUpdateHandler = this.updateMigrationSchedule.bind(this)
+  private onRemoveHandler = this.removeMigrationSchedule.bind(this)
 
   async start() {
-    console.log('[cron] starting scheduler')
+    if (this.started) {
+      logger.info('[cron] scheduler already started, skipping')
+      return
+    }
+    logger.info('[cron] starting scheduler')
     await this.loadAndScheduleAll()
 
-    emitter.on(MigrationCreate, this.updateMigrationSchedule.bind(this))
-    emitter.on(MigrationUpdate, this.updateMigrationSchedule.bind(this))
-    emitter.on(MigrationRemove, this.removeMigrationSchedule.bind(this))
+    emitter.on(MigrationCreate, this.onCreateHandler)
+    emitter.on(MigrationUpdate, this.onUpdateHandler)
+    emitter.on(MigrationRemove, this.onRemoveHandler)
+    this.started = true
   }
 
   async stop() {
-    emitter.off(MigrationCreate, this.updateMigrationSchedule.bind(this))
-    emitter.off(MigrationUpdate, this.updateMigrationSchedule.bind(this))
-    emitter.off(MigrationRemove, this.removeMigrationSchedule.bind(this))
+    if (!this.started) return
+    emitter.off(MigrationCreate, this.onCreateHandler)
+    emitter.off(MigrationUpdate, this.onUpdateHandler)
+    emitter.off(MigrationRemove, this.onRemoveHandler)
 
     for (const t of this.timers.values()) {
       clearInterval(t as any)
       clearTimeout(t as any)
     }
     this.timers.clear()
+    this.configs.clear()
     if (this.refreshHandle) {
       clearInterval(this.refreshHandle as any)
       this.refreshHandle = null
     }
+    this.started = false
   }
 
   private updateMigrationSchedule(event: MigrationCreate | MigrationUpdate) {
     const migration = event.migration
     logger.info(`[cron] update schedule for migration ${migration.id}`)
-    const cfg = migration.cronExpression as CronConfig
+    const cfg = migration.cronExpression as CronConfig | null
     const hasTimer = this.timers.has(migration.id)
+
+    // Если миграция выключена — отменяем и выходим
+    if (!migration.isActive) {
+      if (hasTimer) this.cancel(migration.id)
+      this.configs.delete(migration.id)
+      logger.info(`[cron][${migration.id}] inactive, schedule canceled`)
+      return
+    }
+
+    // Нет конфигурации — отменяем при необходимости
+    if (!cfg) {
+      if (hasTimer) this.cancel(migration.id)
+      this.configs.delete(migration.id)
+      logger.info(`[cron][${migration.id}] no cronExpression, schedule canceled`)
+      return
+    }
+
+    // Сравнение конфигов, чтобы не пересоздавать таймер без изменений
+    const nextCfgStr = JSON.stringify(cfg)
+    const prevCfgStr = this.configs.get(migration.id)
+    if (hasTimer && prevCfgStr === nextCfgStr) {
+      logger.info(`[cron][${migration.id}] config unchanged, keep existing timer`)
+      return
+    }
+
     if (hasTimer) this.cancel(migration.id)
-    if (!cfg) return
     logger.info(`[cron][${migration.id}] schedule`, cfg)
     this.schedule(migration.id, cfg)
+    this.configs.set(migration.id, nextCfgStr)
   }
 
   private removeMigrationSchedule(event: MigrationRemove) {
     const migration = event.migration
     logger.info(`[cron] remove schedule for migration ${migration.id}`)
     this.cancel(migration.id)
+    this.configs.delete(migration.id)
   }
 
   private async loadAndScheduleAll() {
     const migrations = await Migration.query().where('isActive', true)
-    console.log('[cron] active migrations:', migrations.length)
+    logger.info(`[cron] active migrations: ${migrations.length}`)
     for (const m of migrations) {
       const cfg = m.cronExpression as CronConfig | null
       const hasTimer = this.timers.has(m.id)
       if (!cfg) {
         if (hasTimer) this.cancel(m.id)
-        console.log(`[cron][${m.id}] no cronExpression, skipping`)
+        logger.info(`[cron][${m.id}] no cronExpression, skipping`)
+        this.configs.delete(m.id)
         continue
       }
-      // Recreate timer if config changed or missing
-      if (hasTimer) {
-        this.cancel(m.id)
+      // Пересоздаём таймер только если конфиг изменился или таймер отсутствует
+      const nextCfgStr = JSON.stringify(cfg)
+      const prevCfgStr = this.configs.get(m.id)
+      if (!hasTimer || prevCfgStr !== nextCfgStr) {
+        if (hasTimer) this.cancel(m.id)
+        logger.info(`[cron][${m.id}] schedule`, cfg)
+        this.schedule(m.id, cfg)
+        this.configs.set(m.id, nextCfgStr)
+      } else {
+        logger.info(`[cron][${m.id}] config unchanged, skip reschedule`)
       }
-      console.log(`[cron][${m.id}] schedule`, cfg)
-      this.schedule(m.id, cfg)
     }
   }
 
