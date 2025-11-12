@@ -13,6 +13,7 @@ import FetchConfigService from '#services/fetchсonfigs'
 import SqlService from '#services/sql_service'
 import { SaveMapping } from '#interfaces/save_mapping'
 import { progressBus } from '#start/events'
+import { PubSubHub } from '#services/pubsub_hub'
 
 // Реестр запущенных миграций для поддержки остановки по channelId
 const runningMigrations = new Map<string, { aborted: boolean }>()
@@ -259,11 +260,16 @@ export default class MigrationsController {
   }
 
   async stream({ request, response }: HttpContext) {
+    const pubSubHub = new PubSubHub()
     const channelId = String(request.input('channelId') || '')
     if (!channelId) {
       response.status(400)
       return response.send({ error: 'Missing channelId' })
     }
+
+    pubSubHub.on('data', (data) => {
+      console.log('client', data.toString())
+    })
 
     response.response.setHeader('Content-Type', 'text/event-stream')
     response.response.setHeader('Cache-Control', 'no-cache')
@@ -298,6 +304,7 @@ export default class MigrationsController {
 
     const cleanup = () => {
       clearInterval(heartbeat)
+      pubSubHub.dispose()
       progressBus.off(`progress:${channelId}`, onProgress)
       progressBus.off(`done:${channelId}`, onDone)
       progressBus.off(`error:${channelId}`, onError)
@@ -338,58 +345,80 @@ export default class MigrationsController {
     { id, params, fetchConfigs, saveMappings }: RunMigrateData,
     channelId?: string
   ) {
-    const paramsService = new ParamsService()
-    const fetchConfigService = new FetchConfigService()
-    const sqlService = new SqlService()
+    const pubSubHub = new PubSubHub()
+    try {
+      pubSubHub.writeJson({
+        type: 'migration',
+        subject: id,
+        stage: 'start',
+        data: { id, params, fetchConfigs, saveMappings },
+      })
+      const paramsService = new ParamsService()
+      const fetchConfigService = new FetchConfigService()
+      const sqlService = new SqlService()
 
-    const paramsSource = paramsService.getSource(params)
-    const initialResults: FetchConfigResult[] = [{ dataType: 'params', data: paramsSource }]
-    if (fetchConfigs.length === 0) {
-      throw new Error('Нет конфигураций для выполнения')
-    }
-
-    const saveSummary: Record<string, number> = {}
-
-    for await (const { data, meta } of fetchConfigService.execute(fetchConfigs, initialResults)) {
-      if (isAborted(channelId)) {
-        return { ok: false, cancelled: true, summary: saveSummary }
-      }
-      if (channelId) {
-        progressBus.emit(`progress:${channelId}`, {
-          stage: 'fetch',
-          details: { ...meta, migrationId: id },
-        })
+      const paramsSource = paramsService.getSource(params)
+      const initialResults: FetchConfigResult[] = [{ dataType: 'params', data: paramsSource }]
+      if (fetchConfigs.length === 0) {
+        throw new Error('Нет конфигураций для выполнения')
       }
 
-      if (data.dataType !== 'array_columns') {
-        continue
-      }
+      const saveSummary: Record<string, number> = {}
 
-      const mappings: any[] = Array.isArray(saveMappings) ? saveMappings : []
-      const rows: Record<string, any>[] = Array.isArray(data.data) ? data.data : []
-
-      for (const mapping of mappings) {
+      for await (const { data, meta } of fetchConfigService.execute(fetchConfigs, initialResults)) {
         if (isAborted(channelId)) {
           return { ok: false, cancelled: true, summary: saveSummary }
         }
-        const count = await sqlService.applySaveMappingToRows(mapping, rows)
-        if (mapping && mapping.id) {
-          saveSummary[mapping.id] = (saveSummary[mapping.id] || 0) + count
-        }
         if (channelId) {
-          progressBus.emit(`progress:${channelId}`, {
-            stage: 'save',
-            details: { ...meta, migrationId: id, mappingId: mapping?.id, count },
+          pubSubHub.writeJson({
+            type: 'migration',
+            subject: id,
+            stage: 'fetch',
+            data: { ...meta, migrationId: id },
           })
         }
+
+        if (data.dataType !== 'array_columns') {
+          continue
+        }
+
+        const mappings: any[] = Array.isArray(saveMappings) ? saveMappings : []
+        const rows: Record<string, any>[] = Array.isArray(data.data) ? data.data : []
+
+        for (const mapping of mappings) {
+          if (isAborted(channelId)) {
+            return { ok: false, cancelled: true, summary: saveSummary }
+          }
+          const count = await sqlService.applySaveMappingToRows(mapping, rows)
+          if (mapping && mapping.id) {
+            saveSummary[mapping.id] = (saveSummary[mapping.id] || 0) + count
+          }
+          if (channelId) {
+            pubSubHub.writeJson({
+              type: 'migration',
+              subject: id,
+              stage: 'save',
+              data: { ...meta, migrationId: id, mappingId: mapping?.id, count },
+            })
+          }
+        }
       }
-    }
 
-    if (isAborted(channelId)) {
-      return { ok: false, cancelled: true, summary: saveSummary }
-    }
+      if (isAborted(channelId)) {
+        return { ok: false, cancelled: true, summary: saveSummary }
+      }
 
-    return { ok: true, summary: saveSummary }
+      pubSubHub.writeJson({
+        type: 'migration',
+        subject: id,
+        stage: 'done',
+        data: { id, params, fetchConfigs, saveMappings },
+      })
+
+      return { ok: true, summary: saveSummary }
+    } finally {
+      pubSubHub.dispose()
+    }
   }
   /**
    * Преобразует ошибки Vine в { field: message }.
