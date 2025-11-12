@@ -10,7 +10,7 @@ import { DateTime } from 'luxon'
 
 type TriggerType = 'manual' | 'cron' | 'api'
 
-type RunPayload = {
+export type RunPayload = {
   id: number
   fetchConfigs: FetchConfig[]
   saveMappings: SaveMapping[]
@@ -61,6 +61,7 @@ export default class MigrationRunnerService {
       metadata: {},
     })
 
+    // Запись статуса canceled при Ctrl+C (SIGINT)
     const onSigint = async () => {
       try {
         await migrationRun.refresh()
@@ -70,6 +71,7 @@ export default class MigrationRunnerService {
       } finally {
         process.off('SIGINT', onSigint as any)
       }
+      // Завершаем процесс после фиксации статуса
       process.exit(0)
     }
     process.on('SIGINT', onSigint)

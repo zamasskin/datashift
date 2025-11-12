@@ -10,19 +10,10 @@ import type { HttpContext } from '@adonisjs/core/http'
 import vine from '@vinejs/vine'
 import { ParamsService } from '#services/params_service'
 import FetchConfigService from '#services/fetchсonfigs'
-import SqlService from '#services/sql_service'
-import { SaveMapping } from '#interfaces/save_mapping'
 import MigrationRun from '#models/migration_run'
-import { DateTime } from 'luxon'
+import MigrationRunnerService, { RunPayload } from '#services/migration_runner_service'
+import logger from '@adonisjs/core/services/logger'
 
-// Узкий тип данных для запуска миграции из валидированного тела запроса
-type RunMigrateData = {
-  id: number
-  fetchConfigs: FetchConfig[]
-  saveMappings: SaveMapping[]
-  params: Param[]
-  trigger?: 'manual' | 'cron' | 'api'
-}
 export default class MigrationsController {
   async index({ inertia }: HttpContext) {
     const migrations = await Migration.query().preload('user')
@@ -226,7 +217,7 @@ export default class MigrationsController {
 
     const body = request.all()
     const data = await schema.validate(body)
-    const normalized: RunMigrateData = {
+    const normalized: RunPayload = {
       id: Number(data.id),
       fetchConfigs: this.normalizeFetchConfigs(data.fetchConfigs),
       saveMappings: Array.isArray(data.saveMappings) ? data.saveMappings : [],
@@ -234,13 +225,15 @@ export default class MigrationsController {
       trigger: 'manual',
     }
 
-    const channelId = data.channelId || `migration:${normalized.id}:${Date.now()}`
-
     // Запускаем миграцию в фоне
-    this.migrate(normalized)
+    void (async () => {
+      const runner = new MigrationRunnerService()
+      await runner.run(normalized)
+      logger.info(`Migration ${normalized.id} completed`)
+    })()
 
     // Быстрый ответ REST-запуска
-    return { started: true, id: normalized.id, channelId }
+    return { started: true, id: normalized.id }
   }
 
   async stop({ request, response }: HttpContext) {
@@ -270,100 +263,6 @@ export default class MigrationsController {
     return response.ok({ stopped: true, migrationId, trigger })
   }
 
-  private async migrate({ id, params, fetchConfigs, saveMappings, trigger }: RunMigrateData) {
-    const lastRun = await MigrationRun.query()
-      .where('migrationId', id)
-      .where('status', 'running')
-      .where('trigger', trigger || 'manual')
-      .orderBy('createdAt', 'desc')
-      .first()
-
-    if (lastRun) {
-      throw new Error('Migration is already running')
-    }
-
-    const migrationRun = await MigrationRun.create({
-      migrationId: id,
-      status: 'running',
-      progress: [],
-      trigger: trigger,
-      metadata: {},
-    })
-
-    // Запись статуса canceled при Ctrl+C (SIGINT)
-    const onSigint = async () => {
-      try {
-        await migrationRun.refresh()
-        migrationRun.status = 'canceled'
-        migrationRun.finishedAt = DateTime.now()
-        await migrationRun.save()
-      } finally {
-        process.off('SIGINT', onSigint as any)
-      }
-      // Завершаем процесс после фиксации статуса
-      process.exit(0)
-    }
-    process.on('SIGINT', onSigint)
-
-    try {
-      const paramsService = new ParamsService()
-      const fetchConfigService = new FetchConfigService()
-      const sqlService = new SqlService()
-
-      const paramsSource = paramsService.getSource(params)
-      const initialResults: FetchConfigResult[] = [{ dataType: 'params', data: paramsSource }]
-      if (fetchConfigs.length === 0) {
-        throw new Error('Нет конфигураций для выполнения')
-      }
-
-      const saveSummary: Record<string, number> = {}
-
-      for await (const { data, meta } of fetchConfigService.execute(fetchConfigs, initialResults)) {
-        await migrationRun.refresh()
-        if (migrationRun.isCanceled()) {
-          return { ok: false, cancelled: true, summary: saveSummary }
-        }
-
-        migrationRun.progress = meta.progressList
-        migrationRun.save()
-
-        if (data.dataType !== 'array_columns') {
-          continue
-        }
-
-        const mappings: any[] = Array.isArray(saveMappings) ? saveMappings : []
-        const rows: Record<string, any>[] = Array.isArray(data.data) ? data.data : []
-
-        for (const mapping of mappings) {
-          await migrationRun.refresh()
-          if (migrationRun.isCanceled()) {
-            return { ok: false, cancelled: true, summary: saveSummary }
-          }
-          const count = await sqlService.applySaveMappingToRows(mapping, rows)
-          if (mapping && mapping.id) {
-            saveSummary[mapping.id] = (saveSummary[mapping.id] || 0) + count
-          }
-        }
-      }
-
-      await migrationRun.refresh()
-      if (migrationRun.isCanceled()) {
-        return { ok: false, cancelled: true, summary: saveSummary }
-      }
-
-      migrationRun.status = 'success'
-      migrationRun.finishedAt = DateTime.now()
-      await migrationRun.save()
-
-      return { ok: true, summary: saveSummary }
-    } catch (error) {
-      migrationRun.status = 'failed'
-      migrationRun.finishedAt = DateTime.now()
-      migrationRun.error = String(error)
-      await migrationRun.save()
-      throw error
-    }
-  }
   /**
    * Преобразует ошибки Vine в { field: message }.
    * Добавляет префикс "config." для вложенных полей конфигурации.
