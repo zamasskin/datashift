@@ -43,7 +43,7 @@ export function RunningIndicators({ runnings }: Props) {
                     </div>
                   </div>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                <DropdownMenuContent align="end" side="right">
                   <DropdownMenuLabel>Потоки</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {r.progress.map((percent, idx) => (
