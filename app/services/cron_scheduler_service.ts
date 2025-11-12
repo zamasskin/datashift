@@ -3,6 +3,9 @@ import type { CronConfig } from '#interfaces/cron_config'
 import MigrationRunnerService from '#services/migration_runner_service'
 import { DateTime } from 'luxon'
 import MigrationRun from '#models/migration_run'
+import emitter from '@adonisjs/core/services/emitter'
+import logger from '@adonisjs/core/services/logger'
+import { MigrationCreate, MigrationRemove, MigrationUpdate } from '#events/migration'
 
 type TimerHandle = ReturnType<typeof setInterval> | ReturnType<typeof setTimeout>
 
@@ -72,19 +75,19 @@ export default class CronSchedulerService {
   private refreshHandle: TimerHandle | null = null
 
   async start() {
-    if (this.refreshHandle) {
-      console.log('[cron] scheduler already started, skipping second start')
-      return
-    }
     console.log('[cron] starting scheduler')
     await this.loadAndScheduleAll()
-    // Periodically refresh schedules to pick up DB changes
-    this.refreshHandle = setInterval(() => {
-      this.loadAndScheduleAll().catch((e) => console.error('[cron] refresh error:', e))
-    }, 60_000)
+
+    emitter.on(MigrationCreate, this.updateMigrationSchedule.bind(this))
+    emitter.on(MigrationUpdate, this.updateMigrationSchedule.bind(this))
+    emitter.on(MigrationRemove, this.removeMigrationSchedule.bind(this))
   }
 
   async stop() {
+    emitter.off(MigrationCreate, this.updateMigrationSchedule.bind(this))
+    emitter.off(MigrationUpdate, this.updateMigrationSchedule.bind(this))
+    emitter.off(MigrationRemove, this.removeMigrationSchedule.bind(this))
+
     for (const t of this.timers.values()) {
       clearInterval(t as any)
       clearTimeout(t as any)
@@ -94,6 +97,23 @@ export default class CronSchedulerService {
       clearInterval(this.refreshHandle as any)
       this.refreshHandle = null
     }
+  }
+
+  private updateMigrationSchedule(event: MigrationCreate | MigrationUpdate) {
+    const migration = event.migration
+    logger.info(`[cron] update schedule for migration ${migration.id}`)
+    const cfg = migration.cronExpression as CronConfig
+    const hasTimer = this.timers.has(migration.id)
+    if (hasTimer) this.cancel(migration.id)
+    if (!cfg) return
+    logger.info(`[cron][${migration.id}] schedule`, cfg)
+    this.schedule(migration.id, cfg)
+  }
+
+  private removeMigrationSchedule(event: MigrationRemove) {
+    const migration = event.migration
+    logger.info(`[cron] remove schedule for migration ${migration.id}`)
+    this.cancel(migration.id)
   }
 
   private async loadAndScheduleAll() {
