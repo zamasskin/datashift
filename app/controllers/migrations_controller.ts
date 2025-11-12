@@ -237,7 +237,7 @@ export default class MigrationsController {
     const channelId = data.channelId || `migration:${normalized.id}:${Date.now()}`
 
     // Запускаем миграцию в фоне
-    this.migrate(normalized, channelId)
+    this.migrate(normalized, channelId, 'manual')
 
     // Быстрый ответ REST-запуска
     return { started: true, id: normalized.id, channelId }
@@ -305,6 +305,7 @@ export default class MigrationsController {
 
   async stop({ request, response }: HttpContext) {
     const migrationId = String(request.input('migrationId') || '')
+    const trigger = String(request.input('trigger') || 'manual')
     if (!migrationId) {
       response.status(400)
       return response.send({ error: 'Missing migrationId' })
@@ -313,6 +314,7 @@ export default class MigrationsController {
     const lastRun = await MigrationRun.query()
       .where('migrationId', migrationId)
       .where('status', 'running')
+      .where('trigger', trigger)
       .orderBy('createdAt', 'desc')
       .first()
 
@@ -328,11 +330,13 @@ export default class MigrationsController {
 
   private async migrate(
     { id, params, fetchConfigs, saveMappings }: RunMigrateData,
-    channelId?: string
+    channelId?: string,
+    trigger?: 'manual' | 'cron' | 'api'
   ) {
     const lastRun = await MigrationRun.query()
       .where('migrationId', id)
       .where('status', 'running')
+      .where('trigger', trigger || 'manual')
       .orderBy('createdAt', 'desc')
       .first()
 
@@ -344,7 +348,7 @@ export default class MigrationsController {
       migrationId: id,
       status: 'running',
       progress: [],
-      trigger: 'manual',
+      trigger: trigger,
       metadata: { id, params, fetchConfigs, saveMappings },
     })
 
