@@ -12,7 +12,6 @@ import { ParamsService } from '#services/params_service'
 import FetchConfigService from '#services/fetchсonfigs'
 import SqlService from '#services/sql_service'
 import { SaveMapping } from '#interfaces/save_mapping'
-import { progressBus } from '#start/events'
 import MigrationRun from '#models/migration_run'
 import { DateTime } from 'luxon'
 
@@ -22,6 +21,7 @@ type RunMigrateData = {
   fetchConfigs: FetchConfig[]
   saveMappings: SaveMapping[]
   params: Param[]
+  trigger?: 'manual' | 'cron' | 'api'
 }
 export default class MigrationsController {
   async index({ inertia }: HttpContext) {
@@ -231,69 +231,16 @@ export default class MigrationsController {
       fetchConfigs: this.normalizeFetchConfigs(data.fetchConfigs),
       saveMappings: Array.isArray(data.saveMappings) ? data.saveMappings : [],
       params: this.normalizeParams(data.params),
+      trigger: 'manual',
     }
 
     const channelId = data.channelId || `migration:${normalized.id}:${Date.now()}`
 
     // Запускаем миграцию в фоне
-    this.migrate(normalized, channelId, 'manual')
+    this.migrate(normalized)
 
     // Быстрый ответ REST-запуска
     return { started: true, id: normalized.id, channelId }
-  }
-
-  async stream({ request, response }: HttpContext) {
-    const channelId = String(request.input('channelId') || '')
-    if (!channelId) {
-      response.status(400)
-      return response.send({ error: 'Missing channelId' })
-    }
-
-    response.response.setHeader('Content-Type', 'text/event-stream')
-    response.response.setHeader('Cache-Control', 'no-cache')
-    response.response.setHeader('Connection', 'keep-alive')
-    // Flush headers immediately to establish SSE
-    if (typeof (response.response as any).flushHeaders === 'function') {
-      ;(response.response as any).flushHeaders()
-    }
-
-    const write = (event: string, payload: any) => {
-      response.response.write(
-        `${event ? `event: ${event}\n` : ''}data: ${JSON.stringify(payload)}\n\n`
-      )
-    }
-
-    const onProgress = (p: { stage: string; details?: any }) => write('progress', p)
-    const onDone = (payload: any) => {
-      // Сообщаем о завершении, но соединение не закрываем — поток длительный
-      write('done', payload)
-    }
-    const onError = (payload: any) => {
-      // Сообщаем об ошибке, но не закрываем — клиент может переподключиться
-      write('error', payload)
-    }
-
-    // Heartbeat для поддержки долгоживущего соединения
-    const heartbeat = setInterval(() => {
-      try {
-        response.response.write(':keep-alive\n\n')
-      } catch {}
-    }, 30000)
-
-    const cleanup = () => {
-      clearInterval(heartbeat)
-      progressBus.off(`progress:${channelId}`, onProgress)
-      progressBus.off(`done:${channelId}`, onDone)
-      progressBus.off(`error:${channelId}`, onError)
-      response.response.end()
-    }
-
-    progressBus.on(`progress:${channelId}`, onProgress)
-    progressBus.once(`done:${channelId}`, onDone)
-    progressBus.once(`error:${channelId}`, onError)
-
-    write('', { status: 'listening', channelId })
-    response.response.on('close', cleanup)
   }
 
   async stop({ request, response }: HttpContext) {
@@ -323,11 +270,7 @@ export default class MigrationsController {
     return response.ok({ stopped: true, migrationId, trigger })
   }
 
-  private async migrate(
-    { id, params, fetchConfigs, saveMappings }: RunMigrateData,
-    channelId?: string,
-    trigger?: 'manual' | 'cron' | 'api'
-  ) {
+  private async migrate({ id, params, fetchConfigs, saveMappings, trigger }: RunMigrateData) {
     const lastRun = await MigrationRun.query()
       .where('migrationId', id)
       .where('status', 'running')
@@ -363,12 +306,6 @@ export default class MigrationsController {
     process.on('SIGINT', onSigint)
 
     try {
-      progressBus.emit('migration:start', {
-        type: 'migration',
-        subject: id,
-        stage: 'start',
-        data: { id, params, fetchConfigs, saveMappings },
-      })
       const paramsService = new ParamsService()
       const fetchConfigService = new FetchConfigService()
       const sqlService = new SqlService()
@@ -386,14 +323,9 @@ export default class MigrationsController {
         if (migrationRun.isCanceled()) {
           return { ok: false, cancelled: true, summary: saveSummary }
         }
-        if (channelId) {
-          progressBus.emit('migration:fetch', {
-            type: 'migration',
-            subject: id,
-            stage: 'fetch',
-            data: { ...meta, migrationId: id },
-          })
-        }
+
+        migrationRun.progress = meta.progressList
+        migrationRun.save()
 
         if (data.dataType !== 'array_columns') {
           continue
@@ -411,14 +343,6 @@ export default class MigrationsController {
           if (mapping && mapping.id) {
             saveSummary[mapping.id] = (saveSummary[mapping.id] || 0) + count
           }
-          if (channelId) {
-            progressBus.emit('migration:save', {
-              type: 'migration',
-              subject: id,
-              stage: 'save',
-              data: { ...meta, migrationId: id, mappingId: mapping?.id, count },
-            })
-          }
         }
       }
 
@@ -427,25 +351,12 @@ export default class MigrationsController {
         return { ok: false, cancelled: true, summary: saveSummary }
       }
 
-      progressBus.emit('migration:done', {
-        type: 'migration',
-        subject: id,
-        stage: 'done',
-        data: { id, params, fetchConfigs, saveMappings },
-      })
-
       migrationRun.status = 'success'
       migrationRun.finishedAt = DateTime.now()
       await migrationRun.save()
 
       return { ok: true, summary: saveSummary }
     } catch (error) {
-      progressBus.emit('migration:error', {
-        type: 'migration',
-        subject: id,
-        stage: 'error',
-        data: { id, params, fetchConfigs, saveMappings, error: String(error) },
-      })
       migrationRun.status = 'failed'
       migrationRun.finishedAt = DateTime.now()
       migrationRun.error = String(error)

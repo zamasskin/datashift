@@ -9,6 +9,7 @@
 
 import router from '@adonisjs/core/services/router'
 import { middleware } from '#start/kernel'
+const StreamsController = () => import('#controllers/streams_controller')
 const MigrationsController = () => import('#controllers/migrations_controller')
 const LoginController = () => import('#controllers/login_controller')
 const DataSourcesController = () => import('#controllers/data_sources_controller')
@@ -29,9 +30,11 @@ router
   .group(() => {
     // router.on('/').renderInertia('home')
 
+    // SSE
+    router.get('/stream', [StreamsController, 'stream'])
+
     router.get('/', [MigrationsController, 'index'])
     router.post('/migrations', [MigrationsController, 'store'])
-    router.get('/migrations/stream', [MigrationsController, 'stream'])
     router.post('/migrations/stop', [MigrationsController, 'stop'])
     router.get('/migrations/:id', [MigrationsController, 'edit'])
     router.put('/migrations/:id', [MigrationsController, 'update'])

@@ -1,7 +1,7 @@
 import type Migration from '#models/migration'
 import { Head, router, usePage } from '@inertiajs/react'
 import { ArrowDownUp, Play, Plus, Save, Settings, Trash } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { MergeCard } from '~/components/migrations/cards/merge-card'
 import { ModificationCard } from '~/components/migrations/cards/modification-card'
 import { SqlBuilderCard } from '~/components/migrations/cards/sql-builder-card'
@@ -31,6 +31,8 @@ import { SaveMappings } from '~/components/migrations/save-mappings'
 import { FetchConfigResultCard } from '~/components/migrations/fetch_config_result_card'
 import _ from 'lodash'
 import { cn } from '~/lib/utils'
+import { useMigrationRuns } from '~/store/migrations'
+import { Progress } from '~/components/ui/progress'
 
 const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const { props } = usePage<{ csrfToken?: string }>()
@@ -45,14 +47,21 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const [prevResults, setPrevResults] = useState<FetchConfigResult>()
   const [meta, setMeta] = useState<FetchConfigMeta>()
   const [previewPages, setPreviewPages] = useState<Record<string, number>>({})
-  const esRef = useRef<EventSource | null>(null)
   const channelId = `migration:${migration.id}`
-  const [isRunning, setIsRunning] = useState(false)
-
   const [newDatasetOpen, setNewDatasetOpen] = useState('')
 
   const [saveLoading, setSaveLoading] = useState(false)
   const [saveErrors, setSaveErrors] = useState<Record<string, string>>({})
+
+  const { runnings } = useMigrationRuns()
+
+  const running = useMemo(
+    () =>
+      runnings.find(
+        (r) => r.migrationId === migration.id && r.trigger === 'manual' && r.status === 'running'
+      ),
+    [runnings]
+  )
 
   const showPlay = useMemo(
     () => fetchConfigs.length > 0 && saveMappings.length > 0,
@@ -124,50 +133,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
     setFetchConfigs((old) => old.map((item) => (item.id == config.id ? config : item)))
   }
 
-  const closeStream = () => {
-    esRef.current?.close()
-    esRef.current = null
-  }
-
-  const openStream = () => {
-    closeStream()
-    const es = new EventSource(`/migrations/stream?channelId=${channelId}`)
-    es.onopen = () => {
-      setIsRunning(true)
-    }
-    es.onmessage = (e) => {
-      // Общие события без имени
-      // Можно показать статус «listening»
-      console.log('message', e.data)
-    }
-    es.addEventListener('progress', (e: MessageEvent) => {
-      const payload = JSON.parse(e.data)
-      console.log('progress', payload.details.progressList)
-      setIsRunning(true)
-    })
-    es.addEventListener('done', (e: MessageEvent) => {
-      console.log('done', e.data)
-      // Поток не закрываем — клиент остаётся слушать следующие запуски
-      setIsRunning(false)
-    })
-    es.addEventListener('error', (e: MessageEvent) => {
-      console.error('error', e)
-      // При остановке/завершении сервер может закрыть соединение — браузер
-      // сгенерирует error и затем переподключится. Не закрываем вручную.
-      if (es.readyState === 2 /* EventSource.CLOSED */) {
-        setIsRunning(false)
-      }
-    })
-    esRef.current = es
-  }
-
-  useEffect(() => {
-    openStream()
-    return () => closeStream()
-  }, [])
-
   const handleRun = async () => {
-    setIsRunning(true)
     await fetch('/migrations/run', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': props.csrfToken || '' },
@@ -185,7 +151,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
     await fetch('/migrations/stop', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': props.csrfToken || '' },
-      body: JSON.stringify({ channelId }),
+      body: JSON.stringify({ migrationId: migration.id, trigger: 'manual' }),
     })
   }
 
@@ -243,17 +209,31 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
           {showPlay && (
             <div className="flex justify-start md:justify-end">
               <div className="flex gap-2">
-                <Button variant="secondary" onClick={handleRun}>
-                  <Play />
-                  Запустить
-                </Button>
-                <Button variant="destructive" onClick={handleStop} disabled={!isRunning}>
-                  Остановить
-                </Button>
+                {running ? (
+                  <Button variant="destructive" onClick={handleStop}>
+                    Остановить
+                  </Button>
+                ) : (
+                  <Button variant="secondary" onClick={handleRun}>
+                    <Play />
+                    Запустить
+                  </Button>
+                )}
               </div>
             </div>
           )}
         </div>
+
+        {running?.progress && (
+          <div className="space-y-3">
+            {running?.progress.map((percent, idx) => (
+              <div className="flex items-center gap-3" key={idx}>
+                <Progress value={percent} className="h-2 rounded-full" />
+                <span className="text-sm font-medium text-muted-foreground">{percent}%</span>
+              </div>
+            ))}
+          </div>
+        )}
 
         <Tabs defaultValue="migrations" className="mt-6">
           <TabsList>

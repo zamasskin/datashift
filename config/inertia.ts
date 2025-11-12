@@ -1,3 +1,4 @@
+import MigrationRun from '#models/migration_run'
 import { HttpContext } from '@adonisjs/core/http'
 import { defineConfig } from '@adonisjs/inertia'
 import type { InferSharedProps } from '@adonisjs/inertia/types'
@@ -14,6 +15,10 @@ const inertiaConfig = defineConfig({
   sharedData: {
     user: (ctx) => ctx.inertia.always(() => ctx.auth.user),
     csrfToken: (ctx: HttpContext) => ctx.request.csrfToken,
+    runningMigrations: async (ctx) => {
+      const running = await MigrationRun.query().where('status', 'running')
+      return ctx.inertia.always(() => running)
+    },
   },
 
   /**

@@ -1,8 +1,9 @@
 import { DateTime } from 'luxon'
-import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
+import { afterCreate, afterUpdate, BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
 import Migration from '#models/migration'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import { jsonColumn } from '../helpers/json_column.js'
+import { MigrationChange } from '#events/migration'
 
 export default class MigrationRun extends BaseModel {
   @column({ isPrimary: true })
@@ -42,5 +43,15 @@ export default class MigrationRun extends BaseModel {
 
   isCanceled() {
     return this.status === 'canceled'
+  }
+
+  @afterCreate()
+  static emitStart(migrationRun: MigrationRun) {
+    MigrationChange.dispatch(migrationRun)
+  }
+
+  @afterUpdate()
+  public static emitUpdate(migrationRun: MigrationRun) {
+    MigrationChange.dispatch(migrationRun)
   }
 }
