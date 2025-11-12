@@ -30,6 +30,9 @@ export default class MigrationRun extends BaseModel {
   @column()
   declare metadata: any
 
+  @column()
+  declare pid: number | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

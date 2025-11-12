@@ -13,6 +13,7 @@ export default class extends BaseSchema {
       table.string('trigger').nullable()
       table.string('error').nullable()
       table.json('metadata').defaultTo({})
+      table.integer('pid').unsigned().nullable()
 
       table.timestamp('created_at')
       table.timestamp('finished_at')
