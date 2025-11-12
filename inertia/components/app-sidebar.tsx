@@ -24,6 +24,7 @@ import { NavUser } from './user-naw'
 import { NavSecondary } from './nav-secondary'
 import { BrandMark } from '~/components/ui/brand-logo'
 import { useMigrationRuns } from '~/store/migrations'
+import { Progress } from './ui/progress'
 
 const data = {
   user: {
@@ -101,19 +102,27 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <div className="text-xs font-medium text-muted-foreground mb-2">
               Запущено ({runnings.length})
             </div>
-            <ul className="space-y-1">
+            <ul className="space-y-2">
               {runnings.map((r) => (
-                <li key={r.id} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="inline-block size-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-sm text-foreground">Миграция #{r.migrationId}</span>
+                <li key={r.id} className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between">
+                    <Link href={`/migrations/${r.migrationId}`} className="flex items-center gap-2">
+                      <span className="inline-block size-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-sm text-foreground">Миграция #{r.migrationId}</span>
+                    </Link>
+                    <span className="text-xs text-muted-foreground">{r.trigger}</span>
                   </div>
-                  <span className="text-xs text-muted-foreground">{r.trigger}</span>
+                  <Progress value={r.progress[0]} />
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">Прогресс</span>
+                    <span className="text-xs text-foreground">{r.progress[0]}%</span>
+                  </div>
                 </li>
               ))}
             </ul>
           </div>
         )}
+
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
