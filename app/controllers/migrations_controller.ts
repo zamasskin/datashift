@@ -344,7 +344,7 @@ export default class MigrationsController {
       status: 'running',
       progress: [],
       trigger: trigger,
-      metadata: { id, params, fetchConfigs, saveMappings },
+      metadata: {},
     })
 
     // Запись статуса canceled при Ctrl+C (SIGINT)
