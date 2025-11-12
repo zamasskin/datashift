@@ -25,26 +25,28 @@ export function RunningIndicators({ runnings }: Props) {
               </Link>
               <span className="text-xs text-muted-foreground">{r.trigger}</span>
             </div>
-            <Popover>
-              <PopoverTrigger asChild>
-                <div className="cursor-pointer">
-                  <Progress value={r.progress[0]} />
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">Прогресс</span>
-                    <span className="text-xs text-foreground">{r.progress[0]}%</span>
+            {r.progress.length > 0 && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <div className="cursor-pointer">
+                    <Progress value={r.progress[0]} />
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Прогресс</span>
+                      <span className="text-xs text-foreground">{r.progress[0]}%</span>
+                    </div>
                   </div>
-                </div>
-              </PopoverTrigger>
-              <PopoverContent>
-                {r.progress.map((percent, idx) => (
-                  <div key={idx} className="space-y-2">
-                    <span className="text-xs text-muted-foreground">{`Поток ${idx + 1}`}</span>
-                    <Progress value={percent} />
-                    <span className="text-xs text-foreground">{`${percent}%`}</span>
-                  </div>
-                ))}
-              </PopoverContent>
-            </Popover>
+                </PopoverTrigger>
+                <PopoverContent>
+                  {r.progress.map((percent, idx) => (
+                    <div key={idx} className="space-y-2">
+                      <span className="text-xs text-muted-foreground">{`Поток ${idx + 1}`}</span>
+                      <Progress value={percent} />
+                      <span className="text-xs text-foreground">{`${percent}%`}</span>
+                    </div>
+                  ))}
+                </PopoverContent>
+              </Popover>
+            )}
           </li>
         ))}
       </ul>
