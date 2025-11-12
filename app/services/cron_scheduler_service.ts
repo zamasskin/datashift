@@ -206,9 +206,9 @@ export default class CronSchedulerService {
     switch (cfg.type) {
       case 'interval': {
         const ms = toMs(cfg.count, cfg.units)
-        console.log(`[cron][${id}] interval to ${ms}ms`)
+        logger.info(`[cron][${id}] interval to ${ms}ms`)
         const h = setInterval(async () => {
-          console.log(`[cron][${id}] interval run`)
+          logger.info(`[cron][${id}] interval run`)
           try {
             if (await this.isRunning(id)) return
             await this.runner.runById(id, 'cron')
