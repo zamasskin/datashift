@@ -25,6 +25,7 @@ import { NavSecondary } from './nav-secondary'
 import { BrandMark } from '~/components/ui/brand-logo'
 import { useMigrationRuns } from '~/store/migrations'
 import { Progress } from './ui/progress'
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
 
 const data = {
   user: {
@@ -112,11 +113,28 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     </Link>
                     <span className="text-xs text-muted-foreground">{r.trigger}</span>
                   </div>
-                  <Progress value={r.progress[0]} />
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">Прогресс</span>
-                    <span className="text-xs text-foreground">{r.progress[0]}%</span>
-                  </div>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <div className="cursor-pointer">
+                        <Progress value={r.progress[0]} />
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground">Прогресс</span>
+                          <span className="text-xs text-foreground">{r.progress[0]}%</span>
+                        </div>
+                      </div>
+                    </PopoverTrigger>
+                    <PopoverContent>
+                      {r.progress.map((percent, idx) => (
+                        <div key={idx} className="space-y-2">
+                          <span className="text-xs text-muted-foreground">
+                            {`Поток ${idx + 1}`}
+                          </span>
+                          <Progress value={percent} />
+                          <span className="text-xs text-foreground">{`${percent}%`}</span>
+                        </div>
+                      ))}
+                    </PopoverContent>
+                  </Popover>
                 </li>
               ))}
             </ul>
