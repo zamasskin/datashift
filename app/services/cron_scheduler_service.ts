@@ -19,6 +19,9 @@ const dayMap: Record<string, number> = {
   su: 7,
 }
 
+// Node.js/libuv max delay for timers: ~2^31-1 ms (~24.8 days)
+const MAX_DELAY_MS = 2_147_483_647
+
 function toMs(count: number, units: 's' | 'm' | 'h'): number {
   if (units === 's') return count * 1000
   if (units === 'm') return count * 60_000
@@ -206,32 +209,33 @@ export default class CronSchedulerService {
     switch (cfg.type) {
       case 'interval': {
         const ms = toMs(cfg.count, cfg.units)
-        logger.info(`[cron][${id}] interval to ${ms}ms`)
-        const h = setInterval(async () => {
-          logger.info(`[cron][${id}] interval run`)
+        logger.info(`[cron][${id}] interval period: ${ms}ms`)
+        this.scheduleSafeInterval(id, ms, async () => {
+          logger.debug(`[cron][${id}] interval tick`)
           try {
             if (await this.isRunning(id)) return
             await this.runner.runById(id, 'cron')
           } catch (e: any) {
-            console.warn(`[cron][${id}] run skipped/error:`, e?.message || e)
+            logger.warn(`[cron][${id}] run skipped/error: ${e?.message || e}`)
           }
-        }, ms)
-        this.timers.set(id, h)
+        })
         break
       }
       case 'interval-time': {
         const periodMs = cfg.timeUnits * 60_000
-        const h = setInterval(async () => {
+        logger.info(
+          `[cron][${id}] interval-time period: ${periodMs}ms window ${cfg.timeStart}-${cfg.timeEnd}`
+        )
+        this.scheduleSafeInterval(id, periodMs, async () => {
           try {
             const now = DateTime.local()
             if (!isWithinWindow(cfg.days || [], cfg.timeStart, cfg.timeEnd, now)) return
             if (await this.isRunning(id)) return
             await this.runner.runById(id, 'cron')
           } catch (e: any) {
-            console.warn(`[cron][${id}] run skipped/error:`, e?.message || e)
+            logger.warn(`[cron][${id}] run skipped/error: ${e?.message || e}`)
           }
-        }, periodMs)
-        this.timers.set(id, h)
+        })
         break
       }
       case 'time': {
@@ -261,5 +265,42 @@ export default class CronSchedulerService {
       default:
         console.warn(`[cron][${id}] unknown config type`)
     }
+  }
+
+  /**
+   * Schedule a safe repeating task. If periodMs <= MAX_DELAY_MS uses setInterval.
+   * Otherwise, chains setTimeout chunks to cover very large delays reliably.
+   */
+  private scheduleSafeInterval(id: number, periodMs: number, tick: () => Promise<void>) {
+    if (periodMs <= MAX_DELAY_MS) {
+      const h = setInterval(async () => {
+        await tick()
+      }, periodMs)
+      this.timers.set(id, h)
+      return
+    }
+
+    logger.info(
+      `[cron][${id}] period exceeds max delay (${MAX_DELAY_MS}ms), using chunked timeouts`
+    )
+    const scheduleChunk = (remaining: number) => {
+      const chunk = Math.min(remaining, MAX_DELAY_MS)
+      const h = setTimeout(async () => {
+        const next = remaining - chunk
+        if (next > 0) {
+          // keep counting down
+          scheduleChunk(next)
+        } else {
+          try {
+            await tick()
+          } finally {
+            // repeat full period
+            scheduleChunk(periodMs)
+          }
+        }
+      }, chunk)
+      this.timers.set(id, h)
+    }
+    scheduleChunk(periodMs)
   }
 }
