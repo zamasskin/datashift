@@ -23,6 +23,7 @@ import { NavMain } from './nav-main'
 import { NavUser } from './user-naw'
 import { NavSecondary } from './nav-secondary'
 import { BrandMark } from '~/components/ui/brand-logo'
+import { useMigrationRuns } from '~/store/migrations'
 
 const data = {
   user: {
@@ -72,6 +73,7 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { runnings } = useMigrationRuns()
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -93,6 +95,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <NavMain items={data.navMain} />
 
+        {/* Индикаторы запущенных процессов */}
+        {runnings.length > 0 && (
+          <div className="mt-4 p-2 rounded-md border border-[hsl(var(--sidebar-border))]">
+            <div className="text-xs font-medium text-muted-foreground mb-2">
+              Запущено ({runnings.length})
+            </div>
+            <ul className="space-y-1">
+              {runnings.map((r) => (
+                <li key={r.id} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="inline-block size-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-sm text-foreground">Миграция #{r.migrationId}</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">{r.trigger}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
