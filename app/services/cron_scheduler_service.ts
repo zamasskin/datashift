@@ -1,0 +1,168 @@
+import Migration from '#models/migration'
+import type { CronConfig } from '#interfaces/cron_config'
+import MigrationRunnerService from '#services/migration_runner_service'
+import { DateTime } from 'luxon'
+
+type TimerHandle = ReturnType<typeof setInterval> | ReturnType<typeof setTimeout>
+
+const dayMap: Record<string, number> = {
+  mo: 1,
+  tu: 2,
+  we: 3,
+  th: 4,
+  fr: 5,
+  sa: 6,
+  su: 7,
+}
+
+function toMs(count: number, units: 's' | 'm' | 'h'): number {
+  if (units === 's') return count * 1000
+  if (units === 'm') return count * 60_000
+  return count * 3_600_000
+}
+
+function timeToMinutes(t: string): number {
+  const [h, m] = t.split(':').map((x) => Number(x))
+  return h * 60 + m
+}
+
+function isDayAllowed(days: string[], dt: DateTime): boolean {
+  if (!Array.isArray(days) || days.length === 0) return true
+  const set = new Set(days.map((d) => dayMap[d]))
+  return set.has(dt.weekday)
+}
+
+function isWithinWindow(days: string[], start: string, end: string, dt: DateTime): boolean {
+  if (!isDayAllowed(days, dt)) return false
+  const nowMin = dt.hour * 60 + dt.minute
+  const startMin = timeToMinutes(start)
+  const endMin = timeToMinutes(end)
+  if (startMin <= endMin) {
+    return nowMin >= startMin && nowMin <= endMin
+  }
+  // overnight window (e.g., 23:00-02:00)
+  return nowMin >= startMin || nowMin <= endMin
+}
+
+function nextOccurrence(days: string[], time: string, from: DateTime): DateTime {
+  const allowed = new Set(days.map((d) => dayMap[d]))
+  const [hour, minute] = time.split(':').map((x) => Number(x))
+  let candidate = from.set({ hour, minute, second: 0, millisecond: 0 })
+
+  // If today allowed and time is still ahead
+  if ((allowed.size === 0 || allowed.has(candidate.weekday)) && candidate > from) {
+    return candidate
+  }
+
+  // Find the next allowed day
+  for (let i = 1; i <= 7; i++) {
+    const nextDay = candidate.plus({ days: 1 })
+    candidate = nextDay
+    if (allowed.size === 0 || allowed.has(candidate.weekday)) {
+      return candidate
+    }
+  }
+  return candidate
+}
+
+export default class CronSchedulerService {
+  private timers = new Map<number, TimerHandle>()
+  private runner = new MigrationRunnerService()
+  private refreshHandle: TimerHandle | null = null
+
+  async start() {
+    await this.loadAndScheduleAll()
+    // Periodically refresh schedules to pick up DB changes
+    this.refreshHandle = setInterval(() => {
+      this.loadAndScheduleAll().catch((e) => console.error('[cron] refresh error:', e))
+    }, 60_000)
+  }
+
+  async stop() {
+    for (const t of this.timers.values()) {
+      clearInterval(t as any)
+      clearTimeout(t as any)
+    }
+    this.timers.clear()
+    if (this.refreshHandle) {
+      clearInterval(this.refreshHandle as any)
+      this.refreshHandle = null
+    }
+  }
+
+  private async loadAndScheduleAll() {
+    const migrations = await Migration.query().where('isActive', true)
+    for (const m of migrations) {
+      const cfg = m.cronExpression as CronConfig | null
+      const hasTimer = this.timers.has(m.id)
+      if (!cfg) {
+        if (hasTimer) this.cancel(m.id)
+        continue
+      }
+      // Recreate timer if config changed or missing
+      if (hasTimer) {
+        this.cancel(m.id)
+      }
+      this.schedule(m.id, cfg)
+    }
+  }
+
+  private cancel(id: number) {
+    const t = this.timers.get(id)
+    if (t) {
+      clearInterval(t as any)
+      clearTimeout(t as any)
+      this.timers.delete(id)
+    }
+  }
+
+  private schedule(id: number, cfg: CronConfig) {
+    switch (cfg.type) {
+      case 'interval': {
+        const ms = toMs(cfg.count, cfg.units)
+        const h = setInterval(() => {
+          this.runner
+            .runById(id, 'cron')
+            .catch((e) => console.warn(`[cron][${id}] run skipped/error:`, e?.message || e))
+        }, ms)
+        this.timers.set(id, h)
+        break
+      }
+      case 'interval-time': {
+        const periodMs = cfg.timeUnits * 60_000
+        const h = setInterval(() => {
+          const now = DateTime.local()
+          if (isWithinWindow(cfg.days || [], cfg.timeStart, cfg.timeEnd, now)) {
+            this.runner
+              .runById(id, 'cron')
+              .catch((e) => console.warn(`[cron][${id}] run skipped/error:`, e?.message || e))
+          }
+        }, periodMs)
+        this.timers.set(id, h)
+        break
+      }
+      case 'time': {
+        const scheduleNext = () => {
+          const from = DateTime.local()
+          const next = nextOccurrence(cfg.days || [], cfg.time, from)
+          const diffMs = Math.max(0, next.toMillis() - from.toMillis())
+          const t = setTimeout(async () => {
+            try {
+              await this.runner.runById(id, 'cron')
+            } catch (e: any) {
+              console.warn(`[cron][${id}] run skipped/error:`, e?.message || e)
+            } finally {
+              scheduleNext()
+            }
+          }, diffMs)
+          this.timers.set(id, t)
+        }
+        scheduleNext()
+        break
+      }
+      default:
+        console.warn(`[cron][${id}] unknown config type`)
+    }
+  }
+}
+//
