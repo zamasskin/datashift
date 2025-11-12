@@ -347,6 +347,21 @@ export default class MigrationsController {
       metadata: { id, params, fetchConfigs, saveMappings },
     })
 
+    // Запись статуса canceled при Ctrl+C (SIGINT)
+    const onSigint = async () => {
+      try {
+        await migrationRun.refresh()
+        migrationRun.status = 'canceled'
+        migrationRun.finishedAt = DateTime.now()
+        await migrationRun.save()
+      } finally {
+        process.off('SIGINT', onSigint as any)
+      }
+      // Завершаем процесс после фиксации статуса
+      process.exit(0)
+    }
+    process.on('SIGINT', onSigint)
+
     try {
       progressBus.emit('migration:start', {
         type: 'migration',
