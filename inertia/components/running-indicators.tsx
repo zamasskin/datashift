@@ -1,7 +1,14 @@
 import type MigrationRun from '#models/migration_run'
 import { Link } from '@inertiajs/react'
 import { Progress } from './ui/progress'
-import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from './ui/dropdown-menu'
 
 type Props = {
   runnings: MigrationRun[]
@@ -26,8 +33,8 @@ export function RunningIndicators({ runnings }: Props) {
               <span className="text-xs text-muted-foreground">{r.trigger}</span>
             </div>
             {r.progress.length > 0 && (
-              <Popover>
-                <PopoverTrigger asChild>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
                   <div className="cursor-pointer">
                     <Progress value={r.progress[0]} />
                     <div className="flex items-center justify-between">
@@ -35,17 +42,19 @@ export function RunningIndicators({ runnings }: Props) {
                       <span className="text-xs text-foreground">{r.progress[0]}%</span>
                     </div>
                   </div>
-                </PopoverTrigger>
-                <PopoverContent>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuLabel>Потоки</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
                   {r.progress.map((percent, idx) => (
-                    <div key={idx} className="space-y-2">
+                    <DropdownMenuItem key={idx} className="flex flex-col gap-1">
                       <span className="text-xs text-muted-foreground">{`Поток ${idx + 1}`}</span>
                       <Progress value={percent} />
                       <span className="text-xs text-foreground">{`${percent}%`}</span>
-                    </div>
+                    </DropdownMenuItem>
                   ))}
-                </PopoverContent>
-              </Popover>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </li>
         ))}
