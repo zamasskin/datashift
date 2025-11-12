@@ -1,7 +1,7 @@
 // import type { HttpContext } from '@adonisjs/core/http'
 import { HttpContext } from '@adonisjs/core/http'
 import emitter from '@adonisjs/core/services/emitter'
-import { MigrationChange } from '#events/migration'
+import { MigrationRunChange } from '#events/migration'
 
 export default class StreamsController {
   async stream({ response }: HttpContext) {
@@ -19,7 +19,7 @@ export default class StreamsController {
     }
 
     // Обработчик события изменения миграции
-    const onMigrationChange = (event: MigrationChange) => {
+    const onMigrationChange = (event: MigrationRunChange) => {
       write('migration_run', event.migrationRun)
     }
 
@@ -33,12 +33,12 @@ export default class StreamsController {
     // Очистка ресурсов при закрытии соединения
     const cleanup = () => {
       clearInterval(heartbeat)
-      emitter.off(MigrationChange, onMigrationChange)
+      emitter.off(MigrationRunChange, onMigrationChange)
       response.response.end()
     }
 
     // Тут регистрируем обработчик события, чтобы отправлять данные клиенту
-    emitter.on(MigrationChange, onMigrationChange)
+    emitter.on(MigrationRunChange, onMigrationChange)
 
     // Очистка ресурсов при закрытии соединения
     response.response.on('close', cleanup)

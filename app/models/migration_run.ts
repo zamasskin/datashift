@@ -3,7 +3,7 @@ import { afterCreate, afterUpdate, BaseModel, belongsTo, column } from '@adonisj
 import Migration from '#models/migration'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import { jsonColumn } from '../helpers/json_column.js'
-import { MigrationChange } from '#events/migration'
+import { MigrationRunChange } from '#events/migration'
 
 export default class MigrationRun extends BaseModel {
   @column({ isPrimary: true })
@@ -47,11 +47,11 @@ export default class MigrationRun extends BaseModel {
 
   @afterCreate()
   static emitStart(migrationRun: MigrationRun) {
-    MigrationChange.dispatch(migrationRun)
+    MigrationRunChange.dispatch(migrationRun)
   }
 
   @afterUpdate()
   public static emitUpdate(migrationRun: MigrationRun) {
-    MigrationChange.dispatch(migrationRun)
+    MigrationRunChange.dispatch(migrationRun)
   }
 }
