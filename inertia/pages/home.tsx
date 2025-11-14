@@ -120,7 +120,7 @@ const Home = () => {
                 <div key={e.id} className="flex items-start justify-between gap-4">
                   <div className="flex-1 space-y-1">
                     <div className="text-sm font-medium text-foreground">
-                      {e.message || 'Без сообщения'}
+                      <Link href={`/errors/${e.id}`}>{e.message || 'Без сообщения'}</Link>
                     </div>
                     {e.occurredAt && (
                       <div className="text-xs text-muted-foreground">
