@@ -14,6 +14,7 @@ export default class ProfileController {
         email: user.email,
         fullName: user.fullName,
         avatarUrl: user.avatarUrl,
+        role: user.role,
       },
     })
   }
