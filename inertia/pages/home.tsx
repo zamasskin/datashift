@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '~/components/ui/card'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { Separator } from '~/components/ui/separator'
+import { toast } from 'sonner'
 import {
   Table,
   TableBody,
@@ -26,6 +27,7 @@ type HomeProps = {
     severity: 'error' | 'warning' | 'info'
     occurredAt?: string | null
   }>
+  csrfToken?: string
 }
 
 const Home = () => {
@@ -113,9 +115,14 @@ const Home = () => {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="outline" size="sm" asChild>
-                          <Link href={`/migrations/${m.id}`}>Открыть</Link>
-                        </Button>
+                        <div className="flex items-center justify-end gap-2">
+                          <Button variant="default" size="sm" onClick={() => handleRun(m.id, props.csrfToken)}>
+                            Запустить
+                          </Button>
+                          <Button variant="outline" size="sm" asChild>
+                            <Link href={`/migrations/${m.id}`}>Открыть</Link>
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
@@ -282,4 +289,21 @@ function SectionHeader({ title, right }: { title: string; right?: React.ReactNod
       {right}
     </div>
   )
+}
+async function handleRun(id: number, csrfToken?: string) {
+  try {
+    const res = await fetch('/migrations/run-by-id', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
+      },
+      credentials: 'same-origin',
+      body: JSON.stringify({ id }),
+    })
+    if (!res.ok) throw new Error('Failed')
+    toast.success(`Запуск миграции #${id} начат`)
+  } catch (e) {
+    toast.error(`Не удалось запустить миграцию #${id}`)
+  }
 }
