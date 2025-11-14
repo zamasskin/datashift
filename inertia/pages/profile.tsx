@@ -13,6 +13,7 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from '~/components/ui/input-group'
+import { toast } from 'sonner'
 
 type ProfileProps = {
   user: { id: number; email: string; fullName: string | null; avatarUrl?: string | null }
@@ -57,7 +58,15 @@ const ProfilePage = () => {
     if (avatarFile) {
       fd.append('avatar', avatarFile)
     }
-    router.put('/profile', fd, { forceFormData: true })
+    router.put('/profile', fd, {
+      forceFormData: true,
+      onSuccess: () => {
+        toast.success('Данные сохранены', { duration: 4000 })
+      },
+      onError: () => {
+        toast.error('Не удалось сохранить изменения', { duration: 6000 })
+      },
+    })
   }
 
   const onCancel = () => {
@@ -179,7 +188,9 @@ const ProfilePage = () => {
               </div>
               <div className="flex items-center gap-2">
                 <Button type="submit">Сохранить</Button>
-                <Button type="button" variant="outline" onClick={onCancel}>Отмена</Button>
+                <Button type="button" variant="outline" onClick={onCancel}>
+                  Отмена
+                </Button>
               </div>
             </form>
           </CardContent>
