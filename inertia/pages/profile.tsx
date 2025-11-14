@@ -297,8 +297,10 @@ const ProfilePage = () => {
         <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 items-stretch gap-4">
           {/* Левая колонка: Источники данных — компактный список */}
           <div className="md:col-span-1">
-            <SectionHeader title="Источники данных" />
             <Card className="h-full">
+              <CardHeader className="py-2">
+                <CardTitle className="text-sm text-muted-foreground">Источники данных</CardTitle>
+              </CardHeader>
               <CardContent className="flex flex-col h-full space-y-2 p-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-muted-foreground">Всего</span>
@@ -329,8 +331,10 @@ const ProfilePage = () => {
 
           {/* Правая колонка: Миграции — широкая таблица */}
           <div className="md:col-span-2">
-            <SectionHeader title="Последние миграции" />
             <Card className="h-full">
+              <CardHeader className="py-2">
+                <CardTitle className="text-sm text-muted-foreground">Последние миграции</CardTitle>
+              </CardHeader>
               <CardContent className="flex flex-col h-full">
                 <Table>
                   <TableHeader>
