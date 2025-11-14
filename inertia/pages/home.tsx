@@ -76,9 +76,11 @@ const Home = () => {
           return (
             <DashboardAreaChart
               badge="30 дн."
-              hint="Запуски и ошибки за период"
+              hint="Запуски, успешные и отменённые, и ошибки"
               dataRuns={metrics.runs}
               dataErrors={metrics.errors}
+              dataSuccess={metrics.runsSuccess}
+              dataCanceled={metrics.runsCanceled}
             />
           )
         })()}
@@ -198,6 +200,8 @@ export default Home
 function useMetrics() {
   const [runs, setRuns] = useState<Array<{ date: string; value: number }>>([])
   const [errors, setErrors] = useState<Array<{ date: string; value: number }>>([])
+  const [runsSuccess, setRunsSuccess] = useState<Array<{ date: string; value: number }>>([])
+  const [runsCanceled, setRunsCanceled] = useState<Array<{ date: string; value: number }>>([])
   useEffect(() => {
     let aborted = false
     ;(async () => {
@@ -210,6 +214,8 @@ function useMetrics() {
         const json = await res.json()
         const runsRaw = json?.series?.migrationRuns
         const errorsRaw = json?.series?.errors
+        const runsSuccessRaw = json?.series?.runsSuccess
+        const runsCanceledRaw = json?.series?.runsCanceled
         const toPoints = (raw: any): Array<{ date: string; value: number }> =>
           Array.isArray(raw)
             ? raw
@@ -217,6 +223,8 @@ function useMetrics() {
         if (!aborted) {
           setRuns(toPoints(runsRaw))
           setErrors(toPoints(errorsRaw))
+          setRunsSuccess(toPoints(runsSuccessRaw))
+          setRunsCanceled(toPoints(runsCanceledRaw))
         }
       } catch {}
     })()
@@ -224,7 +232,7 @@ function useMetrics() {
       aborted = true
     }
   }, [])
-  return { runs, errors }
+  return { runs, errors, runsSuccess, runsCanceled }
 }
 
 function StatCard({

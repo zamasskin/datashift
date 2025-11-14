@@ -12,7 +12,7 @@ import {
 } from 'recharts'
 
 type Point = { date: string; value: number }
-type ChartPoint = { date: string; runs?: number; errors?: number }
+type ChartPoint = { date: string; runs?: number; errors?: number; success?: number; canceled?: number }
 
 export function DashboardAreaChart({
   title = 'Активность миграций',
@@ -21,6 +21,8 @@ export function DashboardAreaChart({
   data,
   dataRuns,
   dataErrors,
+  dataSuccess,
+  dataCanceled,
 }: {
   title?: string
   hint?: string
@@ -28,6 +30,8 @@ export function DashboardAreaChart({
   data?: Point[]
   dataRuns?: Point[]
   dataErrors?: Point[]
+  dataSuccess?: Point[]
+  dataCanceled?: Point[]
 }) {
   const defaultData: ChartPoint[] = [
     { date: 'Янв', runs: 12 },
@@ -38,7 +42,12 @@ export function DashboardAreaChart({
     { date: 'Июн', runs: 26 },
   ]
 
-  function mergeByDate(runs: Point[] = [], errors: Point[] = []): ChartPoint[] {
+  function mergeByDate(
+    runs: Point[] = [],
+    errors: Point[] = [],
+    success: Point[] = [],
+    canceled: Point[] = []
+  ): ChartPoint[] {
     const map = new Map<string, ChartPoint>()
     for (const r of runs) {
       const item = map.get(r.date) || { date: r.date }
@@ -50,11 +59,22 @@ export function DashboardAreaChart({
       item.errors = e.value
       map.set(e.date, item)
     }
+    for (const s of success) {
+      const item = map.get(s.date) || { date: s.date }
+      item.success = s.value
+      map.set(s.date, item)
+    }
+    for (const c of canceled) {
+      const item = map.get(c.date) || { date: c.date }
+      item.canceled = c.value
+      map.set(c.date, item)
+    }
     return Array.from(map.values()).sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0))
   }
 
   const chartData: ChartPoint[] = (() => {
-    if (dataRuns?.length || dataErrors?.length) return mergeByDate(dataRuns ?? [], dataErrors ?? [])
+    if (dataRuns?.length || dataErrors?.length || dataSuccess?.length || dataCanceled?.length)
+      return mergeByDate(dataRuns ?? [], dataErrors ?? [], dataSuccess ?? [], dataCanceled ?? [])
     if (data?.length) return data.map((p) => ({ date: p.date, runs: p.value }))
     return defaultData
   })()
@@ -98,6 +118,24 @@ export function DashboardAreaChart({
                 name="Запуски"
                 stroke="#3b82f6"
                 fill="url(#areaRuns)"
+                strokeWidth={2}
+                dot={{ r: 2 }}
+              />
+              <Area
+                type="monotone"
+                dataKey="success"
+                name="Успешные"
+                stroke="#10b981"
+                fill="none"
+                strokeWidth={2}
+                dot={{ r: 2 }}
+              />
+              <Area
+                type="monotone"
+                dataKey="canceled"
+                name="Отменённые"
+                stroke="#f59e0b"
+                fill="none"
                 strokeWidth={2}
                 dot={{ r: 2 }}
               />
