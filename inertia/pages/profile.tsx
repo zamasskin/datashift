@@ -37,7 +37,13 @@ const ProfilePage = () => {
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    router.put('/profile', { email, fullName })
+    const fd = new FormData()
+    fd.append('email', email)
+    fd.append('fullName', fullName)
+    if (avatarFile) {
+      fd.append('avatar', avatarFile)
+    }
+    router.put('/profile', fd, { forceFormData: true })
   }
 
   const getXsrfToken = () => {
@@ -79,13 +85,7 @@ const ProfilePage = () => {
     }
   }
 
-  const onSubmitAvatar = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!avatarFile) return
-    const fd = new FormData()
-    fd.append('avatar', avatarFile)
-    router.post('/profile/avatar', fd, { forceFormData: true })
-  }
+  // Удалён отдельный сабмит аватара; теперь аватар отправляется вместе с основными полями
 
   return (
     <>
@@ -114,6 +114,18 @@ const ProfilePage = () => {
                 />
                 {errors?.fullName && (
                   <p className="text-destructive text-sm">{errors.fullName}</p>
+                )}
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="avatar">Аватар</Label>
+                <Input
+                  id="avatar"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setAvatarFile(e.target.files?.[0] || null)}
+                />
+                {errors?.avatar && (
+                  <p className="text-destructive text-sm">{errors.avatar}</p>
                 )}
               </div>
               <div className="flex items-center gap-2">
@@ -209,29 +221,7 @@ const ProfilePage = () => {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Загрузка аватара</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <form onSubmit={onSubmitAvatar} className="space-y-4">
-              <div className="grid gap-2">
-                <Label htmlFor="avatar">Выберите файл</Label>
-                <Input
-                  id="avatar"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setAvatarFile(e.target.files?.[0] || null)}
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <Button type="submit" disabled={!avatarFile}>
-                  Загрузить фото
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+        {/* Карточка загрузки аватара удалена: загрузка теперь в основной форме */}
       </div>
     </>
   )

@@ -40,6 +40,52 @@ export default class ProfileController {
       // Обновляем поля профиля
       user.email = payload.email
       if (typeof payload.fullName !== 'undefined') user.fullName = payload.fullName || null
+
+      // Опциональная загрузка аватара вместе с основными полями
+      const avatar = request.file('avatar', {
+        size: '5mb',
+        extnames: ['jpg', 'jpeg', 'png', 'webp'],
+      })
+
+      if (avatar) {
+        if (!avatar.isValid) {
+          const firstError = Array.isArray(avatar.errors) && avatar.errors[0]?.message
+          const fieldErrors = {
+            avatar: firstError || 'Недопустимый файл аватара',
+          }
+          return inertia.render(
+            'profile',
+            {
+              user: {
+                id: user.id,
+                email: user.email,
+                fullName: user.fullName,
+                role: user.role,
+              },
+              errors: fieldErrors,
+            },
+            { status: 422 }
+          )
+        }
+
+        const dir = app.publicPath('uploads/avatars')
+        await fs.promises.mkdir(dir, { recursive: true })
+
+        const fileName = `${user.id}_${Date.now()}.${avatar.extname}`
+        await avatar.move(dir, { name: fileName })
+
+        const storageKey = `uploads/avatars/${fileName}`
+        const f = new File()
+        f.originalName = avatar.clientName || fileName
+        f.mimeType = avatar.type || 'application/octet-stream'
+        f.size = avatar.size
+        f.storageKey = storageKey
+        f.checksum = null
+        f.status = 'uploaded'
+        await f.save()
+        user.fileId = f.id
+      }
+
       await user.save()
 
       return response.redirect('/profile')
