@@ -18,7 +18,6 @@ import {
   useSidebar,
 } from '~/components/ui/sidebar'
 export function NavUser() {
-  const avatar = 'https://github.com/shadcn.png'
   const { isMobile } = useSidebar()
   const { props: pageProps } = usePage<{ user: User }>()
   const user = pageProps?.user
@@ -59,7 +58,7 @@ export function NavUser() {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  {user.avatarUrl && <AvatarImage src={avatar} alt={fullName} />}
+                  {user.avatarUrl && <AvatarImage src={user.avatarUrl} alt={fullName} />}
                   <AvatarFallback className="rounded-lg">{fnSmall}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
@@ -71,9 +70,9 @@ export function NavUser() {
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
-                <Link href="/account">
+                <Link href="/profile">
                   <IconUserCircle />
-                  Аккаунт
+                  Профиль
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>

@@ -66,6 +66,11 @@ router
     router.get('/errors/latest', [ErrorsController, 'latest'])
     router.post('/errors/mark-read', [ErrorsController, 'markRead'])
     router.post('/errors/mute', [ErrorsController, 'mute'])
+
+    // Profile
+    const ProfileController = () => import('#controllers/profile_controller')
+    router.get('/profile', [ProfileController, 'edit'])
+    router.put('/profile', [ProfileController, 'update'])
   })
   .middleware(middleware.auth())
 
