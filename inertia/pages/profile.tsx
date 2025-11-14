@@ -393,12 +393,3 @@ ProfilePage.layout = (page: React.ReactNode) => {
 }
 
 export default ProfilePage
-
-function SectionHeader({ title, right }: { title: string; right?: React.ReactNode }) {
-  return (
-    <div className="flex items-center justify-between mb-2">
-      <div className="text-sm font-medium text-muted-foreground">{title}</div>
-      {right}
-    </div>
-  )
-}
