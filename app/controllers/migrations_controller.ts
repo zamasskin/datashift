@@ -233,11 +233,17 @@ export default class MigrationsController {
       trigger: 'manual',
     }
 
-    // Запускаем миграцию в фоне
+    // Запускаем миграцию в фоне (с безопасной обработкой ошибок, чтобы приложение не падало)
     void (async () => {
       const runner = new MigrationRunnerService()
-      await runner.run(normalized)
-      logger.info(`Migration ${normalized.id} completed`)
+      try {
+        await runner.run(normalized)
+        logger.info(`Migration ${normalized.id} completed`)
+      } catch (e: any) {
+        // Логируем ошибку, но не пробрасываем её дальше — чтобы избежать фатального падения
+        const msg = e?.message || String(e)
+        logger.error(`Migration ${normalized.id} failed: ${msg}`)
+      }
     })()
 
     // Быстрый ответ REST-запуска
