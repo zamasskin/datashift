@@ -13,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '~/components/ui/table'
+import { RunningIndicators } from '~/components/running-indicators'
 import { useMigrationRuns } from '~/store/migrations'
 import { useEffect, useMemo, useState } from 'react'
 import { DashboardAreaChart } from '~/components/charts/area-chart'
@@ -202,6 +203,17 @@ const Home = () => {
             <Link href="/sources">Источники</Link>
           </Button>
         </div>
+
+        {/* Запущенные процессы */}
+        {runnings.length > 0 && (
+          <div>
+            <SectionHeader
+              title="Запущено"
+              right={<Badge variant="secondary">{runningCount}</Badge>}
+            />
+            <RunningIndicators runnings={runnings} />
+          </div>
+        )}
       </div>
     </>
   )
