@@ -15,18 +15,20 @@ import {
 
 type ProfileProps = {
   user: { id: number; email: string; fullName: string | null }
+  errors?: Record<string, string>
 }
 
 const ProfilePage = () => {
   const { props } = usePage<ProfileProps>()
   const u = props.user
+  const errors = (props as any).errors as Record<string, string> | undefined
   const [email, setEmail] = useState(u?.email || '')
   const [fullName, setFullName] = useState(u?.fullName || '')
   const [newPassword, setNewPassword] = useState('')
   const [passwordConfirmation, setPasswordConfirmation] = useState('')
+  const [passwordErrors, setPasswordErrors] = useState<Record<string, string> | null>(null)
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [showNewPassword, setShowNewPassword] = useState(false)
-  const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false)
 
   useEffect(() => {
     setEmail(u?.email || '')
@@ -38,9 +40,43 @@ const ProfilePage = () => {
     router.put('/profile', { email, fullName })
   }
 
-  const onSubmitPassword = (e: React.FormEvent) => {
+  const getXsrfToken = () => {
+    const m = document.cookie.match(/(?:^|; )XSRF-TOKEN=([^;]+)/)
+    return m ? decodeURIComponent(m[1]) : null
+  }
+
+  const onSubmitPassword = async (e: React.FormEvent) => {
     e.preventDefault()
-    router.put('/profile/password', { password: newPassword, passwordConfirmation })
+    setPasswordErrors(null)
+    try {
+      const token = getXsrfToken()
+      const res = await fetch('/profile/password', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'X-XSRF-TOKEN': token } : {}),
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({ password: newPassword, passwordConfirmation }),
+      })
+
+      if (res.ok) {
+        setNewPassword('')
+        setPasswordConfirmation('')
+        setPasswordErrors(null)
+        return
+      }
+
+      if (res.status === 422) {
+        const data = await res.json().catch(() => null)
+        setPasswordErrors((data && data.errors) || { password: 'Ошибка валидации' })
+        return
+      }
+
+      setPasswordErrors({ password: 'Не удалось обновить пароль' })
+    } catch (err) {
+      setPasswordErrors({ password: 'Ошибка сети. Повторите попытку.' })
+    }
   }
 
   const onSubmitAvatar = (e: React.FormEvent) => {
@@ -64,6 +100,9 @@ const ProfilePage = () => {
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input id="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                {errors?.email && (
+                  <p className="text-destructive text-sm">{errors.email}</p>
+                )}
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="fullName">Имя</Label>
@@ -73,6 +112,9 @@ const ProfilePage = () => {
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Ваше имя"
                 />
+                {errors?.fullName && (
+                  <p className="text-destructive text-sm">{errors.fullName}</p>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <Button type="submit">Сохранить</Button>
@@ -118,6 +160,11 @@ const ProfilePage = () => {
                     </InputGroupAddon>
                   </InputGroup>
                 </div>
+                {(passwordErrors?.password || errors?.password) && (
+                  <p className="text-destructive text-sm">
+                    {passwordErrors?.password || errors?.password}
+                  </p>
+                )}
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="passwordConfirmation">Подтверждение пароля</Label>
@@ -147,6 +194,11 @@ const ProfilePage = () => {
                     </InputGroupAddon>
                   </InputGroup>
                 </div>
+                {(passwordErrors?.passwordConfirmation || errors?.passwordConfirmation) && (
+                  <p className="text-destructive text-sm">
+                    {passwordErrors?.passwordConfirmation || errors?.passwordConfirmation}
+                  </p>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <Button type="submit" disabled={!newPassword || newPassword.length < 8}>

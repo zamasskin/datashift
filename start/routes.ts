@@ -71,7 +71,6 @@ router
     const ProfileController = () => import('#controllers/profile_controller')
     router.get('/profile', [ProfileController, 'edit'])
     router.put('/profile', [ProfileController, 'update'])
-    router.put('/profile/password', [ProfileController, 'changePassword'])
     router.post('/profile/avatar', [ProfileController, 'uploadAvatar'])
   })
   .middleware(middleware.auth())
