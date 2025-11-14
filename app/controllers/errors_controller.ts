@@ -35,6 +35,40 @@ export default class ErrorsController {
     })
   }
 
+  async show({ inertia, params, auth }: HttpContext) {
+    const id = Number(params.id)
+    const error = await ErrorLog.findOrFail(id)
+
+    const userId = auth.user?.id
+    const userState = userId
+      ? await ErrorUserState.query().where('userId', userId).where('errorId', id).first()
+      : null
+
+    return inertia.render('errors/show', {
+      error: {
+        id: error.id,
+        uuid: error.uuid,
+        severity: error.severity,
+        status: error.status,
+        code: error.code,
+        message: error.message,
+        occurredAt: error.occurredAt?.toISO() ?? null,
+        migrationId: error.migrationId,
+        migrationRunId: error.migrationRunId,
+        trigger: error.trigger,
+        source: error.source,
+        environment: error.environment,
+        hostname: error.hostname,
+        stack: error.stack,
+        context: error.context || {},
+      },
+      state: {
+        read: Boolean(userState?.readAt),
+        muted: Boolean(userState?.muted),
+      },
+    })
+  }
+
   async latest({ auth }: HttpContext) {
     const userId = auth.user?.id
     const latest = await ErrorLog.query()

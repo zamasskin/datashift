@@ -111,7 +111,7 @@ const ErrorsIndex = () => {
                       </TableCell>
                       <TableCell className="text-right">
                         <Button variant="outline" size="sm" asChild>
-                          <Link href={`/errors/not_found`}>Подробнее</Link>
+                          <Link href={`/errors/${e.id}`}>Подробнее</Link>
                         </Button>
                       </TableCell>
                     </TableRow>

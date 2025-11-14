@@ -69,6 +69,7 @@ router
     router.delete('/users', [UsersController, 'destroy'])
     router.on('/help').renderInertia('help/index')
     router.get('/errors', [ErrorsController, 'index'])
+    router.get('/errors/:id', [ErrorsController, 'show'])
     router.get('/errors/latest', [ErrorsController, 'latest'])
     router.post('/errors/mark-read', [ErrorsController, 'markRead'])
     router.post('/errors/mute', [ErrorsController, 'mute'])
