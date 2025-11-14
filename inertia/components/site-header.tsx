@@ -1,6 +1,7 @@
 import { Separator } from '~/components/ui/separator'
 import { SidebarTrigger } from '~/components/ui/sidebar'
 import { ThemeToggle } from './theme-toggle'
+import { NotificationsButton } from './errors/notifications-button'
 
 export function SiteHeader({ title }: { title: string }) {
   return (
@@ -10,6 +11,7 @@ export function SiteHeader({ title }: { title: string }) {
         <Separator orientation="vertical" className="mx-2 data-[orientation=vertical]:h-4" />
         <h1 className="text-base font-medium">{title}</h1>
         <div className="ml-auto flex items-center gap-2">
+          <NotificationsButton />
           <ThemeToggle />
         </div>
       </div>

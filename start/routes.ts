@@ -63,6 +63,9 @@ router
     router.on('/settings').renderInertia('settings/index')
     router.on('/help').renderInertia('help/index')
     router.get('/errors', [ErrorsController, 'index'])
+    router.get('/errors/latest', [ErrorsController, 'latest'])
+    router.post('/errors/mark-read', [ErrorsController, 'markRead'])
+    router.post('/errors/mute', [ErrorsController, 'mute'])
   })
   .middleware(middleware.auth())
 
