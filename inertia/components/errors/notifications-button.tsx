@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { Bell } from 'lucide-react'
 import { Button } from '~/components/ui/button'
 import { Badge } from '~/components/ui/badge'
@@ -16,16 +16,16 @@ import {
   IconLoader2,
 } from '@tabler/icons-react'
 
-  type EventItem = {
+type EventItem = {
+  id: number
+  createdAt?: string
+  type?: 'error' | 'notify' | string
+  errorId?: number
+  message?: string | null
+  error?: {
     id: number
-    createdAt?: string
-    type?: 'error' | 'notify' | string
-    errorId?: number
-    message?: string | null
-    error?: {
-      id: number
-      uuid?: string
-      message: string | null
+    uuid?: string
+    message: string | null
     severity: 'error' | 'warning' | 'info'
     status: 'open' | 'resolved'
   }
@@ -71,7 +71,7 @@ export function NotificationsButton() {
         method: 'POST',
         credentials: 'same-origin',
         headers: {
-          accept: 'application/json',
+          'accept': 'application/json',
           'X-Requested-With': 'XMLHttpRequest',
           'content-type': 'application/json',
           ...(props.csrfToken ? { 'X-CSRF-Token': props.csrfToken } : {}),
@@ -100,61 +100,72 @@ export function NotificationsButton() {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 p-0">
+      <PopoverContent
+        side="bottom"
+        align="end"
+        sideOffset={8}
+        className="w-80 p-0 max-h-[70vh] overflow-hidden"
+      >
         <div className="p-3">
           <div className="text-sm font-medium">Уведомления</div>
         </div>
         <Separator />
-        <ScrollArea className="max-h-64">
-          <div className="p-2">
-            {items.length === 0 ? (
-              <div className="px-2 py-4 text-sm text-muted-foreground">Нет уведомлений</div>
-            ) : (
-              items.map((e) => {
-                const errId = e.error?.id ?? e.errorId
-                const isError = (e.type ?? 'notify') === 'error'
-                const content = (
-                  <div className="text-sm text-foreground/90 line-clamp-2">
-                    {e.message ?? e.error?.message ?? '—'}
-                  </div>
-                )
-                return (
-                  <div
-                    key={e.id}
-                    className="flex items-start gap-2 px-2 py-2 hover:bg-muted rounded-sm"
-                  >
-                    <EventIcon type={e.type} />
-                    <div className="flex-1">
-                      <div className="text-xs text-muted-foreground">
-                        <span className="mr-1">#{e.id}</span>
-                        <span>{formatUtcRu(e.createdAt)}</span>
-                      </div>
-                      {isError && errId ? (
-                        <Link
-                          href={`/errors/${errId}`}
-                          className="text-sm font-medium text-foreground hover:underline"
-                          onClick={() => setOpen(false)}
-                        >
-                          {e.message ?? e.error?.message ?? '—'}
-                        </Link>
-                      ) : (
-                        content
-                      )}
+        <div className="max-h-[60vh]">
+          <ScrollArea
+            type="always"
+            className="h-full pr-1 [&>[data-radix-scroll-area-viewport]]:max-h-96"
+          >
+            <div className="p-2">
+              {items.length === 0 ? (
+                <div className="px-2 py-4 text-sm text-muted-foreground">Нет уведомлений</div>
+              ) : (
+                items.map((e) => {
+                  const errId = e.error?.id ?? e.errorId
+                  const isError = (e.type ?? 'notify') === 'error'
+                  const content = (
+                    <div className="text-sm text-foreground/90 line-clamp-2">
+                      {e.message ?? e.error?.message ?? '—'}
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => mute(e.id)}
-                      aria-label="Отключить уведомление"
+                  )
+                  return (
+                    <div
+                      key={e.id}
+                      className="flex items-start gap-2 px-2 py-2 hover:bg-muted rounded-sm"
                     >
-                      <IconX className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )
-              })
-            )}
-          </div>
-        </ScrollArea>
+                      <EventIcon type={e.type} />
+                      <div className="flex-1">
+                        <div className="text-xs text-muted-foreground">
+                          <span className="mr-1">#{e.id}</span>
+                          <span>{formatUtcRu(e.createdAt)}</span>
+                        </div>
+                        {isError && errId ? (
+                          <Link
+                            href={`/errors/${errId}`}
+                            className="text-sm font-medium text-foreground hover:underline"
+                            onClick={() => setOpen(false)}
+                          >
+                            {e.message ?? e.error?.message ?? '—'}
+                          </Link>
+                        ) : (
+                          content
+                        )}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => mute(e.id)}
+                        aria-label="Отключить уведомление"
+                      >
+                        <IconX className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )
+                })
+              )}
+            </div>
+          </ScrollArea>
+        </div>
+
         <Separator />
         <div className="p-2">
           <Button
@@ -170,9 +181,7 @@ export function NotificationsButton() {
             ) : (
               <IconTrash className="h-4 w-4" />
             )}
-            <span>
-              Очистить уведомления{count > 0 ? ` (${count})` : ''}
-            </span>
+            <span>Очистить уведомления{count > 0 ? ` (${count})` : ''}</span>
           </Button>
         </div>
       </PopoverContent>
