@@ -1,6 +1,8 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import vine from '@vinejs/vine'
 import User from '#models/user'
+import DataSource from '#models/data_source'
+import Migration from '#models/migration'
 import File from '#models/file'
 import app from '@adonisjs/core/services/app'
 import fs from 'node:fs'
@@ -18,6 +20,36 @@ export default class ProfileController {
     const storageKey = (user as any).avatarFile?.storageKey as string | undefined
     const avatarUrl = storageKey ? `/${storageKey}` : null
 
+    // Обзор связанных данных: счётчики и последние элементы
+    const sourcesCountRes = await DataSource.query().where('userId', user.id).count('* as total')
+    const sourcesCount = Number((sourcesCountRes[0] as any).$extras.total || 0)
+    const migrationsCountRes = await Migration.query()
+      .where('createdBy', user.id)
+      .count('* as total')
+    const migrationsCount = Number((migrationsCountRes[0] as any).$extras.total || 0)
+
+    const latestSourcesModels = await DataSource.query()
+      .where('userId', user.id)
+      .orderBy('updated_at', 'desc')
+      .limit(3)
+
+    const latestMigrationsModels = await Migration.query()
+      .where('createdBy', user.id)
+      .orderBy('updated_at', 'desc')
+      .limit(3)
+
+    const latestSources = latestSourcesModels.map((s) => ({
+      id: s.id,
+      name: s.name,
+      type: s.type,
+    }))
+
+    const latestMigrations = latestMigrationsModels.map((m) => ({
+      id: m.id,
+      name: m.name,
+      isActive: m.isActive,
+    }))
+
     return inertia.render('profile', {
       user: {
         id: user.id,
@@ -25,6 +57,11 @@ export default class ProfileController {
         fullName: user.fullName,
         role: user.role,
         avatarUrl,
+      },
+      overview: {
+        counts: { sources: sourcesCount, migrations: migrationsCount },
+        latestSources,
+        latestMigrations,
       },
     })
   }

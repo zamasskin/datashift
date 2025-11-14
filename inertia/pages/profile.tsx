@@ -1,7 +1,7 @@
-import { Head, usePage, router } from '@inertiajs/react'
+import { Head, usePage, router, Link } from '@inertiajs/react'
 import { RootLayout } from '~/components/root-layout'
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
-import { Item, ItemMedia, ItemContent, ItemDescription } from '~/components/ui/item'
+import { Item, ItemMedia, ItemContent, ItemDescription, ItemTitle } from '~/components/ui/item'
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 import { Button } from '~/components/ui/button'
@@ -14,10 +14,16 @@ import {
   InputGroupInput,
 } from '~/components/ui/input-group'
 import { toast } from 'sonner'
+import { Badge } from '~/components/ui/badge'
 
 type ProfileProps = {
   user: { id: number; email: string; fullName: string | null; avatarUrl?: string | null }
   errors?: Record<string, string>
+  overview?: {
+    counts: { sources: number; migrations: number }
+    latestSources: Array<{ id: number; name: string; type: string }>
+    latestMigrations: Array<{ id: number; name: string; isActive: boolean }>
+  }
 }
 
 const ProfilePage = () => {
@@ -276,6 +282,72 @@ const ProfilePage = () => {
                 </Button>
               </div>
             </form>
+          </CardContent>
+        </Card>
+
+        {/* Обзор: Источники данных */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Источники данных</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Всего</span>
+              <Badge variant="outline">{props?.overview?.counts?.sources ?? 0}</Badge>
+            </div>
+            <div className="space-y-2">
+              {(props?.overview?.latestSources || []).length ? (
+                props!.overview!.latestSources.map((s) => (
+                  <Item key={s.id} variant="muted" className="p-2">
+                    <ItemContent>
+                      <ItemTitle className="text-sm font-medium">{s.name}</ItemTitle>
+                      <ItemDescription className="text-xs">{s.type}</ItemDescription>
+                    </ItemContent>
+                  </Item>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">Нет источников</p>
+              )}
+            </div>
+            <div className="pt-1">
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/sources">Открыть источники</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Обзор: Миграции */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Миграции</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Всего</span>
+              <Badge variant="outline">{props?.overview?.counts?.migrations ?? 0}</Badge>
+            </div>
+            <div className="space-y-2">
+              {(props?.overview?.latestMigrations || []).length ? (
+                props!.overview!.latestMigrations.map((m) => (
+                  <Item key={m.id} variant="muted" className="p-2">
+                    <ItemContent>
+                      <ItemTitle className="text-sm font-medium">{m.name}</ItemTitle>
+                      <ItemDescription className="text-xs">
+                        Статус: {m.isActive ? 'активна' : 'выключена'}
+                      </ItemDescription>
+                    </ItemContent>
+                  </Item>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">Нет миграций</p>
+              )}
+            </div>
+            <div className="pt-1 flex items-center gap-2">
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/migrations">Открыть миграции</Link>
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
