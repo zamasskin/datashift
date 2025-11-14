@@ -208,7 +208,7 @@ const Home = () => {
 
         {/* Запущенные процессы */}
         {runnings.length > 0 && (
-          <div>
+          <div className="space-y-3">
             <SectionHeader
               title="Запущено"
               right={<Badge variant="secondary">{runningCount}</Badge>}
