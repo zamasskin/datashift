@@ -24,7 +24,9 @@ const inertiaConfig = defineConfig({
       }),
     csrfToken: (ctx: HttpContext) => ctx.request.csrfToken,
     runningMigrations: async (ctx) => {
-      const running = await MigrationRun.query().where('status', 'running')
+      const running = await MigrationRun.query()
+        .preload('migration', (q) => q.select(['id', 'name']))
+        .where('status', 'running')
       return ctx.inertia.always(() => running)
     },
   },
