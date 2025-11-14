@@ -1,18 +1,10 @@
 import { DateTime } from 'luxon'
-import {
-  afterCreate,
-  afterUpdate,
-  BaseModel,
-  belongsTo,
-  column,
-  hasMany,
-} from '@adonisjs/lucid/orm'
+import { BaseModel, belongsTo, column, hasMany } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import { jsonColumn } from '../helpers/json_column.js'
 import Migration from './migration.js'
 import MigrationRun from './migration_run.js'
 import ErrorUserState from '#models/error_user_state'
-import { ErrorLogChange } from '#events/error_log'
 
 export default class ErrorLog extends BaseModel {
   public static table = 'errors'
@@ -85,14 +77,4 @@ export default class ErrorLog extends BaseModel {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
-
-  @afterCreate()
-  static emitCreate(errorLog: ErrorLog) {
-    ErrorLogChange.dispatch(errorLog)
-  }
-
-  @afterUpdate()
-  static emitUpdate(errorLog: ErrorLog) {
-    ErrorLogChange.dispatch(errorLog)
-  }
 }
