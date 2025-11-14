@@ -12,7 +12,6 @@ import {
   TableHeader,
   TableRow,
 } from '~/components/ui/table'
-import { Skeleton } from '~/components/ui/skeleton'
 import { RunningIndicators } from '~/components/running-indicators'
 import { useMigrationRuns } from '~/store/migrations'
 import { useMemo } from 'react'
