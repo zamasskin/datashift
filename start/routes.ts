@@ -10,6 +10,7 @@
 import router from '@adonisjs/core/services/router'
 import { middleware } from '#start/kernel'
 const HomeController = () => import('#controllers/home_controller')
+const ErrorsController = () => import('#controllers/errors_controller')
 const StreamsController = () => import('#controllers/streams_controller')
 const MigrationsController = () => import('#controllers/migrations_controller')
 const LoginController = () => import('#controllers/login_controller')
@@ -61,6 +62,7 @@ router
     router.on('/tasks').renderInertia('tasks/index')
     router.on('/settings').renderInertia('settings/index')
     router.on('/help').renderInertia('help/index')
+    router.get('/errors', [ErrorsController, 'index'])
   })
   .middleware(middleware.auth())
 
