@@ -86,9 +86,6 @@ export default class MetricsController {
       .groupBy('day')
       .orderBy('day', 'asc')
 
-    console.log(errorsRaw)
-    console.log(normalizeSeries(errorsRaw as any, days))
-
     return {
       range: {
         from: DateTime.fromJSDate(from).toISODate(),
