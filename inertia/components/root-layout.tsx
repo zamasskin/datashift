@@ -3,10 +3,12 @@ import { SiteHeader } from '~/components/site-header'
 import { SidebarInset, SidebarProvider } from '~/components/ui/sidebar'
 import { GlobalSseProvider } from './provider/global-sse-provider'
 import { Toaster } from 'sonner'
+import GlobalSearch from '~/components/global-search'
 
 export const RootLayout = ({ children, title }: { children: React.ReactNode; title: string }) => {
   return (
     <GlobalSseProvider>
+      <GlobalSearch />
       <Toaster
         richColors
         closeButton
