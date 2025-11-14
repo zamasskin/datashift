@@ -167,6 +167,13 @@ const Migrations = ({ migrations }: { migrations?: ModelPaginatorContract<Migrat
                         <TableCell>{formatUtcRu(m.createdAt)}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
+                            <Button
+                              variant="default"
+                              size="sm"
+                              onClick={() => handleRun(m.id, props.csrfToken)}
+                            >
+                              Запустить
+                            </Button>
                             <Button variant="outline" size="sm" asChild>
                               <Link href={`/migrations/${m.id}`}>Открыть</Link>
                             </Button>
@@ -265,6 +272,24 @@ function handleDelete(id: number) {
       router.visit('/migrations')
     },
   })
+}
+
+async function handleRun(id: number, csrfToken?: string) {
+  try {
+    const res = await fetch('/migrations/run-by-id', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
+      },
+      credentials: 'same-origin',
+      body: JSON.stringify({ id }),
+    })
+    if (!res.ok) throw new Error('Failed')
+    toast.success(`Запуск миграции #${id} начат`)
+  } catch (e) {
+    toast.error(`Не удалось запустить миграцию #${id}`)
+  }
 }
 
 function renderPageItems(current: number, last: number, perPage: number) {

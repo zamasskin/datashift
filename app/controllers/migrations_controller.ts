@@ -255,6 +255,31 @@ export default class MigrationsController {
     return { started: true, id: normalized.id }
   }
 
+  /**
+   * Запуск миграции по её ID, используя сохранённые конфиги
+   * Удобно для быстрого запуска из списка без передачи всей конфигурации
+   */
+  async runById({ request, response }: HttpContext) {
+    const rawId = request.input('id')
+    const id = Number(rawId)
+    if (!Number.isFinite(id) || id <= 0) {
+      return response.status(422).send({ error: 'Invalid id' })
+    }
+
+    void (async () => {
+      const runner = new MigrationRunnerService()
+      try {
+        await runner.runById(id, 'manual')
+        logger.info(`Migration ${id} completed`)
+      } catch (e: any) {
+        const msg = e?.message || String(e)
+        logger.error(`Migration ${id} failed: ${msg}`)
+      }
+    })()
+
+    return response.ok({ started: true, id })
+  }
+
   async stop({ request, response }: HttpContext) {
     const migrationId = String(request.input('migrationId') || '')
     const trigger = String(request.input('trigger') || 'manual')
