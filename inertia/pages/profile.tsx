@@ -293,81 +293,89 @@ const ProfilePage = () => {
           </CardContent>
         </Card>
 
-        {/* Обзор: Источники данных и Миграции — один столбик */}
-        <div className="md:col-span-2 grid grid-cols-1 gap-4">
-        {/* Обзор: Источники данных — простой список */}
-        <SectionHeader title="Источники данных" />
-        <Card>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Всего</span>
-              <Badge variant="outline">{props?.overview?.counts?.sources ?? 0}</Badge>
-            </div>
-            <div className="space-y-2">
-              {(props?.overview?.latestSources || []).length ? (
-                props!.overview!.latestSources.map((s) => (
-                  <Item key={s.id} variant="muted" className="p-2">
-                    <ItemContent>
-                      <ItemTitle className="text-sm font-medium">{s.name}</ItemTitle>
-                      <ItemDescription className="text-xs">{s.type}</ItemDescription>
-                    </ItemContent>
-                  </Item>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground">Нет источников</p>
-              )}
-            </div>
-            <div className="pt-1">
-              <Button variant="outline" size="sm" asChild>
-                <Link href="/sources">Все источники</Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Обзор: Источники данных и Миграции — две колонки (источники уже, миграции шире) */}
+        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 items-stretch gap-4">
+          {/* Левая колонка: Источники данных — компактный список */}
+          <div className="md:col-span-1">
+            <SectionHeader title="Источники данных" />
+            <Card className="h-full">
+              <CardContent className="flex flex-col h-full space-y-2 p-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">Всего</span>
+                  <Badge variant="outline">{props?.overview?.counts?.sources ?? 0}</Badge>
+                </div>
+                <div className="space-y-1.5">
+                  {(props?.overview?.latestSources || []).length ? (
+                    props!.overview!.latestSources.map((s) => (
+                      <Item key={s.id} variant="muted" className="p-1.5">
+                        <ItemContent>
+                          <ItemTitle className="text-xs font-medium">{s.name}</ItemTitle>
+                          <ItemDescription className="text-xs">{s.type}</ItemDescription>
+                        </ItemContent>
+                      </Item>
+                    ))
+                  ) : (
+                    <p className="text-xs text-muted-foreground">Нет источников</p>
+                  )}
+                </div>
+                <div className="pt-1 mt-auto">
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href="/sources">Все источники</Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
-        {/* Обзор: Миграции (стиль дашборда) */}
-        <SectionHeader title="Последние миграции" right={<Link href="/migrations">Все миграции</Link>} />
-        <Card>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Название</TableHead>
-                  <TableHead>Статус</TableHead>
-                  <TableHead className="text-right">Действия</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {props?.overview?.latestMigrations?.length ? (
-                  props!.overview!.latestMigrations.map((m) => (
-                    <TableRow key={m.id}>
-                      <TableCell>{m.id}</TableCell>
-                      <TableCell className="font-medium">{m.name}</TableCell>
-                      <TableCell>
-                        <Badge variant={m.isActive ? 'secondary' : 'outline'}>
-                          {m.isActive ? 'активна' : 'выключена'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="outline" size="sm" asChild>
-                          <Link href={`/migrations/${m.id}`}>Открыть</Link>
-                        </Button>
-                      </TableCell>
+          {/* Правая колонка: Миграции — широкая таблица */}
+          <div className="md:col-span-2">
+            <SectionHeader title="Последние миграции" />
+            <Card className="h-full">
+              <CardContent className="flex flex-col h-full">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>ID</TableHead>
+                      <TableHead>Название</TableHead>
+                      <TableHead>Статус</TableHead>
+                      <TableHead className="text-right">Действия</TableHead>
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={4}>
-                      <div className="text-sm text-muted-foreground">Нет данных</div>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-
+                  </TableHeader>
+                  <TableBody>
+                    {props?.overview?.latestMigrations?.length ? (
+                      props!.overview!.latestMigrations.map((m) => (
+                        <TableRow key={m.id}>
+                          <TableCell>{m.id}</TableCell>
+                          <TableCell className="font-medium">{m.name}</TableCell>
+                          <TableCell>
+                            <Badge variant={m.isActive ? 'secondary' : 'outline'}>
+                              {m.isActive ? 'активна' : 'выключена'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button variant="outline" size="sm" asChild>
+                              <Link href={`/migrations/${m.id}`}>Открыть</Link>
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={4}>
+                          <div className="text-sm text-muted-foreground">Нет данных</div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+                <div className="pt-2 mt-auto">
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href="/migrations">Все миграции</Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         {/* Карточка загрузки аватара удалена: загрузка теперь в основной форме */}
@@ -384,7 +392,7 @@ export default ProfilePage
 
 function SectionHeader({ title, right }: { title: string; right?: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between mt-2">
+    <div className="flex items-center justify-between mb-2">
       <div className="text-sm font-medium text-muted-foreground">{title}</div>
       {right}
     </div>
