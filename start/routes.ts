@@ -28,12 +28,12 @@ router.post('/logout', async ({ auth, response }) => {
 
 router
   .group(() => {
-    // router.on('/').renderInertia('home')
+    router.on('/').renderInertia('home')
 
     // SSE
     router.get('/stream', [StreamsController, 'stream'])
 
-    router.get('/', [MigrationsController, 'index'])
+    router.get('/migrations', [MigrationsController, 'index'])
     router.post('/migrations', [MigrationsController, 'store'])
     router.post('/migrations/stop', [MigrationsController, 'stop'])
     router.get('/migrations/:id', [MigrationsController, 'edit'])
