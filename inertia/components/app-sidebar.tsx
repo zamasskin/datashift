@@ -65,8 +65,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const page = usePage<{ user: User }>()
   const isAdmin = page.props?.user?.role === 'admin'
 
-  console.log(isAdmin)
-
   const { runnings } = useMigrationRuns()
   return (
     <Sidebar collapsible="offcanvas" {...props}>

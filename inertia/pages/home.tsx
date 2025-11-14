@@ -124,7 +124,7 @@ const Home = () => {
                     </div>
                     {e.occurredAt && (
                       <div className="text-xs text-muted-foreground">
-                        {new Date(e.occurredAt).toLocaleString('ru-RU')}
+                        {formatUtcRu(e.occurredAt || undefined)}
                       </div>
                     )}
                   </div>
@@ -170,7 +170,7 @@ function StatCard({
   value: string | number
   hint?: string
   link?: { href: string; text: string }
-}) {
+  }) {
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -189,6 +189,15 @@ function StatCard({
       </CardContent>
     </Card>
   )
+}
+
+function formatUtcRu(input?: string): string {
+  if (!input) return '—'
+  const d = new Date(input)
+  const pad = (n: number) => n.toString().padStart(2, '0')
+  return `${pad(d.getUTCDate())}.${pad(d.getUTCMonth() + 1)}.${d.getUTCFullYear()}, ${pad(
+    d.getUTCHours()
+  )}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`
 }
 
 function SectionHeader({ title, right }: { title: string; right?: React.ReactNode }) {
