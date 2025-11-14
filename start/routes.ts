@@ -20,6 +20,7 @@ const SqlController = () => import('#controllers/sql_controller')
 const UsersController = () => import('#controllers/users_controller')
 const SearchController = () => import('#controllers/search_controller')
 const MetricsController = () => import('#controllers/metrics_controller')
+const EventsController = () => import('#controllers/events_controller')
 
 // Login routes
 router.get('/login', [LoginController, 'create']).middleware(middleware.guest())
@@ -79,6 +80,7 @@ router
     router.get('/errors/latest', [ErrorsController, 'latest'])
     router.post('/errors/mark-read', [ErrorsController, 'markRead'])
     router.post('/errors/mute', [ErrorsController, 'mute'])
+    router.post('/events/mute', [EventsController, 'mute'])
 
     // Profile
     const ProfileController = () => import('#controllers/profile_controller')

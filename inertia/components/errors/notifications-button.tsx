@@ -1,42 +1,55 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Bell } from 'lucide-react'
 import { Button } from '~/components/ui/button'
 import { Badge } from '~/components/ui/badge'
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover'
 import { Separator } from '~/components/ui/separator'
 import { ScrollArea } from '~/components/ui/scroll-area'
-import { Link } from '@inertiajs/react'
+import { Link, usePage } from '@inertiajs/react'
+import { IconX } from '@tabler/icons-react'
 
-type LatestError = {
+type EventItem = {
   id: number
-  severity: 'error' | 'warning' | 'info'
-  message: string | null
-  occurredAt: string | null
-  status: 'open' | 'resolved'
-  code: string | null
-  migrationId: number | null
-  migrationRunId: number | null
+  createdAt?: string
+  error?: {
+    id: number
+    uuid?: string
+    message: string | null
+    severity: 'error' | 'warning' | 'info'
+    status: 'open' | 'resolved'
+  }
 }
 
 export function NotificationsButton() {
   const [open, setOpen] = useState(false)
-  const [items, setItems] = useState<LatestError[]>([])
+  const { props } = usePage<{
+    events?: { items: EventItem[]; total: number }
+    csrfToken?: string
+  }>()
+  const initialItems = useMemo(() => props.events?.items ?? [], [props.events])
+  const [items, setItems] = useState<EventItem[]>(initialItems)
+  useEffect(() => setItems(initialItems), [initialItems, open])
   const count = items.length
 
-  useEffect(() => {
-    if (!open) return
-    void fetchLatest()
-  }, [open])
-
-  const fetchLatest = async () => {
+  const mute = async (id: number) => {
     try {
-      const res = await fetch('/errors/latest')
-      const data = await res.json()
-      setItems(Array.isArray(data) ? data : [])
+      const res = await fetch('/events/mute', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          'accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'content-type': 'application/json',
+          ...(props.csrfToken ? { 'X-CSRF-Token': props.csrfToken } : {}),
+        },
+        body: JSON.stringify({ id }),
+      })
+      const json = await res.json().catch(() => ({}))
+      if (res.ok && (json?.updated ?? 0) > 0) {
+        setItems((prev) => prev.filter((e) => e.id !== id))
+      }
     } catch {}
   }
-
-  // Удалены действия пометки прочитанного и отключения уведомлений
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -55,27 +68,34 @@ export function NotificationsButton() {
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 p-0">
         <div className="p-3">
-          <div className="text-sm font-medium">Последние ошибки</div>
+          <div className="text-sm font-medium">Уведомления</div>
         </div>
         <Separator />
         <ScrollArea className="max-h-64">
           <div className="p-2">
             {items.length === 0 ? (
-              <div className="px-2 py-4 text-sm text-muted-foreground">Ошибок не найдено</div>
+              <div className="px-2 py-4 text-sm text-muted-foreground">Нет уведомлений</div>
             ) : (
               items.map((e) => (
                 <div key={e.id} className="flex items-start gap-2 px-2 py-2">
-                  <div className={severityDotClass(e.severity)} />
+                  <div className={severityDotClass(e.error?.severity)} />
                   <div className="flex-1">
                     <div className="text-sm">
                       <span className="font-medium">#{e.id}</span>{' '}
-                      <span className="text-muted-foreground">{formatUtcRu(e.occurredAt)}</span>
+                      <span className="text-muted-foreground">{formatUtcRu(e.createdAt)}</span>
                     </div>
                     <div className="text-sm text-foreground/90 line-clamp-2">
-                      {e.message || '—'}
+                      {e.error?.message || '—'}
                     </div>
-                    {/* Удалены действия управления прочитанностью/уведомлениями */}
                   </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => mute(e.id)}
+                    aria-label="Отключить уведомление"
+                  >
+                    <IconX className="h-4 w-4" />
+                  </Button>
                 </div>
               ))
             )}
@@ -94,7 +114,7 @@ export function NotificationsButton() {
   )
 }
 
-function severityDotClass(sev: LatestError['severity']) {
+function severityDotClass(sev?: 'error' | 'warning' | 'info') {
   const base = 'mt-1 h-2 w-2 shrink-0 rounded-full'
   switch (sev) {
     case 'error':
