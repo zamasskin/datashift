@@ -22,7 +22,7 @@ export const PublicLayout = ({
         </div>
       </header>
       <main className="px-4 lg:px-6 py-4">
-        <div className="max-w-4xl mx-auto">{children}</div>
+        {children}
       </main>
       <footer className="border-t">
         <div className="px-4 lg:px-6 py-3 text-xs text-muted-foreground">
