@@ -17,6 +17,7 @@ const LoginController = () => import('#controllers/login_controller')
 const DataSourcesController = () => import('#controllers/data_sources_controller')
 const DatasetsController = () => import('#controllers/datasets_controller')
 const SqlController = () => import('#controllers/sql_controller')
+const UsersController = () => import('#controllers/users_controller')
 
 // Login routes
 router.get('/login', [LoginController, 'create']).middleware(middleware.guest())
@@ -60,7 +61,12 @@ router
     router.post('/sql/columns', [SqlController, 'listColumns'])
 
     router.on('/tasks').renderInertia('tasks/index')
-    router.on('/settings').renderInertia('settings/index')
+
+    // Settings & users management (without /admin prefix)
+    router.get('/settings', [UsersController, 'settings'])
+    router.post('/users', [UsersController, 'store'])
+    router.put('/users/:id', [UsersController, 'update'])
+    router.delete('/users', [UsersController, 'destroy'])
     router.on('/help').renderInertia('help/index')
     router.get('/errors', [ErrorsController, 'index'])
     router.get('/errors/latest', [ErrorsController, 'latest'])
