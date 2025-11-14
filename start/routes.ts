@@ -19,6 +19,7 @@ const DatasetsController = () => import('#controllers/datasets_controller')
 const SqlController = () => import('#controllers/sql_controller')
 const UsersController = () => import('#controllers/users_controller')
 const SearchController = () => import('#controllers/search_controller')
+const MetricsController = () => import('#controllers/metrics_controller')
 
 // Login routes
 router.get('/login', [LoginController, 'create']).middleware(middleware.guest())
@@ -35,6 +36,7 @@ router
     router.get('/', [HomeController, 'index'])
     // Unified REST search
     router.get('/search', [SearchController, 'index'])
+    router.get('/metrics/dashboard', [MetricsController, 'dashboard'])
 
     // SSE
     router.get('/stream', [StreamsController, 'stream'])

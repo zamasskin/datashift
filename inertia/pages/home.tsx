@@ -14,7 +14,8 @@ import {
 } from '~/components/ui/table'
 import { RunningIndicators } from '~/components/running-indicators'
 import { useMigrationRuns } from '~/store/migrations'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { DashboardAreaChart } from '~/components/charts/area-chart'
 
 type HomeProps = {
   counts: { migrations: number; sources: number; openErrors: number }
@@ -67,6 +68,20 @@ const Home = () => {
         <RunningIndicators runnings={runnings} />
 
         <Separator className="my-2" />
+
+        {/* Аналитика */}
+        <SectionHeader title="Аналитика" />
+        {(() => {
+          const metrics = useMetrics()
+          return (
+            <DashboardAreaChart
+              badge="30 дн."
+              hint="Запуски и ошибки за период"
+              dataRuns={metrics.runs}
+              dataErrors={metrics.errors}
+            />
+          )
+        })()}
 
         {/* Последние миграции */}
         <SectionHeader
@@ -179,6 +194,38 @@ Home.layout = (page: React.ReactNode) => {
 }
 
 export default Home
+
+function useMetrics() {
+  const [runs, setRuns] = useState<Array<{ date: string; value: number }>>([])
+  const [errors, setErrors] = useState<Array<{ date: string; value: number }>>([])
+  useEffect(() => {
+    let aborted = false
+    ;(async () => {
+      try {
+        const res = await fetch('/metrics/dashboard?days=30', {
+          credentials: 'same-origin',
+          headers: { accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        })
+        if (!res.ok) return
+        const json = await res.json()
+        const runsRaw = json?.series?.migrationRuns
+        const errorsRaw = json?.series?.errors
+        const toPoints = (raw: any): Array<{ date: string; value: number }> =>
+          Array.isArray(raw)
+            ? raw
+            : Object.entries(raw ?? {}).map(([date, value]) => ({ date, value: Number(value) || 0 }))
+        if (!aborted) {
+          setRuns(toPoints(runsRaw))
+          setErrors(toPoints(errorsRaw))
+        }
+      } catch {}
+    })()
+    return () => {
+      aborted = true
+    }
+  }, [])
+  return { runs, errors }
+}
 
 function StatCard({
   title,
