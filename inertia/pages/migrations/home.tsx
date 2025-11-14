@@ -165,9 +165,18 @@ const Migrations = ({ migrations }: { migrations?: ModelPaginatorContract<Migrat
                         </TableCell>
                         <TableCell>{formatUtcRu(m.createdAt)}</TableCell>
                         <TableCell className="text-right">
-                          <Button variant="outline" size="sm" asChild>
-                            <Link href={`/migrations/${m.id}`}>Открыть</Link>
-                          </Button>
+                          <div className="flex items-center justify-end gap-2">
+                            <Button variant="outline" size="sm" asChild>
+                              <Link href={`/migrations/${m.id}`}>Открыть</Link>
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => handleDelete(m.id)}
+                            >
+                              Удалить
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))
@@ -233,6 +242,18 @@ function formatUtcRu(input?: string): string {
   const d = new Date(input)
   const pad = (n: number) => n.toString().padStart(2, '0')
   return `${pad(d.getUTCDate())}.${pad(d.getUTCMonth() + 1)}.${d.getUTCFullYear()}, ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`
+}
+
+function handleDelete(id: number) {
+  if (!confirm(`Удалить миграцию #${id}?`)) return
+  router.delete('/migrations', {
+    data: { ids: [id] },
+    preserveScroll: true,
+    onSuccess: () => {
+      // Обновим только список миграций, оставаясь на текущей странице
+      router.reload({ only: ['migrations'], preserveUrl: true })
+    },
+  })
 }
 
 function renderPageItems(current: number, last: number, perPage: number) {
