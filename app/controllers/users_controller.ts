@@ -125,6 +125,7 @@ export default class UsersController {
       return response.send({ error: 'Forbidden' })
     }
     const id = Number(request.input('id'))
+    const redirectTo = String(request.input('redirectTo') || '')
     if (!id) {
       response.status(400)
       return response.send({ error: 'Missing id' })
@@ -135,7 +136,10 @@ export default class UsersController {
       return response.send({ error: 'User not found' })
     }
     await user.delete()
-    return response.ok({ success: true })
+    if (redirectTo) {
+      return response.redirect(redirectTo)
+    }
+    return response.redirect('/settings')
   }
 
   private mapVineErrors(error: any): Record<string, string> {

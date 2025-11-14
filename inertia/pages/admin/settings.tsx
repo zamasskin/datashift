@@ -109,10 +109,9 @@ const AdminSettingsPage = () => {
   const handleDelete = (id: number) => {
     if (!confirm('Удалить пользователя?')) return
     router.delete('/users', {
-      data: { id },
+      data: { id, redirectTo: '/settings' },
       onSuccess: () => toast.success('Пользователь удалён'),
       onError: () => toast.error('Не удалось удалить пользователя'),
-      onFinish: () => router.visit('/settings'),
     })
   }
 
