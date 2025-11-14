@@ -16,8 +16,12 @@ import logger from '@adonisjs/core/services/logger'
 
 export default class MigrationsController {
   async index({ inertia }: HttpContext) {
-    const migrations = await Migration.query().preload('user')
-    return inertia.render('migrations/home', { migrations })
+    // Return full list and perform client-side pagination in the UI
+    const migrations = await Migration.query().orderBy('createdAt', 'desc')
+
+    return inertia.render('migrations/home', {
+      migrations,
+    })
   }
 
   async edit({ inertia, params }: HttpContext) {
