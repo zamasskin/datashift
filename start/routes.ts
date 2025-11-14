@@ -32,6 +32,10 @@ router.post('/logout', async ({ auth, response }) => {
   return response.redirect('/login')
 })
 
+// Public pages (no auth)
+router.on('/terms').renderInertia('public/terms')
+router.on('/privacy').renderInertia('public/privacy')
+
 router
   .group(() => {
     router.get('/', [HomeController, 'index'])

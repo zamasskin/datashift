@@ -92,8 +92,8 @@ export function LoginForm({
         </CardContent>
       </Card>
       <FieldDescription className="px-6 text-center">
-        Нажимая «Продолжить», вы соглашаетесь с нашими <a href="#">Условиями обслуживания</a> и{' '}
-        <a href="#">Политикой конфиденциальности.</a>
+        Нажимая «Продолжить», вы соглашаетесь с нашими <a href="/terms">Условиями обслуживания</a> и{' '}
+        <a href="/privacy">Политикой конфиденциальности.</a>
       </FieldDescription>
     </div>
   )
