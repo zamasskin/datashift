@@ -3,6 +3,7 @@ import File from '#models/file'
 import { HttpContext } from '@adonisjs/core/http'
 import { defineConfig } from '@adonisjs/inertia'
 import type { InferSharedProps } from '@adonisjs/inertia/types'
+import EventLog from '#models/event'
 
 const inertiaConfig = defineConfig({
   /**
@@ -28,6 +29,21 @@ const inertiaConfig = defineConfig({
         .preload('migration', (q) => q.select(['id', 'name']))
         .where('status', 'running')
       return ctx.inertia.always(() => running)
+    },
+    events: async (ctx) => {
+      const query = EventLog.query()
+        .where('userId', ctx.auth.user?.id || 0)
+        .where('muted', false)
+        .orderBy('createdAt', 'desc')
+
+      const [items, totalRows] = await Promise.all([
+        query.clone().limit(100),
+        query.clone().count('id as count').first(),
+      ])
+      return ctx.inertia.always(() => {
+        const total = totalRows?.$extras?.count || 0
+        return { items, total }
+      })
     },
   },
 
