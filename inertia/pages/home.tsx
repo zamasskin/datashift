@@ -30,7 +30,10 @@ type HomeProps = {
 const Home = () => {
   const { runnings } = useMigrationRuns()
   const runningCount = useMemo(() => runnings.length, [runnings])
-  const { props } = usePage<HomeProps>()
+  const { props, url } = usePage<HomeProps>()
+  const searchParams = new URLSearchParams(url.split('?')[1] || '')
+  const includeRead = searchParams.get('includeRead') === '1'
+  const visibleErrorCount = props.latestErrors?.length ?? 0
 
   return (
     <>
@@ -112,7 +115,24 @@ const Home = () => {
         </Card>
 
         {/* Последние ошибки */}
-        <SectionHeader title="Последние ошибки" right={<Link href="/errors">Все ошибки</Link>} />
+        <SectionHeader
+          title="Последние ошибки"
+          right={
+            <div className="flex items-center gap-3">
+              <Badge variant="secondary">{visibleErrorCount}</Badge>
+              <Link
+                href={`/?includeRead=${includeRead ? '0' : '1'}`}
+                preserveScroll
+                className="text-sm"
+              >
+                {includeRead ? 'Скрыть прочитанные' : 'Показать прочитанные'}
+              </Link>
+              <Link href="/errors" className="text-sm">
+                Все ошибки
+              </Link>
+            </div>
+          }
+        />
         <Card>
           <CardContent className="space-y-3">
             {props.latestErrors?.length ? (
