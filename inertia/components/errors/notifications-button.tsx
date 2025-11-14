@@ -6,11 +6,14 @@ import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover
 import { Separator } from '~/components/ui/separator'
 import { ScrollArea } from '~/components/ui/scroll-area'
 import { Link, usePage } from '@inertiajs/react'
-import { IconX } from '@tabler/icons-react'
+import { IconX, IconAlertCircle, IconInfoCircle, IconAlertTriangle } from '@tabler/icons-react'
 
 type EventItem = {
   id: number
   createdAt?: string
+  type?: 'error' | 'notify' | string
+  errorId?: number
+  value?: number | boolean | null
   message?: string | null
   error?: {
     id: number
@@ -77,28 +80,48 @@ export function NotificationsButton() {
             {items.length === 0 ? (
               <div className="px-2 py-4 text-sm text-muted-foreground">Нет уведомлений</div>
             ) : (
-              items.map((e) => (
-                <div key={e.id} className="flex items-start gap-2 px-2 py-2">
-                  <div className={severityDotClass(e.error?.severity)} />
-                  <div className="flex-1">
-                    <div className="text-sm">
-                      <span className="font-medium">#{e.id}</span>{' '}
-                      <span className="text-muted-foreground">{formatUtcRu(e.createdAt)}</span>
-                    </div>
-                    <div className="text-sm text-foreground/90 line-clamp-2">
-                      {e.message ?? e.error?.message ?? '—'}
-                    </div>
+              items.map((e) => {
+                const errId = e.error?.id ?? e.errorId ?? (typeof e.value === 'number' ? e.value : undefined)
+                const isError = (e.type ?? 'notify') === 'error'
+                const content = (
+                  <div className="text-sm text-foreground/90 line-clamp-2">
+                    {e.message ?? e.error?.message ?? '—'}
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => mute(e.id)}
-                    aria-label="Отключить уведомление"
+                )
+                return (
+                  <div
+                    key={e.id}
+                    className="flex items-start gap-2 px-2 py-2 hover:bg-muted rounded-sm"
                   >
-                    <IconX className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))
+                    <EventIcon type={e.type} />
+                    <div className="flex-1">
+                      <div className="text-xs text-muted-foreground">
+                        <span className="mr-1">#{e.id}</span>
+                        <span>{formatUtcRu(e.createdAt)}</span>
+                      </div>
+                      {isError && errId ? (
+                        <Link
+                          href={`/errors/${errId}`}
+                          className="text-sm font-medium text-foreground hover:underline"
+                          onClick={() => setOpen(false)}
+                        >
+                          {e.message ?? e.error?.message ?? '—'}
+                        </Link>
+                      ) : (
+                        content
+                      )}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => mute(e.id)}
+                      aria-label="Отключить уведомление"
+                    >
+                      <IconX className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )
+              })
             )}
           </div>
         </ScrollArea>
@@ -115,17 +138,11 @@ export function NotificationsButton() {
   )
 }
 
-function severityDotClass(sev?: 'error' | 'warning' | 'info') {
-  const base = 'mt-1 h-2 w-2 shrink-0 rounded-full'
-  switch (sev) {
-    case 'error':
-      return base + ' bg-destructive'
-    case 'warning':
-      return base + ' bg-yellow-500'
-    case 'info':
-    default:
-      return base + ' bg-blue-500'
-  }
+function EventIcon({ type }: { type?: string }) {
+  const cls = 'mt-0.5 h-4 w-4 shrink-0'
+  if (type === 'error') return <IconAlertCircle className={cls + ' text-destructive'} />
+  if (type === 'warning') return <IconAlertTriangle className={cls + ' text-yellow-500'} />
+  return <IconInfoCircle className={cls + ' text-blue-500'} />
 }
 
 function formatUtcRu(input?: string | null) {
