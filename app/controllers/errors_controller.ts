@@ -40,9 +40,26 @@ export default class ErrorsController {
     const error = await ErrorLog.findOrFail(id)
 
     const userId = auth.user?.id
-    const userState = userId
+    let userState = userId
       ? await ErrorUserState.query().where('userId', userId).where('errorId', id).first()
       : null
+
+    // Автоматически помечаем ошибку как прочитанную при открытии страницы подробностей
+    if (userId) {
+      if (userState) {
+        if (!userState.readAt) {
+          userState.readAt = DateTime.now()
+          await userState.save()
+        }
+      } else {
+        userState = await ErrorUserState.create({
+          userId,
+          errorId: id,
+          readAt: DateTime.now(),
+          muted: false,
+        })
+      }
+    }
 
     return inertia.render('errors/show', {
       error: {
