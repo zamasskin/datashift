@@ -1,4 +1,5 @@
 import MigrationRun from '#models/migration_run'
+import File from '#models/file'
 import { HttpContext } from '@adonisjs/core/http'
 import { defineConfig } from '@adonisjs/inertia'
 import type { InferSharedProps } from '@adonisjs/inertia/types'
@@ -14,6 +15,13 @@ const inertiaConfig = defineConfig({
    */
   sharedData: {
     user: (ctx) => ctx.inertia.always(() => ctx.auth.user),
+    userAvatarUrl: async (ctx) =>
+      ctx.inertia.always(async () => {
+        const u = ctx.auth.user
+        if (!u || !u.fileId) return null
+        const f = await File.find(u.fileId)
+        return f ? `/${f.storageKey}` : null
+      }),
     csrfToken: (ctx: HttpContext) => ctx.request.csrfToken,
     runningMigrations: async (ctx) => {
       const running = await MigrationRun.query().where('status', 'running')

@@ -7,7 +7,7 @@ import { Button } from '~/components/ui/button'
 import { useEffect, useState } from 'react'
 
 type ProfileProps = {
-  user: { id: number; email: string; fullName: string | null; avatarUrl: string | null }
+  user: { id: number; email: string; fullName: string | null }
 }
 
 const ProfilePage = () => {
@@ -15,18 +15,25 @@ const ProfilePage = () => {
   const u = props.user
   const [email, setEmail] = useState(u?.email || '')
   const [fullName, setFullName] = useState(u?.fullName || '')
-  const [avatarUrl, setAvatarUrl] = useState(u?.avatarUrl || '')
   const [password, setPassword] = useState('')
+  const [avatarFile, setAvatarFile] = useState<File | null>(null)
 
   useEffect(() => {
     setEmail(u?.email || '')
     setFullName(u?.fullName || '')
-    setAvatarUrl(u?.avatarUrl || '')
-  }, [u?.email, u?.fullName, u?.avatarUrl])
+  }, [u?.email, u?.fullName])
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    router.put('/profile', { email, fullName, avatarUrl: avatarUrl || null, password })
+    router.put('/profile', { email, fullName, password })
+  }
+
+  const onSubmitAvatar = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!avatarFile) return
+    const fd = new FormData()
+    fd.append('avatar', avatarFile)
+    router.post('/profile/avatar', fd, { forceFormData: true })
   }
 
   return (
@@ -53,15 +60,6 @@ const ProfilePage = () => {
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="avatarUrl">Аватар (URL)</Label>
-                <Input
-                  id="avatarUrl"
-                  value={avatarUrl}
-                  onChange={(e) => setAvatarUrl(e.target.value)}
-                  placeholder="https://..."
-                />
-              </div>
-              <div className="grid gap-2">
                 <Label htmlFor="password">Новый пароль</Label>
                 <Input
                   id="password"
@@ -76,6 +74,23 @@ const ProfilePage = () => {
                 <Button type="button" variant="outline" asChild>
                   <Link href="/">Отмена</Link>
                 </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Загрузка аватара</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <form onSubmit={onSubmitAvatar} className="space-y-4">
+              <div className="grid gap-2">
+                <Label htmlFor="avatar">Выберите файл</Label>
+                <Input id="avatar" type="file" accept="image/*" onChange={(e) => setAvatarFile(e.target.files?.[0] || null)} />
+              </div>
+              <div className="flex items-center gap-2">
+                <Button type="submit" disabled={!avatarFile}>Загрузить фото</Button>
               </div>
             </form>
           </CardContent>

@@ -1,11 +1,11 @@
 import { DateTime } from 'luxon'
 import hash from '@adonisjs/core/services/hash'
 import { compose } from '@adonisjs/core/helpers'
-import { BaseModel, column, hasMany } from '@adonisjs/lucid/orm'
+import { BaseModel, column, hasMany, belongsTo } from '@adonisjs/lucid/orm'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 import DataSource from './data_source.js'
 import File from './file.js'
-import type { HasMany } from '@adonisjs/lucid/types/relations'
+import type { HasMany, BelongsTo } from '@adonisjs/lucid/types/relations'
 import Migration from './migration.js'
 import ErrorUserState from './error_user_state.js'
 
@@ -22,9 +22,6 @@ export default class User extends compose(BaseModel, AuthFinder) {
   declare fullName: string | null
 
   @column()
-  declare avatarUrl: string | null
-
-  @column()
   declare email: string
 
   @column({ serializeAs: null })
@@ -32,6 +29,9 @@ export default class User extends compose(BaseModel, AuthFinder) {
 
   @column()
   declare role: 'user' | 'admin'
+
+  @column()
+  declare fileId: number | null
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -51,10 +51,10 @@ export default class User extends compose(BaseModel, AuthFinder) {
   })
   declare errorStates: HasMany<typeof ErrorUserState>
 
-  @hasMany(() => File, {
-    foreignKey: 'userId',
+  @belongsTo(() => File, {
+    foreignKey: 'fileId',
   })
-  declare files: HasMany<typeof File>
+  declare avatarFile: BelongsTo<typeof File>
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
