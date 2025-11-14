@@ -1,8 +1,8 @@
-"use client"
+'use client'
 
-import * as React from "react"
-import { useEffect, useMemo, useState } from "react"
-import { Link } from "@inertiajs/react"
+import * as React from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link } from '@inertiajs/react'
 import {
   CommandDialog,
   CommandEmpty,
@@ -12,10 +12,9 @@ import {
   CommandList,
   CommandSeparator,
   CommandShortcut,
-} from "~/components/ui/command"
-import { Kbd } from "~/components/ui/kbd"
-import { Badge } from "~/components/ui/badge"
-import { cn } from "~/lib/utils"
+} from '~/components/ui/command'
+import { Badge } from '~/components/ui/badge'
+import { cn } from '~/lib/utils'
 import {
   IconBrandCodepen,
   IconArrowUpToArc,
@@ -24,7 +23,7 @@ import {
   IconSearch,
   IconUserCircle,
   IconAlertCircle,
-} from "@tabler/icons-react"
+} from '@tabler/icons-react'
 
 type CommandLink = {
   label: string
@@ -35,39 +34,59 @@ type CommandLink = {
 }
 
 const navCommands: CommandLink[] = [
-  { label: "Главная", href: "/", icon: IconSearch },
-  { label: "Источники данных", href: "/sources", icon: IconBrandCodepen },
-  { label: "Миграции", href: "/migrations", icon: IconArrowUpToArc },
-  { label: "Ошибки", href: "/errors", icon: IconAlertCircle },
-  { label: "Настройки", href: "/settings", icon: IconSettings },
-  { label: "Профиль", href: "/profile", icon: IconUserCircle },
-  { label: "Помощь", href: "/help", icon: IconHelp },
+  { label: 'Главная', href: '/', icon: IconSearch },
+  { label: 'Источники данных', href: '/sources', icon: IconBrandCodepen },
+  { label: 'Миграции', href: '/migrations', icon: IconArrowUpToArc },
+  { label: 'Ошибки', href: '/errors', icon: IconAlertCircle },
+  { label: 'Настройки', href: '/settings', icon: IconSettings },
+  { label: 'Профиль', href: '/profile', icon: IconUserCircle },
+  { label: 'Помощь', href: '/help', icon: IconHelp },
 ]
 
 export function GlobalSearch({ className }: { className?: string }) {
   const [open, setOpen] = useState(false)
-  const [query, setQuery] = useState("")
+  const [query, setQuery] = useState('')
+  const [loading, setLoading] = useState(false)
+  const abortRef = useRef<AbortController | null>(null)
+
+  type SearchResults = {
+    migrations: Array<{ id: number; name: string; isActive?: boolean }>
+    dataSources: Array<{ id: number; name: string; type: string }>
+    errors: Array<{
+      id: number
+      severity: 'error' | 'warning' | 'info'
+      message: string | null
+      code: string | null
+      occurredAt: string | null
+      status: 'open' | 'resolved'
+    }>
+  }
+  const [results, setResults] = useState<SearchResults>({
+    migrations: [],
+    dataSources: [],
+    errors: [],
+  })
 
   // Toggle by keyboard: Cmd/Ctrl+K
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if (e.key.toLowerCase() === "k" && (e.metaKey || e.ctrlKey)) {
+      if (e.key.toLowerCase() === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault()
         setOpen((prev) => !prev)
       }
-      if (e.key === "Escape") {
+      if (e.key === 'Escape') {
         setOpen(false)
       }
     }
-    document.addEventListener("keydown", down)
-    return () => document.removeEventListener("keydown", down)
+    document.addEventListener('keydown', down)
+    return () => document.removeEventListener('keydown', down)
   }, [])
 
   // Open via custom event from sidebar button
   useEffect(() => {
     const handler = () => setOpen(true)
-    window.addEventListener("open-global-search", handler as EventListener)
-    return () => window.removeEventListener("open-global-search", handler as EventListener)
+    window.addEventListener('open-global-search', handler as EventListener)
+    return () => window.removeEventListener('open-global-search', handler as EventListener)
   }, [])
 
   const filtered = useMemo(() => {
@@ -76,9 +95,59 @@ export function GlobalSearch({ className }: { className?: string }) {
     return navCommands.filter((c) => c.label.toLowerCase().includes(q))
   }, [query])
 
+  // Debounced REST search
+  useEffect(() => {
+    const q = query.trim()
+    if (abortRef.current) {
+      abortRef.current.abort()
+      abortRef.current = null
+    }
+
+    if (q.length < 2) {
+      setResults({ migrations: [], dataSources: [], errors: [] })
+      setLoading(false)
+      return
+    }
+
+    setLoading(true)
+    const ac = new AbortController()
+    abortRef.current = ac
+    const timer = setTimeout(async () => {
+      try {
+        const resp = await fetch(`/search?q=${encodeURIComponent(q)}&limit=5`, {
+          signal: ac.signal,
+          headers: { Accept: 'application/json' },
+        })
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
+        const data = (await resp.json()) as SearchResults
+        setResults(data)
+      } catch (e) {
+        if ((e as any)?.name !== 'AbortError') {
+          // noop, keep results empty on errors
+        }
+      } finally {
+        setLoading(false)
+      }
+    }, 250)
+
+    return () => {
+      clearTimeout(timer)
+      ac.abort()
+    }
+  }, [query])
+
   return (
-    <CommandDialog open={open} onOpenChange={setOpen} className={cn("max-w-xl", className)}>
-      <CommandInput placeholder="Введите команду или запрос..." value={query} onValueChange={setQuery} />
+    <CommandDialog
+      open={open}
+      onOpenChange={setOpen}
+      className={cn('max-w-xl', className)}
+      shouldFilter={false}
+    >
+      <CommandInput
+        placeholder="Введите команду или запрос..."
+        value={query}
+        onValueChange={setQuery}
+      />
       <CommandList>
         <CommandEmpty>Ничего не найдено</CommandEmpty>
 
@@ -88,24 +157,81 @@ export function GlobalSearch({ className }: { className?: string }) {
               {item.icon && <item.icon className="size-4" />}
               <Link href={item.href} className="flex flex-1 items-center gap-2">
                 <span>{item.label}</span>
-                <Badge variant="outline" className="ml-auto">{item.href}</Badge>
+                <Badge variant="outline" className="ml-auto">
+                  {item.href}
+                </Badge>
               </Link>
               {item.shortcut && <CommandShortcut>{item.shortcut}</CommandShortcut>}
             </CommandItem>
           ))}
         </CommandGroup>
 
+        {/* Dynamic search results */}
+        {query.trim().length >= 2 && (
+          <>
+            <CommandSeparator />
+            <CommandGroup heading={loading ? 'Поиск…' : 'Миграции'}>
+              {results.migrations.map((m) => (
+                <CommandItem key={`migration-${m.id}`} onSelect={() => setOpen(false)}>
+                  <IconArrowUpToArc className="size-4" />
+                  <Link href={`/migrations/${m.id}`} className="flex flex-1 items-center gap-2">
+                    <span>{m.name}</span>
+                    <Badge variant={m.isActive ? 'secondary' : 'outline'} className="ml-auto">
+                      {m.isActive ? 'активна' : 'выключена'}
+                    </Badge>
+                  </Link>
+                </CommandItem>
+              ))}
+              {!loading && results.migrations.length === 0 && (
+                <CommandItem disabled>
+                  <span className="text-muted-foreground">Нет совпадений</span>
+                </CommandItem>
+              )}
+            </CommandGroup>
+
+            <CommandSeparator />
+            <CommandGroup heading={loading ? 'Поиск…' : 'Источники данных'}>
+              {results.dataSources.map((s) => (
+                <CommandItem key={`source-${s.id}`} onSelect={() => setOpen(false)}>
+                  <IconBrandCodepen className="size-4" />
+                  <Link href={`/sources`} className="flex flex-1 items-center gap-2">
+                    <span>{s.name}</span>
+                    <Badge variant="outline" className="ml-auto">
+                      {s.type}
+                    </Badge>
+                  </Link>
+                </CommandItem>
+              ))}
+              {!loading && results.dataSources.length === 0 && (
+                <CommandItem disabled>
+                  <span className="text-muted-foreground">Нет совпадений</span>
+                </CommandItem>
+              )}
+            </CommandGroup>
+
+            <CommandSeparator />
+            <CommandGroup heading={loading ? 'Поиск…' : 'Ошибки'}>
+              {results.errors.map((e) => (
+                <CommandItem key={`error-${e.id}`} onSelect={() => setOpen(false)}>
+                  <IconAlertCircle className="size-4" />
+                  <Link href={`/errors/${e.id}`} className="flex flex-1 items-center gap-2">
+                    <span>{e.message || e.code || `Ошибка #${e.id}`}</span>
+                    <Badge variant="outline" className="ml-auto">
+                      {e.severity}
+                    </Badge>
+                  </Link>
+                </CommandItem>
+              ))}
+              {!loading && results.errors.length === 0 && (
+                <CommandItem disabled>
+                  <span className="text-muted-foreground">Нет совпадений</span>
+                </CommandItem>
+              )}
+            </CommandGroup>
+          </>
+        )}
+
         <CommandSeparator />
-        <CommandGroup heading="Подсказки">
-          <CommandItem disabled>
-            <IconSearch className="size-4" />
-            <span>Откройте палитру</span>
-            <div className="ml-auto flex items-center gap-1">
-              <Kbd>⌘</Kbd>
-              <Kbd>K</Kbd>
-            </div>
-          </CommandItem>
-        </CommandGroup>
       </CommandList>
     </CommandDialog>
   )

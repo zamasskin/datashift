@@ -18,6 +18,7 @@ const DataSourcesController = () => import('#controllers/data_sources_controller
 const DatasetsController = () => import('#controllers/datasets_controller')
 const SqlController = () => import('#controllers/sql_controller')
 const UsersController = () => import('#controllers/users_controller')
+const SearchController = () => import('#controllers/search_controller')
 
 // Login routes
 router.get('/login', [LoginController, 'create']).middleware(middleware.guest())
@@ -32,6 +33,8 @@ router.post('/logout', async ({ auth, response }) => {
 router
   .group(() => {
     router.get('/', [HomeController, 'index'])
+    // Unified REST search
+    router.get('/search', [SearchController, 'index'])
 
     // SSE
     router.get('/stream', [StreamsController, 'stream'])
