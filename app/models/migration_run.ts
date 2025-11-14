@@ -1,9 +1,17 @@
 import { DateTime } from 'luxon'
-import { afterCreate, afterUpdate, BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
+import {
+  afterCreate,
+  afterUpdate,
+  BaseModel,
+  belongsTo,
+  column,
+  hasMany,
+} from '@adonisjs/lucid/orm'
 import Migration from '#models/migration'
-import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import { jsonColumn } from '../helpers/json_column.js'
 import { MigrationRunChange } from '#events/migration'
+import ErrorLog from './error_log.js'
 
 export default class MigrationRun extends BaseModel {
   @column({ isPrimary: true })
@@ -54,4 +62,9 @@ export default class MigrationRun extends BaseModel {
   public static emitUpdate(migrationRun: MigrationRun) {
     MigrationRunChange.dispatch(migrationRun)
   }
+
+  @hasMany(() => ErrorLog, {
+    foreignKey: 'migrationRunId',
+  })
+  declare errorLogs: HasMany<typeof ErrorLog>
 }

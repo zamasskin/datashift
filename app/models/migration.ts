@@ -16,6 +16,7 @@ import { SaveMapping } from '#interfaces/save_mapping'
 import { Param } from '#interfaces/params'
 import { CronConfig } from '#interfaces/cron_config'
 import MigrationRun from './migration_run.js'
+import ErrorLog from './error_log.js'
 import { MigrationCreate, MigrationRemove, MigrationUpdate } from '#events/migration'
 
 export default class Migration extends BaseModel {
@@ -52,6 +53,11 @@ export default class Migration extends BaseModel {
     foreignKey: 'migrationId',
   })
   declare migrationRuns: HasMany<typeof MigrationRun>
+
+  @hasMany(() => ErrorLog, {
+    foreignKey: 'migrationId',
+  })
+  declare errorLogs: HasMany<typeof ErrorLog>
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
