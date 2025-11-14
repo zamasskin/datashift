@@ -103,14 +103,14 @@ export function DashboardAreaChart({
         <ChartContainer config={chartConfig} className="h-[240px] w-full">
           <ReAreaChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
             <defs>
-                <linearGradient id="areaRuns" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--color-runs)" stopOpacity={0.6} />
-                  <stop offset="95%" stopColor="var(--color-runs)" stopOpacity={0.06} />
-                </linearGradient>
-                <linearGradient id="areaErrors" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--color-errors)" stopOpacity={0.6} />
-                  <stop offset="95%" stopColor="var(--color-errors)" stopOpacity={0.06} />
-                </linearGradient>
+              <linearGradient id="areaRuns" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="var(--color-runs)" stopOpacity={0.6} />
+                <stop offset="95%" stopColor="var(--color-runs)" stopOpacity={0.06} />
+              </linearGradient>
+              <linearGradient id="areaErrors" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="var(--color-errors)" stopOpacity={0.6} />
+                <stop offset="95%" stopColor="var(--color-errors)" stopOpacity={0.06} />
+              </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
             <XAxis
@@ -142,46 +142,46 @@ export function DashboardAreaChart({
                 />
               }
             />
-              <Area
-                type="monotone"
-                dataKey="runs"
-                name="Запуски"
-                stroke="var(--color-runs)"
-                strokeOpacity={0.7}
-                fill="url(#areaRuns)"
-                strokeWidth={1.5}
-                dot={{ r: 1.5 }}
-              />
-              <Area
-                type="monotone"
-                dataKey="success"
-                name="Успешные"
-                stroke="var(--color-success)"
-                strokeOpacity={0.75}
-                fill="none"
-                strokeWidth={1.5}
-                dot={{ r: 1.5 }}
-              />
-              <Area
-                type="monotone"
-                dataKey="canceled"
-                name="Отменённые"
-                stroke="var(--color-canceled)"
-                strokeOpacity={0.75}
-                fill="none"
-                strokeWidth={1.5}
-                dot={{ r: 1.5 }}
-              />
-              <Area
-                type="monotone"
-                dataKey="errors"
-                name="Ошибки"
-                stroke="var(--color-errors)"
-                strokeOpacity={0.7}
-                fill="url(#areaErrors)"
-                strokeWidth={1.5}
-                dot={{ r: 1.5 }}
-              />
+            <Area
+              type="monotone"
+              dataKey="errors"
+              name="Ошибки"
+              stroke="var(--color-errors)"
+              strokeOpacity={0.7}
+              fill="url(#areaErrors)"
+              strokeWidth={1.5}
+              dot={{ r: 1.5 }}
+            />
+            <Area
+              type="monotone"
+              dataKey="success"
+              name="Успешные"
+              stroke="var(--color-success)"
+              strokeOpacity={0.75}
+              fill="none"
+              strokeWidth={1.5}
+              dot={{ r: 1.5 }}
+            />
+            <Area
+              type="monotone"
+              dataKey="canceled"
+              name="Отменённые"
+              stroke="var(--color-canceled)"
+              strokeOpacity={0.75}
+              fill="none"
+              strokeWidth={1.5}
+              dot={{ r: 1.5 }}
+            />
+            <Area
+              type="monotone"
+              dataKey="runs"
+              name="Запуски"
+              stroke="var(--color-runs)"
+              strokeOpacity={0.7}
+              fill="url(#areaRuns)"
+              strokeWidth={1.5}
+              dot={{ r: 1.5 }}
+            />
             <ChartLegend content={<ChartLegendContent />} />
           </ReAreaChart>
         </ChartContainer>
