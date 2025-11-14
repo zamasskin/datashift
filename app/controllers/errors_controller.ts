@@ -5,12 +5,12 @@ export default class ErrorsController {
   async index({ inertia, request }: HttpContext) {
     const severity = request.input('severity') as 'error' | 'warning' | 'info' | undefined
     const status = request.input('status') as 'open' | 'resolved' | undefined
-    const limit = Number(request.input('limit') || 50)
+    const page = Number(request.input('page') || 1)
+    const perPage = Math.max(1, Math.min(Number(request.input('perPage') || 10), 200))
 
     const query = ErrorLog.query()
       .orderBy('occurredAt', 'desc')
       .orderBy('createdAt', 'desc')
-      .limit(Math.min(limit, 200))
       .select([
         'id',
         'severity',
@@ -25,7 +25,7 @@ export default class ErrorsController {
     if (severity) query.where('severity', severity)
     if (status) query.where('status', status)
 
-    const errors = await query
+    const errors = await query.paginate(page, perPage)
 
     return inertia.render('errors/index', {
       errors,
