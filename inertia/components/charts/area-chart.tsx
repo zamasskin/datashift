@@ -154,9 +154,9 @@ export function DashboardAreaChart({
             />
             <Area
               type="monotone"
-              dataKey="success"
-              name="Успешные"
-              stroke="var(--color-success)"
+              dataKey="canceled"
+              name="Отменённые"
+              stroke="var(--color-canceled)"
               strokeOpacity={0.75}
               fill="none"
               strokeWidth={1.5}
@@ -164,9 +164,9 @@ export function DashboardAreaChart({
             />
             <Area
               type="monotone"
-              dataKey="canceled"
-              name="Отменённые"
-              stroke="var(--color-canceled)"
+              dataKey="success"
+              name="Успешные"
+              stroke="var(--color-success)"
               strokeOpacity={0.75}
               fill="none"
               strokeWidth={1.5}
