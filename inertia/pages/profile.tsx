@@ -1,6 +1,7 @@
 import { Head, Link, usePage, router } from '@inertiajs/react'
 import { RootLayout } from '~/components/root-layout'
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
+import { Item, ItemMedia, ItemContent, ItemDescription } from '~/components/ui/item'
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 import { Button } from '~/components/ui/button'
@@ -110,47 +111,51 @@ const ProfilePage = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <form onSubmit={onSubmit} className="space-y-4">
-              {/* Превью аватара с кликом для выбора файла */}
+              {/* Прямоугольное превью аватара внутри основной формы */}
               <div className="grid gap-2">
                 <Label>Аватар</Label>
-                <div className="flex items-center gap-4">
-                  <button
-                    type="button"
-                    className="rounded-full overflow-hidden border hover:opacity-90 transition-opacity"
-                    onClick={() => fileInputRef.current?.click()}
-                    aria-label="Выбрать файл аватара"
-                  >
-                    {avatarPreviewUrl ? (
-                      <img
-                        src={avatarPreviewUrl}
-                        alt="Аватар"
-                        className="w-24 h-24 object-cover"
-                      />
-                    ) : (
-                      <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center text-xl">
-                        {(fullName || email || '?').slice(0, 1).toUpperCase()}
-                      </div>
+                <Item variant="outline" className="p-0">
+                  <ItemContent className="w-full">
+                    <ItemMedia
+                      variant="image"
+                      className="w-full h-40 md:h-56 rounded-md overflow-hidden cursor-pointer"
+                      onClick={() => fileInputRef.current?.click()}
+                      aria-label="Выбрать файл аватара"
+                    >
+                      {avatarPreviewUrl ? (
+                        <img
+                          src={avatarPreviewUrl}
+                          alt="Аватар"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-muted flex items-center justify-center">
+                          <span className="text-3xl font-semibold">
+                            {(fullName || email || '?').slice(0, 1).toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                    </ItemMedia>
+                    {errors?.avatar && (
+                      <ItemDescription className="text-destructive">
+                        {errors.avatar}
+                      </ItemDescription>
                     )}
-                  </button>
-                  <input
-                    ref={fileInputRef}
-                    id="avatar"
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => setAvatarFile(e.target.files?.[0] || null)}
-                  />
-                </div>
-                {errors?.avatar && (
-                  <p className="text-destructive text-sm">{errors.avatar}</p>
-                )}
+                  </ItemContent>
+                </Item>
+                <input
+                  ref={fileInputRef}
+                  id="avatar"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => setAvatarFile(e.target.files?.[0] || null)}
+                />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input id="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-                {errors?.email && (
-                  <p className="text-destructive text-sm">{errors.email}</p>
-                )}
+                {errors?.email && <p className="text-destructive text-sm">{errors.email}</p>}
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="fullName">Имя</Label>
@@ -160,21 +165,7 @@ const ProfilePage = () => {
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Ваше имя"
                 />
-                {errors?.fullName && (
-                  <p className="text-destructive text-sm">{errors.fullName}</p>
-                )}
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="avatar">Аватар</Label>
-                <Input
-                  id="avatar"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setAvatarFile(e.target.files?.[0] || null)}
-                />
-                {errors?.avatar && (
-                  <p className="text-destructive text-sm">{errors.avatar}</p>
-                )}
+                {errors?.fullName && <p className="text-destructive text-sm">{errors.fullName}</p>}
               </div>
               <div className="flex items-center gap-2">
                 <Button type="submit">Сохранить</Button>
