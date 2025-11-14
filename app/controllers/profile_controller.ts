@@ -11,12 +11,20 @@ export default class ProfileController {
     if (!user) {
       return inertia.render('login')
     }
+    // Загружаем файл аватара, если есть, и формируем публичный URL
+    try {
+      await user.load('avatarFile')
+    } catch {}
+    const storageKey = (user as any).avatarFile?.storageKey as string | undefined
+    const avatarUrl = storageKey ? `/${storageKey}` : null
+
     return inertia.render('profile', {
       user: {
         id: user.id,
         email: user.email,
         fullName: user.fullName,
         role: user.role,
+        avatarUrl,
       },
     })
   }

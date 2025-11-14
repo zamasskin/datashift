@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 import { Button } from '~/components/ui/button'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import {
   InputGroup,
@@ -14,7 +14,7 @@ import {
 } from '~/components/ui/input-group'
 
 type ProfileProps = {
-  user: { id: number; email: string; fullName: string | null }
+  user: { id: number; email: string; fullName: string | null; avatarUrl?: string | null }
   errors?: Record<string, string>
 }
 
@@ -28,12 +28,25 @@ const ProfilePage = () => {
   const [passwordConfirmation, setPasswordConfirmation] = useState('')
   const [passwordErrors, setPasswordErrors] = useState<Record<string, string> | null>(null)
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(u?.avatarUrl || null)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [showNewPassword, setShowNewPassword] = useState(false)
 
   useEffect(() => {
     setEmail(u?.email || '')
     setFullName(u?.fullName || '')
+    setAvatarPreviewUrl(u?.avatarUrl || null)
   }, [u?.email, u?.fullName])
+
+  // Обновляем локальный превью URL при выборе нового файла и чистим blob URL
+  useEffect(() => {
+    if (!avatarFile) return
+    const url = URL.createObjectURL(avatarFile)
+    setAvatarPreviewUrl(url)
+    return () => {
+      URL.revokeObjectURL(url)
+    }
+  }, [avatarFile])
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -97,6 +110,41 @@ const ProfilePage = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <form onSubmit={onSubmit} className="space-y-4">
+              {/* Превью аватара с кликом для выбора файла */}
+              <div className="grid gap-2">
+                <Label>Аватар</Label>
+                <div className="flex items-center gap-4">
+                  <button
+                    type="button"
+                    className="rounded-full overflow-hidden border hover:opacity-90 transition-opacity"
+                    onClick={() => fileInputRef.current?.click()}
+                    aria-label="Выбрать файл аватара"
+                  >
+                    {avatarPreviewUrl ? (
+                      <img
+                        src={avatarPreviewUrl}
+                        alt="Аватар"
+                        className="w-24 h-24 object-cover"
+                      />
+                    ) : (
+                      <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center text-xl">
+                        {(fullName || email || '?').slice(0, 1).toUpperCase()}
+                      </div>
+                    )}
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    id="avatar"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => setAvatarFile(e.target.files?.[0] || null)}
+                  />
+                </div>
+                {errors?.avatar && (
+                  <p className="text-destructive text-sm">{errors.avatar}</p>
+                )}
+              </div>
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input id="email" value={email} onChange={(e) => setEmail(e.target.value)} />
