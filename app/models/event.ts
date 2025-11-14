@@ -29,6 +29,9 @@ export default class EventLog extends BaseModel {
   declare value: boolean | null
 
   @column()
+  declare message: string | null
+
+  @column()
   declare muted: boolean | null
 
   @column.dateTime({ autoCreate: true })

@@ -11,6 +11,7 @@ import { IconX } from '@tabler/icons-react'
 type EventItem = {
   id: number
   createdAt?: string
+  message?: string | null
   error?: {
     id: number
     uuid?: string
@@ -85,7 +86,7 @@ export function NotificationsButton() {
                       <span className="text-muted-foreground">{formatUtcRu(e.createdAt)}</span>
                     </div>
                     <div className="text-sm text-foreground/90 line-clamp-2">
-                      {e.error?.message || '—'}
+                      {e.message ?? e.error?.message ?? '—'}
                     </div>
                   </div>
                   <Button
