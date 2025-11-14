@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Head, Link, router, usePage } from '@inertiajs/react'
+import { toast } from 'sonner'
 import { useForm } from 'react-hook-form'
 import { RootLayout } from '~/components/root-layout'
 import * as z from 'zod'
@@ -246,11 +247,23 @@ function formatUtcRu(input?: string): string {
 
 function handleDelete(id: number) {
   if (!confirm(`Удалить миграцию #${id}?`)) return
+  let handled = false
   router.delete('/migrations', {
     data: { ids: [id], redirectTo: '/migrations' },
     preserveScroll: true,
+    onSuccess: () => {
+      handled = true
+      toast.success('Миграция удалена')
+    },
+    onError: () => {
+      handled = true
+      toast.error('Не удалось удалить миграцию')
+    },
     // Сервер теперь возвращает редирект; на всякий случай — fallback
-    onFinish: () => router.visit('/migrations'),
+    onFinish: () => {
+      if (!handled) toast.success('Миграция удалена')
+      router.visit('/migrations')
+    },
   })
 }
 

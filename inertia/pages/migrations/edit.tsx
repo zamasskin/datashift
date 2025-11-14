@@ -34,6 +34,7 @@ import { cn } from '~/lib/utils'
 import { useMigrationRuns } from '~/store/migrations'
 import { Progress } from '~/components/ui/progress'
 import { Spinner } from '~/components/ui/spinner'
+import { toast } from 'sonner'
 
 const MigrationEdit = ({ migration }: { migration: Migration }) => {
   const { props } = usePage<{ csrfToken?: string }>()
@@ -120,9 +121,14 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
           })
           setSaveErrors(map)
           setSaveLoading(false)
+          // Toast на ошибку сохранения
+          const firstMsg = Object.values(map)[0] || 'Не удалось сохранить миграцию'
+          toast.error(firstMsg)
         },
         onSuccess: () => {
           setSaveLoading(false)
+          // Toast на успешное сохранение
+          toast.success('Миграция сохранена')
         },
       }
     )
@@ -130,11 +136,23 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
 
   const onDelete = () => {
     if (!confirm(`Удалить миграцию #${migration.id}?`)) return
+    let handled = false
     router.delete('/migrations', {
       data: { ids: [migration.id], redirectTo: '/migrations' },
       preserveScroll: true,
+      onSuccess: () => {
+        handled = true
+        toast.success('Миграция удалена')
+      },
+      onError: () => {
+        handled = true
+        toast.error('Не удалось удалить миграцию')
+      },
       // Сервер сделает редирект, но на случай JSON-ответа — подстрахуемся
-      onFinish: () => router.visit('/migrations'),
+      onFinish: () => {
+        if (!handled) toast.success('Миграция удалена')
+        router.visit('/migrations')
+      },
     })
   }
 
