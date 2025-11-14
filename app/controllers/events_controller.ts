@@ -14,4 +14,16 @@ export default class EventsController {
 
     return response.json({ updated })
   }
+
+  async clear({ auth, response }: HttpContext) {
+    if (!auth.user) {
+      return response.badRequest({ updated: 0 })
+    }
+    const updated = await EventLog.query()
+      .where('userId', auth.user.id)
+      .where('muted', false)
+      .update({ muted: true })
+
+    return response.json({ updated })
+  }
 }

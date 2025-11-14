@@ -6,7 +6,14 @@ import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover
 import { Separator } from '~/components/ui/separator'
 import { ScrollArea } from '~/components/ui/scroll-area'
 import { Link, usePage } from '@inertiajs/react'
-import { IconX, IconAlertCircle, IconInfoCircle, IconAlertTriangle } from '@tabler/icons-react'
+import {
+  IconX,
+  IconAlertCircle,
+  IconInfoCircle,
+  IconAlertTriangle,
+  IconTrash,
+  IconLoader2,
+} from '@tabler/icons-react'
 
   type EventItem = {
     id: number
@@ -31,6 +38,7 @@ export function NotificationsButton() {
   }>()
   const initialItems = useMemo(() => props.events?.items ?? [], [props.events])
   const [items, setItems] = useState<EventItem[]>(initialItems)
+  const [clearing, setClearing] = useState(false)
   useEffect(() => setItems(initialItems), [initialItems, open])
   const count = items.length
 
@@ -52,6 +60,28 @@ export function NotificationsButton() {
         setItems((prev) => prev.filter((e) => e.id !== id))
       }
     } catch {}
+  }
+
+  const clearAll = async () => {
+    if (items.length === 0) return
+    setClearing(true)
+    try {
+      const res = await fetch('/events/clear', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          accept: 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'content-type': 'application/json',
+          ...(props.csrfToken ? { 'X-CSRF-Token': props.csrfToken } : {}),
+        },
+      })
+      const json = await res.json().catch(() => ({}))
+      if (res.ok && (json?.updated ?? 0) > 0) {
+        setItems([])
+      }
+    } catch {}
+    setClearing(false)
   }
 
   return (
@@ -126,10 +156,22 @@ export function NotificationsButton() {
         </ScrollArea>
         <Separator />
         <div className="p-2">
-          <Button asChild variant="outline" className="w-full">
-            <Link href="/errors" onClick={() => setOpen(false)}>
-              Перейти ко всем ошибкам
-            </Link>
+          <Button
+            variant="secondary"
+            size="sm"
+            className="w-full justify-center gap-2"
+            onClick={clearAll}
+            disabled={items.length === 0 || clearing}
+            title="Отключить все уведомления"
+          >
+            {clearing ? (
+              <IconLoader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <IconTrash className="h-4 w-4" />
+            )}
+            <span>
+              Очистить уведомления{count > 0 ? ` (${count})` : ''}
+            </span>
           </Button>
         </div>
       </PopoverContent>

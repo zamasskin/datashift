@@ -81,6 +81,7 @@ router
     router.post('/errors/mark-read', [ErrorsController, 'markRead'])
     router.post('/errors/mute', [ErrorsController, 'mute'])
     router.post('/events/mute', [EventsController, 'mute'])
+    router.post('/events/clear', [EventsController, 'clear'])
 
     // Profile
     const ProfileController = () => import('#controllers/profile_controller')
