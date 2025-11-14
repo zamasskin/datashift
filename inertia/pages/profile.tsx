@@ -103,7 +103,7 @@ const ProfilePage = () => {
   return (
     <>
       <Head title="Профиль" />
-      <div className="px-4 space-y-4">
+      <div className="px-4 grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
           <CardHeader>
             <CardTitle>Редактирование профиля</CardTitle>
