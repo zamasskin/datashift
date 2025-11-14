@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Bell } from 'lucide-react'
 import { Button } from '~/components/ui/button'
 import { Badge } from '~/components/ui/badge'
@@ -6,6 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover
 import { Separator } from '~/components/ui/separator'
 import { ScrollArea } from '~/components/ui/scroll-area'
 import { Link, usePage } from '@inertiajs/react'
+import { useNotifications } from '~/store/notifications'
 import {
   IconX,
   IconAlertCircle,
@@ -36,56 +37,11 @@ export function NotificationsButton() {
     events?: { items: EventItem[]; total: number }
     csrfToken?: string
   }>()
-  const initialItems = useMemo(() => props.events?.items ?? [], [props.events])
-  const [items, setItems] = useState<EventItem[]>(initialItems)
+  const { items, removeItem, clear } = useNotifications()
   const [clearing, setClearing] = useState(false)
-  useEffect(() => setItems(initialItems), [initialItems, open])
   const count = items.length
 
-  // Подписка на серверные события (SSE) для живых уведомлений
-  useEffect(() => {
-    const es = new EventSource('/stream')
-    const onCreate = (ev: MessageEvent) => {
-      try {
-        const payload = JSON.parse(ev.data)
-        const e: EventItem = {
-          id: Number(payload.id),
-          createdAt: payload.createdAt ?? null,
-          type: payload.type,
-          errorId: payload.errorId ?? undefined,
-          message: payload.message ?? null,
-        }
-        setItems((prev) => {
-          // избегаем дублей
-          if (prev.some((x) => x.id === e.id)) return prev
-          return [e, ...prev]
-        })
-      } catch {}
-    }
-    const onUpdate = (ev: MessageEvent) => {
-      try {
-        const payload = JSON.parse(ev.data)
-        const id = Number(payload.id)
-        const muted = !!payload.muted
-        if (muted) {
-          setItems((prev) => prev.filter((x) => x.id !== id))
-        } else {
-          setItems((prev) => prev.map((x) => (x.id === id ? { ...x, ...payload } : x)))
-        }
-      } catch {}
-    }
-    const onCleared = (_ev: MessageEvent) => {
-      setItems([])
-    }
-    es.addEventListener('notification_create', onCreate as any)
-    es.addEventListener('notification_update', onUpdate as any)
-    es.addEventListener('notifications_cleared', onCleared as any)
-    return () => {
-      try {
-        es.close()
-      } catch {}
-    }
-  }, [])
+  // SSE уже подключен в GlobalSseProvider, элементы берём из стора
 
   const mute = async (id: number) => {
     try {
@@ -102,7 +58,7 @@ export function NotificationsButton() {
       })
       const json = await res.json().catch(() => ({}))
       if (res.ok && (json?.updated ?? 0) > 0) {
-        setItems((prev) => prev.filter((e) => e.id !== id))
+        removeItem(id)
       }
     } catch {}
   }
@@ -123,7 +79,7 @@ export function NotificationsButton() {
       })
       const json = await res.json().catch(() => ({}))
       if (res.ok && (json?.updated ?? 0) > 0) {
-        setItems([])
+        clear()
       }
     } catch {}
     setClearing(false)
