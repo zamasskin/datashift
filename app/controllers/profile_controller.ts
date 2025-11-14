@@ -48,6 +48,7 @@ export default class ProfileController {
       })
 
       if (avatar) {
+        const prevFileId = user.fileId
         if (!avatar.isValid) {
           const firstError = Array.isArray(avatar.errors) && avatar.errors[0]?.message
           const fieldErrors = {
@@ -84,6 +85,18 @@ export default class ProfileController {
         f.status = 'uploaded'
         await f.save()
         user.fileId = f.id
+
+        // Удаляем предыдущий файл и запись, если были
+        if (prevFileId && prevFileId !== f.id) {
+          const prev = await File.find(prevFileId)
+          if (prev) {
+            const abs = app.publicPath(prev.storageKey)
+            try {
+              await fs.promises.unlink(abs)
+            } catch {}
+            await prev.delete()
+          }
+        }
       }
 
       await user.save()
@@ -175,7 +188,20 @@ export default class ProfileController {
     f.checksum = null
     f.status = 'uploaded'
     await f.save()
+    const prevFileId = user.fileId
     user.fileId = f.id
+
+    // Удаляем предыдущий файл и запись, если были
+    if (prevFileId && prevFileId !== f.id) {
+      const prev = await File.find(prevFileId)
+      if (prev) {
+        const abs = app.publicPath(prev.storageKey)
+        try {
+          await fs.promises.unlink(abs)
+        } catch {}
+        await prev.delete()
+      }
+    }
     return response.redirect('/profile')
   }
 
