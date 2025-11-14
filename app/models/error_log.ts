@@ -4,7 +4,7 @@ import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import { jsonColumn } from '../helpers/json_column.js'
 import Migration from './migration.js'
 import MigrationRun from './migration_run.js'
-import ErrorUserState from '#models/error_user_state'
+import Event from '#models/event'
 
 export default class ErrorLog extends BaseModel {
   public static table = 'errors'
@@ -67,10 +67,10 @@ export default class ErrorLog extends BaseModel {
   @column()
   declare hostname: string | null
 
-  @hasMany(() => ErrorUserState, {
+  @hasMany(() => Event, {
     foreignKey: 'errorId',
   })
-  declare userStates: HasMany<typeof ErrorUserState>
+  declare events: HasMany<typeof Event>
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

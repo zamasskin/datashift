@@ -3,7 +3,7 @@ import Migration from '#models/migration'
 import DataSource from '#models/data_source'
 import MigrationRun from '#models/migration_run'
 import ErrorLog from '#models/error_log'
-import ErrorUserState from '#models/error_user_state'
+import Event from '#models/event'
 
 export default class HomeController {
   async index({ inertia, request, auth }: HttpContext) {
@@ -43,11 +43,17 @@ export default class HomeController {
 
     if (userId && !includeRead && latestErrors.length) {
       const ids = latestErrorsRaw.map((e) => e.id)
-      const states = await ErrorUserState.query().where('userId', userId).whereIn('errorId', ids)
-      const stateByErrorId = new Map(states.map((s) => [s.errorId, s]))
+      const events = await Event.query().where('userId', userId).whereIn('errorId', ids)
+      const grouped = new Map<number, { read: boolean; muted: boolean }>()
+      for (const ev of events) {
+        const current = grouped.get(ev.errorId) || { read: false, muted: false }
+        if (ev.type === 'read') current.read = true
+        if (ev.type === 'mute') current.muted = Boolean((ev as any).muted ?? ev.value)
+        grouped.set(ev.errorId, current)
+      }
       latestErrors = latestErrors.filter((e) => {
-        const s = stateByErrorId.get(e.id)
-        const isRead = Boolean(s?.readAt)
+        const s = grouped.get(e.id)
+        const isRead = Boolean(s?.read)
         const isMuted = Boolean(s?.muted)
         return !isRead && !isMuted
       })

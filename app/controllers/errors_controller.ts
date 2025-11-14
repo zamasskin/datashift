@@ -1,7 +1,6 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import ErrorLog from '#models/error_log'
-import ErrorUserState from '#models/error_user_state'
-import { DateTime } from 'luxon'
+import Event from '#models/event'
 
 export default class ErrorsController {
   async index({ inertia, request }: HttpContext) {
@@ -40,24 +39,24 @@ export default class ErrorsController {
     const error = await ErrorLog.findOrFail(id)
 
     const userId = auth.user?.id
-    let userState = userId
-      ? await ErrorUserState.query().where('userId', userId).where('errorId', id).first()
-      : null
-
-    // Автоматически помечаем ошибку как прочитанную при открытии страницы подробностей
+    // Автоматически фиксируем событие read при открытии страницы
+    let read = false
+    let muted = false
     if (userId) {
-      if (userState) {
-        if (!userState.readAt) {
-          userState.readAt = DateTime.now()
-          await userState.save()
-        }
-      } else {
-        userState = await ErrorUserState.create({
-          userId,
-          errorId: id,
-          readAt: DateTime.now(),
-          muted: false,
-        })
+      const [latestMute, existingRead] = await Promise.all([
+        Event.query()
+          .where('userId', userId)
+          .where('errorId', id)
+          .where('type', 'mute')
+          .orderBy('createdAt', 'desc')
+          .first(),
+        Event.query().where('userId', userId).where('errorId', id).where('type', 'read').first(),
+      ])
+      muted = Boolean((latestMute as any)?.muted ?? latestMute?.value)
+      read = Boolean(existingRead)
+      if (!read) {
+        await Event.create({ userId, errorId: id, type: 'read', value: null })
+        read = true
       }
     }
 
@@ -80,8 +79,8 @@ export default class ErrorsController {
         context: error.context || {},
       },
       state: {
-        read: Boolean(userState?.readAt),
-        muted: Boolean(userState?.muted),
+        read,
+        muted,
       },
     })
   }
@@ -104,13 +103,17 @@ export default class ErrorsController {
       .limit(5)
 
     const ids = latest.map((e) => e.id)
-    const states = userId
-      ? await ErrorUserState.query().where('userId', userId).whereIn('errorId', ids)
-      : []
-    const stateByErrorId = new Map(states.map((s) => [s.errorId, s]))
+    const events = userId ? await Event.query().where('userId', userId).whereIn('errorId', ids) : []
+    const grouped = new Map<number, { read: boolean; muted: boolean }>()
+    for (const ev of events) {
+      const current = grouped.get(ev.errorId) || { read: false, muted: false }
+      if (ev.type === 'read') current.read = true
+      if (ev.type === 'mute') current.muted = Boolean((ev as any).muted ?? ev.value)
+      grouped.set(ev.errorId, current)
+    }
 
     return latest.map((e) => {
-      const s = stateByErrorId.get(e.id)
+      const s = grouped.get(e.id)
       return {
         id: e.id,
         severity: e.severity,
@@ -120,7 +123,7 @@ export default class ErrorsController {
         code: e.code,
         migrationId: e.migrationId,
         migrationRunId: e.migrationRunId,
-        read: Boolean(s?.readAt),
+        read: Boolean(s?.read),
         muted: Boolean(s?.muted),
       }
     })
@@ -134,16 +137,8 @@ export default class ErrorsController {
     }
     let count = 0
     for (const errorId of ids) {
-      const state = await ErrorUserState.query()
-        .where('userId', userId)
-        .where('errorId', errorId)
-        .first()
-      if (state) {
-        state.readAt = DateTime.now()
-        await state.save()
-      } else {
-        await ErrorUserState.create({ userId, errorId, readAt: DateTime.now(), muted: false })
-      }
+      // Фиксируем событие «прочитано»; повторные события допустимы
+      await Event.create({ userId, errorId, type: 'read', value: null })
       count++
     }
     return { updated: count }
@@ -155,16 +150,8 @@ export default class ErrorsController {
     const muted = Boolean(request.input('muted'))
     if (!userId || !errorId) return { updated: 0 }
 
-    const state = await ErrorUserState.query()
-      .where('userId', userId)
-      .where('errorId', errorId)
-      .first()
-    if (state) {
-      state.muted = muted
-      await state.save()
-    } else {
-      await ErrorUserState.create({ userId, errorId, muted, readAt: null })
-    }
+    // Записываем событие mute с указанным значением
+    await Event.create({ userId, errorId, type: 'mute', value: muted, muted })
     return { updated: 1 }
   }
 }

@@ -7,7 +7,7 @@ import DataSource from './data_source.js'
 import File from './file.js'
 import type { HasMany, BelongsTo } from '@adonisjs/lucid/types/relations'
 import Migration from './migration.js'
-import ErrorUserState from './error_user_state.js'
+import Event from './event.js'
 
 const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
   uids: ['email'],
@@ -46,10 +46,10 @@ export default class User extends compose(BaseModel, AuthFinder) {
   })
   declare migrations: HasMany<typeof Migration>
 
-  @hasMany(() => ErrorUserState, {
+  @hasMany(() => Event, {
     foreignKey: 'userId',
   })
-  declare errorStates: HasMany<typeof ErrorUserState>
+  declare events: HasMany<typeof Event>
 
   @belongsTo(() => File, {
     foreignKey: 'fileId',
