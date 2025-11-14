@@ -128,6 +128,16 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
     )
   }
 
+  const onDelete = () => {
+    if (!confirm(`Удалить миграцию #${migration.id}?`)) return
+    router.delete('/migrations', {
+      data: { ids: [migration.id], redirectTo: '/migrations' },
+      preserveScroll: true,
+      // Сервер сделает редирект, но на случай JSON-ответа — подстрахуемся
+      onFinish: () => router.visit('/migrations'),
+    })
+  }
+
   const handleRemove = (id: string) => {
     setFetchConfigs((old) => old.filter((cfg) => cfg.id !== id))
   }
@@ -198,7 +208,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
           </ItemContent>
           <ItemContent>
             <div className="flex gap-2">
-              <Button variant="outline">
+              <Button variant="outline" onClick={onDelete}>
                 <Trash />
                 Удалить
               </Button>

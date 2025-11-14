@@ -247,12 +247,10 @@ function formatUtcRu(input?: string): string {
 function handleDelete(id: number) {
   if (!confirm(`Удалить миграцию #${id}?`)) return
   router.delete('/migrations', {
-    data: { ids: [id] },
+    data: { ids: [id], redirectTo: '/migrations' },
     preserveScroll: true,
-    onSuccess: () => {
-      // Обновим только список миграций, оставаясь на текущей странице
-      router.reload({ only: ['migrations'], preserveUrl: true })
-    },
+    // Сервер теперь возвращает редирект; на всякий случай — fallback
+    onFinish: () => router.visit('/migrations'),
   })
 }
 

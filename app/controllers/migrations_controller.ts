@@ -150,6 +150,8 @@ export default class MigrationsController {
 
   async destroy({ request, response }: HttpContext) {
     try {
+      // Опциональный редирект после удаления (для Inertia-визитов из страниц редактирования)
+      const redirectTo = String(request.input('redirectTo') || '')
       const { ids } = await this.validateDeleteIds(request)
       const uniqueIds = Array.from(new Set(ids))
 
@@ -167,7 +169,10 @@ export default class MigrationsController {
 
       await Migration.query().whereIn('id', uniqueIds).delete()
 
-      return response.status(200).send({ message: 'Migrations deleted successfully' })
+      // Если явно указали куда перейти — делаем редирект, чтобы Inertia выполнил визит
+      if (redirectTo) return response.redirect(redirectTo)
+      // По умолчанию — редиректим на список миграций, чтобы избежать показа JSON-ответа в браузере
+      return response.redirect('/migrations')
     } catch (error) {
       return response.status(500).send({ error: 'Internal server error' })
     }
