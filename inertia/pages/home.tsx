@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react'
+import { Head, Link, usePage } from '@inertiajs/react'
 import { RootLayout } from '~/components/root-layout'
 import { Card, CardHeader, CardTitle, CardContent } from '~/components/ui/card'
 import { Badge } from '~/components/ui/badge'
@@ -17,9 +17,21 @@ import { RunningIndicators } from '~/components/running-indicators'
 import { useMigrationRuns } from '~/store/migrations'
 import { useMemo } from 'react'
 
+type HomeProps = {
+  counts: { migrations: number; sources: number; openErrors: number }
+  latestMigrations: Array<{ id: number; name: string; isActive: boolean }>
+  latestErrors: Array<{
+    id: number
+    message: string | null
+    severity: 'error' | 'warning' | 'info'
+    occurredAt?: string | null
+  }>
+}
+
 const Home = () => {
   const { runnings } = useMigrationRuns()
   const runningCount = useMemo(() => runnings.length, [runnings])
+  const { props } = usePage<HomeProps>()
 
   return (
     <>
@@ -29,20 +41,20 @@ const Home = () => {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           <StatCard
             title="Источники"
-            value="—"
+            value={props.counts?.sources ?? '—'}
             hint="Всего источников"
             link={{ href: '/sources', text: 'Открыть' }}
           />
           <StatCard
             title="Миграции"
-            value="—"
+            value={props.counts?.migrations ?? '—'}
             hint="Всего миграций"
             link={{ href: '/migrations', text: 'Открыть' }}
           />
 
           <StatCard
             title="Ошибки"
-            value="—"
+            value={props.counts?.openErrors ?? '—'}
             hint="Открытые ошибки"
             link={{ href: '/errors', text: 'Открыть' }}
           />
@@ -71,24 +83,30 @@ const Home = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {[...Array(5)].map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell>
-                      <Skeleton className="h-4 w-8" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-48" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-24" />
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="outline" size="sm" asChild>
-                        <Link href="#">Открыть</Link>
-                      </Button>
+                {props.latestMigrations?.length ? (
+                  props.latestMigrations.map((m) => (
+                    <TableRow key={m.id}>
+                      <TableCell>{m.id}</TableCell>
+                      <TableCell className="font-medium">{m.name}</TableCell>
+                      <TableCell>
+                        <Badge variant={m.isActive ? 'secondary' : 'outline'}>
+                          {m.isActive ? 'активна' : 'выключена'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href={`/migrations/${m.id}`}>Открыть</Link>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={4}>
+                      <div className="text-sm text-muted-foreground">Нет данных</div>
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </CardContent>
@@ -98,15 +116,27 @@ const Home = () => {
         <SectionHeader title="Последние ошибки" right={<Link href="/errors">Все ошибки</Link>} />
         <Card>
           <CardContent className="space-y-3">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="flex items-start justify-between gap-4">
-                <div className="flex-1 space-y-1">
-                  <Skeleton className="h-4 w-64" />
-                  <Skeleton className="h-3 w-96" />
+            {props.latestErrors?.length ? (
+              props.latestErrors.map((e) => (
+                <div key={e.id} className="flex items-start justify-between gap-4">
+                  <div className="flex-1 space-y-1">
+                    <div className="text-sm font-medium text-foreground">
+                      {e.message || 'Без сообщения'}
+                    </div>
+                    {e.occurredAt && (
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(e.occurredAt).toLocaleString('ru-RU')}
+                      </div>
+                    )}
+                  </div>
+                  <Badge variant={e.severity === 'error' ? 'destructive' : 'secondary'}>
+                    {e.severity}
+                  </Badge>
                 </div>
-                <Badge variant="destructive">error</Badge>
-              </div>
-            ))}
+              ))
+            ) : (
+              <div className="text-sm text-muted-foreground">Нет данных</div>
+            )}
           </CardContent>
         </Card>
 
