@@ -12,6 +12,7 @@ import { randomUUID, createHash } from 'node:crypto'
 import logger from '@adonisjs/core/services/logger'
 import User from '#models/user'
 import EventLog from '#models/event'
+import { EventCreate } from '#events/event'
 
 type TriggerType = 'manual' | 'cron' | 'api'
 
@@ -165,13 +166,17 @@ export default class MigrationRunnerService {
 
         const users = await User.query()
         for (const user of users) {
-          await EventLog.create({
+          const event = await EventLog.create({
             errorId: errorLog.id,
             userId: user.id,
             type: 'error',
             message,
             muted: false,
           })
+          // Уведомим слушателей о новом уведомлении
+          try {
+            EventCreate.dispatch(event)
+          } catch {}
         }
       } catch (e) {
         logger.error('[migration_runner_service] Failed to log error to errors table', e)

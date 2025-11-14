@@ -42,6 +42,51 @@ export function NotificationsButton() {
   useEffect(() => setItems(initialItems), [initialItems, open])
   const count = items.length
 
+  // Подписка на серверные события (SSE) для живых уведомлений
+  useEffect(() => {
+    const es = new EventSource('/stream')
+    const onCreate = (ev: MessageEvent) => {
+      try {
+        const payload = JSON.parse(ev.data)
+        const e: EventItem = {
+          id: Number(payload.id),
+          createdAt: payload.createdAt ?? null,
+          type: payload.type,
+          errorId: payload.errorId ?? undefined,
+          message: payload.message ?? null,
+        }
+        setItems((prev) => {
+          // избегаем дублей
+          if (prev.some((x) => x.id === e.id)) return prev
+          return [e, ...prev]
+        })
+      } catch {}
+    }
+    const onUpdate = (ev: MessageEvent) => {
+      try {
+        const payload = JSON.parse(ev.data)
+        const id = Number(payload.id)
+        const muted = !!payload.muted
+        if (muted) {
+          setItems((prev) => prev.filter((x) => x.id !== id))
+        } else {
+          setItems((prev) => prev.map((x) => (x.id === id ? { ...x, ...payload } : x)))
+        }
+      } catch {}
+    }
+    const onCleared = (_ev: MessageEvent) => {
+      setItems([])
+    }
+    es.addEventListener('notification_create', onCreate as any)
+    es.addEventListener('notification_update', onUpdate as any)
+    es.addEventListener('notifications_cleared', onCleared as any)
+    return () => {
+      try {
+        es.close()
+      } catch {}
+    }
+  }, [])
+
   const mute = async (id: number) => {
     try {
       const res = await fetch('/events/mute', {
