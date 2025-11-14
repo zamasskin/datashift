@@ -1,5 +1,5 @@
 import { Head } from '@inertiajs/react'
-import { RootLayout } from '~/components/root-layout'
+import { PublicLayout } from '~/components/layouts/public-layout'
 import { Card, CardHeader, CardTitle, CardContent } from '~/components/ui/card'
 import { Separator } from '~/components/ui/separator'
 
@@ -76,7 +76,7 @@ const PrivacyPolicy = () => {
 }
 
 PrivacyPolicy.layout = (page: React.ReactNode) => {
-  return <RootLayout title="Политика конфиденциальности">{page}</RootLayout>
+  return <PublicLayout title="Политика конфиденциальности">{page}</PublicLayout>
 }
 
 export default PrivacyPolicy

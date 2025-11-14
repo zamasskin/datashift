@@ -1,5 +1,5 @@
 import { Head } from '@inertiajs/react'
-import { RootLayout } from '~/components/root-layout'
+import { PublicLayout } from '~/components/layouts/public-layout'
 import { Card, CardHeader, CardTitle, CardContent } from '~/components/ui/card'
 import { Separator } from '~/components/ui/separator'
 
@@ -89,7 +89,7 @@ const TermsOfService = () => {
 }
 
 TermsOfService.layout = (page: React.ReactNode) => {
-  return <RootLayout title="Условия обслуживания">{page}</RootLayout>
+  return <PublicLayout title="Условия обслуживания">{page}</PublicLayout>
 }
 
 export default TermsOfService
