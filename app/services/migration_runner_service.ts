@@ -168,7 +168,8 @@ export default class MigrationRunnerService {
           await EventLog.create({
             errorId: errorLog.id,
             userId: user.id,
-            type: 'notify',
+            type: 'error',
+            message,
             value: true,
             muted: false,
           })
