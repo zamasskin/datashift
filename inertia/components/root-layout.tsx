@@ -2,10 +2,23 @@ import { AppSidebar } from '~/components/app-sidebar'
 import { SiteHeader } from '~/components/site-header'
 import { SidebarInset, SidebarProvider } from '~/components/ui/sidebar'
 import { GlobalSseProvider } from './provider/global-sse-provider'
+import { Toaster } from 'sonner'
 
 export const RootLayout = ({ children, title }: { children: React.ReactNode; title: string }) => {
   return (
     <GlobalSseProvider>
+      <Toaster
+        richColors
+        closeButton
+        position="top-right"
+        toastOptions={{
+          classNames: {
+            toast: 'bg-card text-card-foreground border border-border',
+            title: 'font-medium',
+            description: 'text-muted-foreground',
+          },
+        }}
+      />
       <SidebarProvider
         style={
           {
