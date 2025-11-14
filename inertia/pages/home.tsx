@@ -13,7 +13,6 @@ import {
   TableHeader,
   TableRow,
 } from '~/components/ui/table'
-import { RunningIndicators } from '~/components/running-indicators'
 import { useMigrationRuns } from '~/store/migrations'
 import { useEffect, useMemo, useState } from 'react'
 import { DashboardAreaChart } from '~/components/charts/area-chart'
@@ -43,7 +42,7 @@ const Home = () => {
       <Head title="Главная" />
       {/* Статистика */}
       <div className="px-4 space-y-4">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           <StatCard
             title="Источники"
             value={props.counts?.sources ?? '—'}
@@ -67,11 +66,13 @@ const Home = () => {
             hint="Открытые ошибки"
             link={{ href: '/errors', text: 'Открыть' }}
           />
+          <StatCard
+            title="Запущено"
+            value={runningCount}
+            hint="Сейчас выполняется"
+            link={{ href: '/tasks', text: 'Открыть' }}
+          />
         </div>
-
-        {/* Запущенные процессы */}
-        <SectionHeader title="Запущено" right={<Badge variant="secondary">{runningCount}</Badge>} />
-        <RunningIndicators runnings={runnings} />
 
         <Separator className="my-2" />
 
@@ -120,7 +121,11 @@ const Home = () => {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <Button variant="default" size="sm" onClick={() => handleRun(m.id, props.csrfToken)}>
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() => handleRun(m.id, props.csrfToken)}
+                          >
                             Запустить
                           </Button>
                           <Button variant="outline" size="sm" asChild>
@@ -219,7 +224,7 @@ function useMetrics() {
       try {
         const res = await fetch('/metrics/dashboard?days=30', {
           credentials: 'same-origin',
-          headers: { accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+          headers: { 'accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
         })
         if (!res.ok) return
         const json = await res.json()
@@ -230,7 +235,10 @@ function useMetrics() {
         const toPoints = (raw: any): Array<{ date: string; value: number }> =>
           Array.isArray(raw)
             ? raw
-            : Object.entries(raw ?? {}).map(([date, value]) => ({ date, value: Number(value) || 0 }))
+            : Object.entries(raw ?? {}).map(([date, value]) => ({
+                date,
+                value: Number(value) || 0,
+              }))
         if (!aborted) {
           setRuns(toPoints(runsRaw))
           setErrors(toPoints(errorsRaw))
@@ -256,7 +264,7 @@ function StatCard({
   value: string | number
   hint?: string
   link?: { href: string; text: string }
-  }) {
+}) {
   return (
     <Card>
       <CardHeader className="pb-2">
