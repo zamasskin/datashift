@@ -44,7 +44,12 @@ export default class UserCreate extends BaseCommand {
 
     // Pass plain password, model hook/mixin will hash it
 
-    const user = await User.create({ email, fullName: fullName || null, password: passwordInput })
+    const user = await User.create({
+      email,
+      fullName: fullName || null,
+      password: passwordInput,
+      role: 'admin',
+    })
     const saved = await User.query().where('email', email).first()
     this.logger.success(`User created: id=${user.id}, email=${user.email}`)
     if (saved) {
