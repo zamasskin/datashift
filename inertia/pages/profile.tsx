@@ -1,4 +1,4 @@
-import { Head, Link, usePage, router } from '@inertiajs/react'
+import { Head, usePage, router } from '@inertiajs/react'
 import { RootLayout } from '~/components/root-layout'
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import { Item, ItemMedia, ItemContent, ItemDescription } from '~/components/ui/item'
@@ -58,6 +58,16 @@ const ProfilePage = () => {
       fd.append('avatar', avatarFile)
     }
     router.put('/profile', fd, { forceFormData: true })
+  }
+
+  const onCancel = () => {
+    setEmail(u?.email || '')
+    setFullName(u?.fullName || '')
+    setAvatarFile(null)
+    setAvatarPreviewUrl(u?.avatarUrl || null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
   }
 
   const getXsrfToken = () => {
@@ -169,9 +179,7 @@ const ProfilePage = () => {
               </div>
               <div className="flex items-center gap-2">
                 <Button type="submit">Сохранить</Button>
-                <Button type="button" variant="outline" asChild>
-                  <Link href="/">Отмена</Link>
-                </Button>
+                <Button type="button" variant="outline" onClick={onCancel}>Отмена</Button>
               </div>
             </form>
           </CardContent>
