@@ -49,16 +49,21 @@ export function RunningIndicators({ runnings }: Props) {
       </div>
       <ScrollArea className="max-h-56">
         <ul className="space-y-2">
-          {runnings.map((r) => (
-            <li key={r.id} className="flex flex-col gap-1">
-              <div className="flex items-center justify-between">
-                <Link href={`/migrations/${r.migrationId}`} className="flex items-center gap-2">
-                  <span className="inline-block size-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-sm text-foreground">Миграция #{r.migrationId}</span>
-                </Link>
+          {runnings.map((r) => {
+            const anyR = r as any
+            const name = anyR?.migrationName ?? anyR?.migration?.name
+            return (
+              <li key={r.id} className="flex flex-col gap-1">
+                <div className="flex items-center justify-between">
+                  <Link href={`/migrations/${r.migrationId}`} className="flex items-center gap-2">
+                    <span className="inline-block size-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-sm text-foreground">
+                      {name ? name : `Миграция #${r.migrationId}`}
+                    </span>
+                  </Link>
 
-                <span className="text-xs text-muted-foreground">{r.trigger}</span>
-              </div>
+                  <span className="text-xs text-muted-foreground">{r.trigger}</span>
+                </div>
 
               <div className="flex items-center gap-2">
                 {r.progress.length > 0 ? (
@@ -105,8 +110,9 @@ export function RunningIndicators({ runnings }: Props) {
                   <StopCircle className="text-destructive" />
                 </Button>
               </div>
-            </li>
-          ))}
+              </li>
+            )
+          })}
         </ul>
       </ScrollArea>
     </div>
