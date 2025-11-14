@@ -13,7 +13,9 @@ import {
   TableHeader,
   TableRow,
 } from '~/components/ui/table'
-import { RunningIndicators } from '~/components/running-indicators'
+// Sidebar indicator kept as-is elsewhere; not used on dashboard page
+// import { RunningIndicators } from '~/components/running-indicators'
+import { DashboardRunningIndicators } from '~/components/dashboard/running-indicators'
 import { useMigrationRuns } from '~/store/migrations'
 import { useEffect, useMemo, useState } from 'react'
 import { DashboardAreaChart } from '~/components/charts/area-chart'
@@ -211,7 +213,7 @@ const Home = () => {
               title="Запущено"
               right={<Badge variant="secondary">{runningCount}</Badge>}
             />
-            <RunningIndicators runnings={runnings} />
+            <DashboardRunningIndicators runnings={runnings} />
           </div>
         )}
       </div>

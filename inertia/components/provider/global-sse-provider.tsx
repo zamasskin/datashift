@@ -30,7 +30,13 @@ export const GlobalSseProvider = ({ children }: { children: ReactNode }) => {
     }
     es.addEventListener('migration_run', (e: MessageEvent) => {
       const payload = JSON.parse(e.data)
-      changeRunning(payload)
+      // Сохраняем имя миграции между событиями, если оно уже было получено
+      const current = useMigrationRuns.getState().runnings
+      const prev = current.find(
+        (r) => r.id === payload.id || r.migrationId === payload.migrationId
+      ) as any
+      const migrationName = (payload?.migration?.name as string | undefined) ?? prev?.migrationName
+      changeRunning({ ...payload, migrationName })
     })
 
     es.addEventListener('error', (e: MessageEvent) => {

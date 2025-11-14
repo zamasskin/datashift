@@ -23,7 +23,10 @@ export default class HomeController {
     const [latestMigrations, latestErrorsRaw, runningMigrations] = await Promise.all([
       Migration.query().orderBy('createdAt', 'desc').limit(5),
       ErrorLog.query().orderBy('occurredAt', 'desc').orderBy('createdAt', 'desc').limit(8),
-      MigrationRun.query().where('status', 'running').orderBy('createdAt', 'desc'),
+      MigrationRun.query()
+        .where('status', 'running')
+        .preload('migration', (q) => q.select(['id', 'name']))
+        .orderBy('createdAt', 'desc'),
     ])
 
     // По умолчанию скрываем прочитанные и "замьюченные" ошибки на дашборде
