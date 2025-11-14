@@ -7,13 +7,16 @@ import ErrorUserState from '#models/error_user_state'
 
 export default class HomeController {
   async index({ inertia, request, auth }: HttpContext) {
-    const [migrationsCountRow, dataSourcesCountRow, openErrorsCountRow] = await Promise.all([
-      Migration.query().count('* as total'),
-      DataSource.query().count('* as total'),
-      ErrorLog.query().where('status', 'open').count('* as total'),
-    ])
+    const [migrationsCountRow, activeMigrationsCountRow, dataSourcesCountRow, openErrorsCountRow] =
+      await Promise.all([
+        Migration.query().count('* as total'),
+        Migration.query().where('is_active', true).count('* as total'),
+        DataSource.query().count('* as total'),
+        ErrorLog.query().where('status', 'open').count('* as total'),
+      ])
 
     const migrationsCount = Number(migrationsCountRow?.[0]?.$extras?.total || 0)
+    const activeMigrationsCount = Number(activeMigrationsCountRow?.[0]?.$extras?.total || 0)
     const dataSourcesCount = Number(dataSourcesCountRow?.[0]?.$extras?.total || 0)
     const openErrorsCount = Number(openErrorsCountRow?.[0]?.$extras?.total || 0)
 
@@ -50,6 +53,7 @@ export default class HomeController {
     return inertia.render('home', {
       counts: {
         migrations: migrationsCount,
+        activeMigrations: activeMigrationsCount,
         sources: dataSourcesCount,
         openErrors: openErrorsCount,
       },

@@ -19,7 +19,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { DashboardAreaChart } from '~/components/charts/area-chart'
 
 type HomeProps = {
-  counts: { migrations: number; sources: number; openErrors: number }
+  counts: { migrations: number; activeMigrations?: number; sources: number; openErrors: number }
   latestMigrations: Array<{ id: number; name: string; isActive: boolean }>
   latestErrors: Array<{
     id: number
@@ -53,7 +53,11 @@ const Home = () => {
           <StatCard
             title="Миграции"
             value={props.counts?.migrations ?? '—'}
-            hint="Всего миграций"
+            hint={`Активных: ${
+              typeof props.counts?.activeMigrations === 'number'
+                ? props.counts.activeMigrations
+                : '—'
+            }`}
             link={{ href: '/migrations', text: 'Открыть' }}
           />
 
