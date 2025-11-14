@@ -10,6 +10,8 @@ import { DateTime } from 'luxon'
 import ErrorLog from '#models/error_log'
 import { randomUUID, createHash } from 'node:crypto'
 import logger from '@adonisjs/core/services/logger'
+import User from '#models/user'
+import EventLog from '#models/event'
 
 type TriggerType = 'manual' | 'cron' | 'api'
 
@@ -140,7 +142,7 @@ export default class MigrationRunnerService {
         const stack = (error as any)?.stack ?? null
         const code = (error as any)?.code ?? null
         const stackHash = stack ? createHash('sha1').update(stack).digest('hex') : null
-        await ErrorLog.create({
+        const errorLog = await ErrorLog.create({
           uuid: randomUUID(),
           migrationRunId: migrationRun.id,
           migrationId: migrationRun.migrationId,
@@ -160,6 +162,17 @@ export default class MigrationRunnerService {
           environment: process.env.NODE_ENV || null,
           hostname: process.env.HOSTNAME || null,
         })
+
+        const users = await User.query()
+        for (const user of users) {
+          await EventLog.create({
+            errorId: errorLog.id,
+            userId: user.id,
+            type: 'notify',
+            value: true,
+            muted: false,
+          })
+        }
       } catch (e) {
         logger.error('[migration_runner_service] Failed to log error to errors table', e)
       }

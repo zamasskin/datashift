@@ -26,37 +26,15 @@ type ErrorDetails = {
 
 type ErrorShowProps = {
   error: ErrorDetails
-  state?: { read: boolean; muted: boolean }
 }
 
 const ErrorShow = () => {
   const { props } = usePage<ErrorShowProps>()
   const error = props.error
-  const [read, setRead] = useState(Boolean(props.state?.read))
-  const [muted, setMuted] = useState(Boolean(props.state?.muted))
 
-  async function markRead() {
-    try {
-      await fetch('/errors/mark-read', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: [error.id] }),
-      })
-      setRead(true)
-    } catch {}
-  }
+  // Удалены действия пометки как прочитанное и отключения уведомлений
 
-  async function toggleMuted() {
-    try {
-      const next = !muted
-      await fetch('/errors/mute', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: error.id, muted: next }),
-      })
-      setMuted(next)
-    } catch {}
-  }
+  
 
   return (
     <>
@@ -70,12 +48,6 @@ const ErrorShow = () => {
             <Badge variant={error.status === 'open' ? 'secondary' : 'outline'}>{error.status}</Badge>
           </div>
           <div className="flex gap-2">
-            <Button variant={read ? 'outline' : 'default'} size="sm" onClick={markRead}>
-              {read ? 'Прочитано' : 'Пометить как прочитанное'}
-            </Button>
-            <Button variant={muted ? 'outline' : 'secondary'} size="sm" onClick={toggleMuted}>
-              {muted ? 'Включить уведомления' : 'Отключить уведомления'}
-            </Button>
             <Button variant="outline" size="sm" asChild>
               <Link href="/errors">Назад</Link>
             </Button>

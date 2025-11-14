@@ -4,7 +4,7 @@ import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import User from '#models/user'
 import ErrorLog from '#models/error_log'
 
-export default class Event extends BaseModel {
+export default class EventLog extends BaseModel {
   public static table = 'events'
 
   @column({ isPrimary: true })
@@ -23,7 +23,7 @@ export default class Event extends BaseModel {
   declare error: BelongsTo<typeof ErrorLog>
 
   @column()
-  declare type: 'read' | 'mute'
+  declare type: 'error' | 'notify'
 
   @column()
   declare value: boolean | null

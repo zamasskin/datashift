@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Bell, CheckCircle2, EyeOff } from 'lucide-react'
+import { Bell } from 'lucide-react'
 import { Button } from '~/components/ui/button'
 import { Badge } from '~/components/ui/badge'
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover'
@@ -16,14 +16,12 @@ type LatestError = {
   code: string | null
   migrationId: number | null
   migrationRunId: number | null
-  read: boolean
-  muted: boolean
 }
 
 export function NotificationsButton() {
   const [open, setOpen] = useState(false)
   const [items, setItems] = useState<LatestError[]>([])
-  const unreadCount = items.filter((i) => !i.read && !i.muted).length
+  const count = items.length
 
   useEffect(() => {
     if (!open) return
@@ -38,43 +36,21 @@ export function NotificationsButton() {
     } catch {}
   }
 
-  const markRead = async (id: number) => {
-    try {
-      const res = await fetch('/errors/mark-read', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: [id] }),
-      })
-      if (res.ok) {
-        setItems((prev) => prev.map((i) => (i.id === id ? { ...i, read: true } : i)))
-      }
-    } catch {}
-  }
+  // Удалены действия пометки прочитанного и отключения уведомлений
 
-  const toggleMute = async (id: number, muted: boolean) => {
-    try {
-      const res = await fetch('/errors/mute', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, muted }),
-      })
-      if (res.ok) {
-        setItems((prev) => prev.map((i) => (i.id === id ? { ...i, muted } : i)))
-      }
-    } catch {}
-  }
+  
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" className="relative" aria-label="Ошибки">
           <Bell className="h-4 w-4" />
-          {unreadCount > 0 && (
+          {count > 0 && (
             <Badge
               variant="destructive"
               className="absolute -right-0.5 -top-0.5 h-4 min-w-4 px-1 text-[10px]"
             >
-              {unreadCount}
+              {count}
             </Badge>
           )}
         </Button>
@@ -98,22 +74,7 @@ export function NotificationsButton() {
                       <span className="text-muted-foreground">{formatUtcRu(e.occurredAt)}</span>
                     </div>
                     <div className="text-sm text-foreground/90 line-clamp-2">{e.message || '—'}</div>
-                    <div className="mt-1 flex items-center gap-2">
-                      {!e.read && !e.muted && (
-                        <Button variant="ghost" size="sm" className="h-7 px-2" onClick={() => markRead(e.id)}>
-                          <CheckCircle2 className="mr-1 h-4 w-4" /> Прочитано
-                        </Button>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 px-2"
-                        onClick={() => toggleMute(e.id, !e.muted)}
-                        title={e.muted ? 'Включить уведомления' : 'Отключить уведомления'}
-                      >
-                        <EyeOff className="mr-1 h-4 w-4" /> {e.muted ? 'Включить' : 'Отключить'}
-                      </Button>
-                    </div>
+                    {/* Удалены действия управления прочитанностью/уведомлениями */}
                   </div>
                 </div>
               ))
