@@ -163,9 +163,7 @@ const Migrations = ({ migrations }: { migrations?: ModelPaginatorContract<Migrat
                             {m.isActive ? 'активна' : 'выключена'}
                           </Badge>
                         </TableCell>
-                        <TableCell>
-                          {m.createdAt ? new Date(m.createdAt).toLocaleString('ru-RU') : '—'}
-                        </TableCell>
+                        <TableCell>{formatUtcRu(m.createdAt)}</TableCell>
                         <TableCell className="text-right">
                           <Button variant="outline" size="sm" asChild>
                             <Link href={`/migrations/${m.id}`}>Открыть</Link>
@@ -229,6 +227,13 @@ Migrations.layout = (page: React.ReactNode) => {
 }
 
 export default Migrations
+
+function formatUtcRu(input?: string): string {
+  if (!input) return '—'
+  const d = new Date(input)
+  const pad = (n: number) => n.toString().padStart(2, '0')
+  return `${pad(d.getUTCDate())}.${pad(d.getUTCMonth() + 1)}.${d.getUTCFullYear()}, ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`
+}
 
 function renderPageItems(current: number, last: number, perPage: number) {
   const items: React.ReactNode[] = []
