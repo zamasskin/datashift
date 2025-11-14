@@ -43,6 +43,8 @@ import {
   PaginationPrevious,
   PaginationEllipsis,
 } from '~/components/ui/pagination'
+import { ModelPaginatorContract } from '@adonisjs/lucid/types/model'
+import Migration from '#models/migration'
 
 const schemaCreate = z.object({
   name: z.string().trim().min(3, 'Минимум 3 символа').max(64, 'Максимум 64 символа'),
@@ -50,8 +52,26 @@ const schemaCreate = z.object({
 
 type MigrationItem = { id: number; name: string; isActive: boolean; createdAt?: string }
 
-const Migrations = () => {
-  const { props } = usePage<{ csrfToken?: string; migrations?: MigrationItem[] }>()
+const Migrations = ({ migrations }: { migrations?: ModelPaginatorContract<Migration> }) => {
+  const { props, url } = usePage<{ csrfToken?: string; migrations?: MigrationItem[] }>()
+
+  // Поддержка двух форматов: серверный пагинатор { meta, data } и простой массив
+  const isServerPaginated =
+    migrations && typeof migrations === 'object' && 'meta' in (migrations as any) && 'data' in (migrations as any)
+
+  const searchParams = new URLSearchParams(url.split('?')[1] || '')
+  const perPageRaw = Number(searchParams.get('perPage') || 10)
+  const perPage = isServerPaginated ? Number((migrations as any).meta?.perPage ?? 10) : Math.max(1, Math.min(perPageRaw, 100))
+  const currentPage = isServerPaginated
+    ? Number((migrations as any).meta?.currentPage ?? 1)
+    : Math.max(1, Number(searchParams.get('page') || 1))
+  const allItems = props.migrations || []
+  const lastPage = isServerPaginated
+    ? Number((migrations as any).meta?.lastPage ?? 1)
+    : Math.max(1, Math.ceil(allItems.length / perPage))
+  const pageData: MigrationItem[] = isServerPaginated
+    ? (((migrations as any).data as any[]) || [])
+    : allItems.slice((currentPage - 1) * perPage, (currentPage - 1) * perPage + perPage)
 
   const form = useForm<z.infer<typeof schemaCreate>>({
     resolver: zodResolver(schemaCreate),
@@ -133,8 +153,8 @@ const Migrations = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {getPageData(props.migrations).length ? (
-                    getPageData(props.migrations).map((m) => (
+                  {pageData.length ? (
+                    pageData.map((m) => (
                       <TableRow key={m.id}>
                         <TableCell>{m.id}</TableCell>
                         <TableCell className="font-medium">{m.name}</TableCell>
@@ -164,38 +184,38 @@ const Migrations = () => {
               </Table>
 
               {/* Пагинация */}
-              {getLastPage(props.migrations) > 1 && (
-                  <div className="mt-4">
-                    <Pagination>
-                      <PaginationContent>
-                        {/* Previous */}
-                        <PaginationItem>
-                          <PaginationPrevious
-                            href={
-                              getCurrentPage() > 1
-                                ? `/migrations?page=${getCurrentPage() - 1}&perPage=${getPerPage()}`
-                                : undefined
-                            }
-                          />
-                        </PaginationItem>
+              {lastPage > 1 && (
+                <div className="mt-4">
+                  <Pagination>
+                    <PaginationContent>
+                      {/* Previous */}
+                      <PaginationItem>
+                        <PaginationPrevious
+                          href={
+                            currentPage > 1
+                              ? `/migrations?page=${currentPage - 1}&perPage=${perPage}`
+                              : undefined
+                          }
+                        />
+                      </PaginationItem>
 
-                        {/* Page numbers with ellipsis */}
-                        {renderPageItems(getCurrentPage(), getLastPage(props.migrations), getPerPage())}
+                      {/* Page numbers with ellipsis */}
+                      {renderPageItems(currentPage, lastPage, perPage)}
 
-                        {/* Next */}
-                        <PaginationItem>
-                          <PaginationNext
-                            href={
-                              getCurrentPage() < getLastPage(props.migrations)
-                                ? `/migrations?page=${getCurrentPage() + 1}&perPage=${getPerPage()}`
-                                : undefined
-                            }
-                          />
-                        </PaginationItem>
-                      </PaginationContent>
-                    </Pagination>
-                  </div>
-                )}
+                      {/* Next */}
+                      <PaginationItem>
+                        <PaginationNext
+                          href={
+                            currentPage < lastPage
+                              ? `/migrations?page=${currentPage + 1}&perPage=${perPage}`
+                              : undefined
+                          }
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -241,30 +261,4 @@ function renderPageItems(current: number, last: number, perPage: number) {
   return items
 }
 
-function getPerPage(): number {
-  if (typeof window === 'undefined') return 10
-  const url = new URL(window.location.href)
-  const perPage = Number(url.searchParams.get('perPage') || 10)
-  return Math.max(1, Math.min(perPage, 100))
-}
-
-function getCurrentPage(): number {
-  if (typeof window === 'undefined') return 1
-  const url = new URL(window.location.href)
-  const page = Number(url.searchParams.get('page') || 1)
-  return Math.max(1, page)
-}
-
-function getLastPage(list?: MigrationItem[]): number {
-  const items = list || []
-  const perPage = getPerPage()
-  return Math.max(1, Math.ceil(items.length / perPage))
-}
-
-function getPageData(list?: MigrationItem[]): MigrationItem[] {
-  const items = list || []
-  const perPage = getPerPage()
-  const current = getCurrentPage()
-  const start = (current - 1) * perPage
-  return items.slice(start, start + perPage)
-}
+// Удалены хелперы, чтение страницы/лимита берём из Inertia router URL

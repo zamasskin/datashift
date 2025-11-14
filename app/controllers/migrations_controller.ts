@@ -15,9 +15,13 @@ import MigrationRunnerService, { RunPayload } from '#services/migration_runner_s
 import logger from '@adonisjs/core/services/logger'
 
 export default class MigrationsController {
-  async index({ inertia }: HttpContext) {
-    // Return full list and perform client-side pagination in the UI
-    const migrations = await Migration.query().orderBy('createdAt', 'desc')
+  async index({ inertia, request }: HttpContext) {
+    const page = Number(request.input('page') || 1)
+    const perPage = Number(request.input('perPage') || 10)
+    const migrations = await Migration.query()
+      .orderBy('createdAt', 'desc')
+      .orderBy('id', 'desc')
+      .paginate(page, perPage)
 
     return inertia.render('migrations/home', {
       migrations,
