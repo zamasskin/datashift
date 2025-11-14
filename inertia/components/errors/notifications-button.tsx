@@ -5,7 +5,7 @@ import { Badge } from '~/components/ui/badge'
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover'
 import { Separator } from '~/components/ui/separator'
 import { ScrollArea } from '~/components/ui/scroll-area'
-import { Link, router } from '@inertiajs/react'
+import { Link } from '@inertiajs/react'
 
 type LatestError = {
   id: number
@@ -37,8 +37,6 @@ export function NotificationsButton() {
   }
 
   // Удалены действия пометки прочитанного и отключения уведомлений
-
-  
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -73,7 +71,9 @@ export function NotificationsButton() {
                       <span className="font-medium">#{e.id}</span>{' '}
                       <span className="text-muted-foreground">{formatUtcRu(e.occurredAt)}</span>
                     </div>
-                    <div className="text-sm text-foreground/90 line-clamp-2">{e.message || '—'}</div>
+                    <div className="text-sm text-foreground/90 line-clamp-2">
+                      {e.message || '—'}
+                    </div>
                     {/* Удалены действия управления прочитанностью/уведомлениями */}
                   </div>
                 </div>

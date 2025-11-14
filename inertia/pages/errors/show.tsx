@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { Separator } from '~/components/ui/separator'
-import { useState } from 'react'
 
 type ErrorDetails = {
   id: number
@@ -34,8 +33,6 @@ const ErrorShow = () => {
 
   // Удалены действия пометки как прочитанное и отключения уведомлений
 
-  
-
   return (
     <>
       <Head title={`Ошибка #${error.id}`} />
@@ -45,7 +42,9 @@ const ErrorShow = () => {
             <Badge variant={error.severity === 'error' ? 'destructive' : 'secondary'}>
               {error.severity}
             </Badge>
-            <Badge variant={error.status === 'open' ? 'secondary' : 'outline'}>{error.status}</Badge>
+            <Badge variant={error.status === 'open' ? 'secondary' : 'outline'}>
+              {error.status}
+            </Badge>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" asChild>
@@ -89,7 +88,10 @@ const ErrorShow = () => {
                   )
                 }
               />
-              <Detail label="Рун" value={error.migrationRunId ? String(error.migrationRunId) : '—'} />
+              <Detail
+                label="Рун"
+                value={error.migrationRunId ? String(error.migrationRunId) : '—'}
+              />
             </div>
           </CardContent>
         </Card>
