@@ -32,16 +32,41 @@ export default class ProfileController {
       vine.object({
         email: vine.string().email(),
         fullName: vine.string().trim().minLength(1).maxLength(128).optional(),
-        password: vine.string().minLength(8).optional(),
       })
     )
 
     const payload = await schema.validate(request.all())
 
-    // Обновляем поля профиля; пароль — отдельно, если передан
+    // Обновляем поля профиля
     user.email = payload.email
     if (typeof payload.fullName !== 'undefined') user.fullName = payload.fullName || null
-    if (payload.password) user.password = payload.password
+    await user.save()
+
+    return response.redirect('/profile')
+  }
+
+  async changePassword({ request, response, auth }: HttpContext) {
+    const user = auth.user as User | null
+    if (!user) {
+      response.status(401)
+      return response.send({ error: 'Unauthorized' })
+    }
+
+    const schema = vine.compile(
+      vine.object({
+        password: vine.string().minLength(8),
+        passwordConfirmation: vine.string(),
+      })
+    )
+
+    const payload = await schema.validate(request.all())
+
+    if (payload.password !== payload.passwordConfirmation) {
+      response.status(422)
+      return response.send({ error: 'Пароль и подтверждение не совпадают' })
+    }
+
+    user.password = payload.password
     await user.save()
 
     return response.redirect('/profile')
