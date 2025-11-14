@@ -2,6 +2,7 @@
 import { HttpContext } from '@adonisjs/core/http'
 import emitter from '@adonisjs/core/services/emitter'
 import { MigrationRunChange } from '#events/migration'
+import { ErrorLogChange } from '#events/error_log'
 
 export default class StreamsController {
   async stream({ response }: HttpContext) {
@@ -23,6 +24,11 @@ export default class StreamsController {
       write('migration_run', event.migrationRun)
     }
 
+    // Обработчик события изменения ошибки
+    const onErrorLogChange = (errorLog: ErrorLogChange) => {
+      write('error_log', errorLog)
+    }
+
     // Heartbeat для поддержки долгоживущего соединения
     const heartbeat = setInterval(() => {
       try {
@@ -32,13 +38,20 @@ export default class StreamsController {
 
     // Очистка ресурсов при закрытии соединения
     const cleanup = () => {
+      // Очищаем интервал hearbeat
       clearInterval(heartbeat)
+
+      // Отключаем обработчики событий
       emitter.off(MigrationRunChange, onMigrationChange)
+      emitter.off(ErrorLogChange, onErrorLogChange)
+
+      // Закрываем соединение
       response.response.end()
     }
 
     // Тут регистрируем обработчик события, чтобы отправлять данные клиенту
     emitter.on(MigrationRunChange, onMigrationChange)
+    emitter.on(ErrorLogChange, onErrorLogChange)
 
     // Очистка ресурсов при закрытии соединения
     response.response.on('close', cleanup)
