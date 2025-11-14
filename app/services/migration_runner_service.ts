@@ -170,7 +170,6 @@ export default class MigrationRunnerService {
             userId: user.id,
             type: 'error',
             message,
-            value: true,
             muted: false,
           })
         }

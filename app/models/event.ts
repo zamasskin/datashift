@@ -26,9 +26,6 @@ export default class EventLog extends BaseModel {
   declare type: 'error' | 'notify'
 
   @column()
-  declare value: boolean | null
-
-  @column()
   declare message: string | null
 
   @column()

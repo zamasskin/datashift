@@ -8,17 +8,16 @@ import { ScrollArea } from '~/components/ui/scroll-area'
 import { Link, usePage } from '@inertiajs/react'
 import { IconX, IconAlertCircle, IconInfoCircle, IconAlertTriangle } from '@tabler/icons-react'
 
-type EventItem = {
-  id: number
-  createdAt?: string
-  type?: 'error' | 'notify' | string
-  errorId?: number
-  value?: number | boolean | null
-  message?: string | null
-  error?: {
+  type EventItem = {
     id: number
-    uuid?: string
-    message: string | null
+    createdAt?: string
+    type?: 'error' | 'notify' | string
+    errorId?: number
+    message?: string | null
+    error?: {
+      id: number
+      uuid?: string
+      message: string | null
     severity: 'error' | 'warning' | 'info'
     status: 'open' | 'resolved'
   }
@@ -81,7 +80,7 @@ export function NotificationsButton() {
               <div className="px-2 py-4 text-sm text-muted-foreground">Нет уведомлений</div>
             ) : (
               items.map((e) => {
-                const errId = e.error?.id ?? e.errorId ?? (typeof e.value === 'number' ? e.value : undefined)
+                const errId = e.error?.id ?? e.errorId
                 const isError = (e.type ?? 'notify') === 'error'
                 const content = (
                   <div className="text-sm text-foreground/90 line-clamp-2">
