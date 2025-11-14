@@ -7,6 +7,9 @@ import type { FetchConfig, FetchConfigResult } from '#interfaces/fetchсonfigs'
 import type { SaveMapping } from '#interfaces/save_mapping'
 import type { Param } from '#interfaces/params'
 import { DateTime } from 'luxon'
+import ErrorLog from '#models/error_log'
+import { randomUUID, createHash } from 'node:crypto'
+import logger from '@adonisjs/core/services/logger'
 
 type TriggerType = 'manual' | 'cron' | 'api'
 
@@ -128,8 +131,38 @@ export default class MigrationRunnerService {
     } catch (error) {
       migrationRun.status = 'failed'
       migrationRun.finishedAt = DateTime.now()
-      migrationRun.error = String(error)
+      // Short summary for fast UI reads
+      const message = String(error)
+      migrationRun.error = message
       await migrationRun.save()
+      // Persist detailed error to errors table
+      try {
+        const stack = (error as any)?.stack ?? null
+        const code = (error as any)?.code ?? null
+        const stackHash = stack ? createHash('sha1').update(stack).digest('hex') : null
+        await ErrorLog.create({
+          uuid: randomUUID(),
+          migrationRunId: migrationRun.id,
+          migrationId: migrationRun.migrationId,
+          trigger,
+          severity: 'error',
+          code: code ?? null,
+          message,
+          context: {
+            params,
+            progress: migrationRun.progress,
+          },
+          stack,
+          stackHash,
+          source: 'runner',
+          status: 'open',
+          occurredAt: DateTime.now(),
+          environment: process.env.NODE_ENV || null,
+          hostname: process.env.HOSTNAME || null,
+        })
+      } catch (e) {
+        logger.error('[migration_runner_service] Failed to log error to errors table', e)
+      }
       throw error
     }
   }
