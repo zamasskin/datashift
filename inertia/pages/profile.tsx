@@ -285,6 +285,8 @@ const ProfilePage = () => {
           </CardContent>
         </Card>
 
+        {/* Обзор: Источники данных и Миграции — один столбик */}
+        <div className="md:col-span-2 grid grid-cols-1 gap-4">
         {/* Обзор: Источники данных */}
         <Card>
           <CardHeader>
@@ -350,6 +352,8 @@ const ProfilePage = () => {
             </div>
           </CardContent>
         </Card>
+
+        </div>
 
         {/* Карточка загрузки аватара удалена: загрузка теперь в основной форме */}
       </div>
