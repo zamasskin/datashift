@@ -88,12 +88,10 @@ export function RunningIndicators({ runnings }: Props) {
                   </div>
                 ) : (
                   <div className="flex-1">
-                    <div className="cursor-pointer">
-                      <Progress value={0} />
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground">Прогресс</span>
-                        <span className="text-xs text-foreground">{0}%</span>
-                      </div>
+                    <Progress value={0} />
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Прогресс</span>
+                      <span className="text-xs text-foreground">{0}%</span>
                     </div>
                   </div>
                 )}
