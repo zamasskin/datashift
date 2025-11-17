@@ -79,7 +79,10 @@ export function EditSource({
     if (!source) return
     router.put(`/sources/${source.id}`, values, {
       preserveScroll: true,
+      preserveState: true,
       onError: (errors) => {
+        // Keep sheet open and display field errors on 422
+        onOpenChange(true)
         Object.entries(errors || {}).forEach(([field, message]) => {
           const msg = Array.isArray(message) ? message[0] : (message as string)
           form.setError(field as any, { type: 'server', message: msg })

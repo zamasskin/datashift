@@ -20,7 +20,7 @@ export default class DataSourcesController {
   /**
    * Массовое удаление источников данных по массиву ID
    */
-  async destroy({ request, response }: HttpContext) {
+  async destroy({ request, response, inertia }: HttpContext) {
     try {
       const { ids } = await this.validateDeleteIds(request)
       const uniqueIds = Array.from(new Set(ids))
@@ -62,16 +62,17 @@ export default class DataSourcesController {
       return response.redirect('/sources')
     } catch (error: any) {
       const fieldErrors = this.mapVineErrors(error)
-      return response.status(422).send({ errors: fieldErrors })
+      const dataSources = await DataSource.query().preload('user')
+      return inertia.render('sources/index', { dataSources, errors: fieldErrors }, { status: 422 })
     }
   }
 
   /**
    * Обновление источника данных
    */
-  async update({ params, request, response }: HttpContext) {
+  async update({ params, request, response, inertia }: HttpContext) {
+    const id = Number(params.id)
     try {
-      const id = Number(params.id)
       if (!Number.isFinite(id)) {
         return response.redirect('/sources')
       }
@@ -124,12 +125,21 @@ export default class DataSourcesController {
                 // Если исходник отсутствует — это нормально для sidecar-файлов
                 if (!err || err.code !== 'ENOENT') {
                   // Любые другие ошибки переноса считаем критичными и прерываем
-                  return response.status(422).send({
-                    errors: {
-                      'config.file':
-                        'Не удалось переименовать файл SQLite. Проверьте права доступа.',
-                    },
-                  })
+                  {
+                    const dataSources = await DataSource.query().preload('user')
+                    return inertia.render(
+                      'sources/index',
+                      {
+                        dataSources,
+                        errors: {
+                          'config.file':
+                            'Не удалось переименовать файл SQLite. Проверьте права доступа.',
+                        },
+                        editId: id,
+                      },
+                      { status: 422 }
+                    )
+                  }
                 }
               }
             }
@@ -142,7 +152,12 @@ export default class DataSourcesController {
         await this.checkConnection(basePayload.type, configPayload)
       } catch (connError) {
         const connErrors = this.mapConnectionErrors(connError, basePayload.type)
-        return response.status(422).send({ errors: connErrors })
+        const dataSources = await DataSource.query().preload('user')
+        return inertia.render(
+          'sources/index',
+          { dataSources, errors: connErrors, editId: id },
+          { status: 422 }
+        )
       }
 
       ds.merge({ name: basePayload.name, type: basePayload.type, config: configPayload })
@@ -151,7 +166,12 @@ export default class DataSourcesController {
       return response.redirect('/sources')
     } catch (error: any) {
       const fieldErrors = this.mapVineErrors(error)
-      return response.status(422).send({ errors: fieldErrors })
+      const dataSources = await DataSource.query().preload('user')
+      return inertia.render(
+        'sources/index',
+        { dataSources, errors: fieldErrors, editId: id },
+        { status: 422 }
+      )
     }
   }
 
@@ -168,7 +188,7 @@ export default class DataSourcesController {
     return schema.validate(request.only(['ids']))
   }
 
-  async store({ request, auth, response }: HttpContext) {
+  async store({ request, auth, response, inertia }: HttpContext) {
     try {
       const { basePayload, configPayload } = await this.validateAndNormalize(request)
 
@@ -177,7 +197,12 @@ export default class DataSourcesController {
         await this.checkConnection(basePayload.type, configPayload)
       } catch (connError) {
         const connErrors = this.mapConnectionErrors(connError, basePayload.type)
-        return response.status(422).send({ errors: connErrors })
+        const dataSources = await DataSource.query().preload('user')
+        return inertia.render(
+          'sources/index',
+          { dataSources, errors: connErrors, newOpen: true },
+          { status: 422 }
+        )
       }
 
       await DataSource.create({
@@ -190,7 +215,12 @@ export default class DataSourcesController {
       return response.redirect('/sources')
     } catch (error: any) {
       const fieldErrors = this.mapVineErrors(error)
-      return response.status(422).send({ errors: fieldErrors })
+      const dataSources = await DataSource.query().preload('user')
+      return inertia.render(
+        'sources/index',
+        { dataSources, errors: fieldErrors, newOpen: true },
+        { status: 422 }
+      )
     }
   }
 
