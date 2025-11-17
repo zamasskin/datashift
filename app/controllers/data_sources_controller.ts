@@ -70,8 +70,8 @@ export default class DataSourcesController {
   /**
    * Обновление источника данных
    */
-  async update({ params, request, response, inertia }: HttpContext) {
-    const id = Number(params.id)
+  async update({ request, response, inertia }: HttpContext) {
+    const id = request.input('id')
     try {
       if (!Number.isFinite(id)) {
         return response.redirect('/sources')

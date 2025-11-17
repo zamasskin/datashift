@@ -59,7 +59,7 @@ router
     // Data sources
     router.get('/sources', [DataSourcesController, 'index'])
     router.post('/sources', [DataSourcesController, 'store'])
-    router.put('/sources/:id', [DataSourcesController, 'update'])
+    router.put('/sources', [DataSourcesController, 'update'])
     router.delete('/sources', [DataSourcesController, 'destroy'])
 
     // Datasets
