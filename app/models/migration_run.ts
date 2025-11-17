@@ -32,7 +32,7 @@ export default class MigrationRun extends BaseModel {
   declare progress: number[]
 
   @column()
-  declare trigger: 'manual' | 'cron' | 'api'
+  declare trigger: 'manual' | 'cron' | 'api' | 'resume'
 
   @column()
   declare error: string | null

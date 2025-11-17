@@ -32,7 +32,7 @@ export default class ErrorLog extends BaseModel {
   declare migration: BelongsTo<typeof Migration>
 
   @column()
-  declare trigger: 'manual' | 'cron' | 'api' | null
+  declare trigger: 'manual' | 'cron' | 'api' | 'resume' | null
 
   @column()
   declare severity: 'error' | 'warning' | 'info'

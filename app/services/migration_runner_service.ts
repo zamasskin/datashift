@@ -14,7 +14,7 @@ import User from '#models/user'
 import EventLog from '#models/event'
 import { EventCreate } from '#events/event'
 
-type TriggerType = 'manual' | 'cron' | 'api'
+type TriggerType = 'manual' | 'cron' | 'api' | 'resume'
 
 export type RunPayload = {
   id: number
@@ -67,20 +67,18 @@ export default class MigrationRunnerService {
       metadata: {},
     })
 
-    // Запись статуса canceled при Ctrl+C (SIGINT)
-    const onSigint = async () => {
-      try {
-        await migrationRun.refresh()
-        migrationRun.status = 'canceled'
-        migrationRun.finishedAt = DateTime.now()
-        await migrationRun.save()
-      } finally {
-        process.off('SIGINT', onSigint as any)
+    // Attach runtime identity for orphan detection and recovery after restart
+    try {
+      const instanceId = (globalThis as any).DATASHIFT_INSTANCE_ID
+      migrationRun.metadata = {
+        ...migrationRun.metadata,
+        instanceId: instanceId ?? 'unknown',
       }
-      // Завершаем процесс после фиксации статуса
-      process.exit(0)
-    }
-    process.on('SIGINT', onSigint)
+      migrationRun.pid = process.pid
+      await migrationRun.save()
+    } catch {}
+
+    // SIGINT cancel handling removed: canceled status is not used for restarts
 
     try {
       const paramsService = new ParamsService()
