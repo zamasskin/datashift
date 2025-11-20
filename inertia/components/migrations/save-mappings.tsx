@@ -46,9 +46,15 @@ export function SaveMappings({
       {fetchConfigsLength === 0 && (
         <Alert>
           <FileWarning />
-          <AlertTitle>
-            Предупреждение: сначала добавьте датасеты, чтобы настраивать соответствия
-          </AlertTitle>
+          <AlertTitle>Датасеты ещё не добавлены</AlertTitle>
+          <AlertDescription>
+            Чтобы настраивать соответствия, добавьте хотя бы один датасет.
+          </AlertDescription>
+          <div className="col-start-2 mt-2">
+            <a href="/sources">
+              <Button size="sm" variant="outline">Перейти к источникам</Button>
+            </a>
+          </div>
         </Alert>
       )}
 
