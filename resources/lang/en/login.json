@@ -1,0 +1,17 @@
+{
+  "title": "Sign In",
+  "welcome": "Welcome",
+  "prompt": "Sign in to your account",
+  "email": "Email",
+  "password": "Password",
+  "submit": "Sign In",
+  "submitting": "Signing in...",
+  "termsText1": "By clicking \u201CContinue\u201D, you agree to our ",
+  "termsService": "Terms of Service",
+  "termsText2": " and ",
+  "privacyPolicy": "Privacy Policy.",
+  "errors": {
+    "missingCredentials": "Please provide e\u2011mail and password.",
+    "invalidCredentials": "Invalid e\u2011mail or password. Please try again."
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "title": "Вход",
+  "welcome": "Добро пожаловать",
+  "prompt": "Войдите в свою учетную запись",
+  "email": "Email",
+  "password": "Пароль",
+  "submit": "Авторизоваться",
+  "submitting": "Входим...",
+  "termsText1": "Нажимая \u00ABПродолжить\u00BB, вы соглашаетесь с нашими ",
+  "termsService": "Условиями обслуживания",
+  "termsText2": " и ",
+  "privacyPolicy": "Политикой конфиденциальности.",
+  "errors": {
+    "missingCredentials": "Укажите e\u2011mail и пароль.",
+    "invalidCredentials": "Неверный e\u2011mail или пароль. Попробуйте снова."
+  }
+}

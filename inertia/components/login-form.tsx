@@ -9,14 +9,29 @@ interface LoginFormProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string
   method?: string
   action?: string
+  messages?: {
+    title?: string
+    welcome?: string
+    prompt?: string
+    email?: string
+    password?: string
+    submit?: string
+    submitting?: string
+    termsText1?: string
+    termsService?: string
+    termsText2?: string
+    privacyPolicy?: string
+  }
 }
 
 export function LoginForm({
   className,
   method = 'POST',
   action = '/login',
+  messages = {},
   ...props
 }: LoginFormProps) {
+  console.log('LoginForm', messages)
   const { props: pageProps } = usePage<{ csrfToken?: string; errors?: Record<string, string> }>()
   const csrfToken = pageProps?.csrfToken
   const errors = pageProps?.errors
@@ -38,8 +53,10 @@ export function LoginForm({
               {csrfToken && <input type="hidden" name="_csrf" value={csrfToken} />}
 
               <div className="flex flex-col items-center gap-2 text-center">
-                <h1 className="text-2xl font-bold">Добро пожаловать</h1>
-                <p className="text-muted-foreground text-balance">Войдите в свою учетную запись</p>
+                <h1 className="text-2xl font-bold">{messages.welcome || 'Welcome'}</h1>
+                <p className="text-muted-foreground text-balance">
+                  {messages.prompt || 'Sign in to your account'}
+                </p>
               </div>
               {errors?.login && (
                 <div className="rounded-md border border-destructive bg-destructive/10 px-3 py-2 text-sm text-destructive">
@@ -47,7 +64,7 @@ export function LoginForm({
                 </div>
               )}
               <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
+                <FieldLabel htmlFor="email">{messages.email || 'Email'}</FieldLabel>
                 <Input
                   id="email"
                   name="email"
@@ -61,7 +78,7 @@ export function LoginForm({
 
               <Field>
                 <div className="flex items-center">
-                  <FieldLabel htmlFor="password">Пароль</FieldLabel>
+                  <FieldLabel htmlFor="password">{messages.password || 'Password'}</FieldLabel>
                   {/* <a href="#" className="ml-auto text-sm underline-offset-2 hover:underline">
                     Забыли пароль?
                   </a> */}
@@ -77,7 +94,9 @@ export function LoginForm({
               </Field>
               <Field>
                 <Button type="submit" disabled={form.processing}>
-                  {form.processing ? 'Входим...' : 'Авторизоваться'}
+                  {form.processing
+                    ? messages.submitting || 'Signing in...'
+                    : messages.submit || 'Sign In'}
                 </Button>
               </Field>
             </FieldGroup>
@@ -92,8 +111,10 @@ export function LoginForm({
         </CardContent>
       </Card>
       <FieldDescription className="px-6 text-center">
-        Нажимая «Продолжить», вы соглашаетесь с нашими <a href="/terms">Условиями обслуживания</a> и{' '}
-        <a href="/privacy">Политикой конфиденциальности.</a>
+        {messages.termsText1 || 'By clicking “Continue”, you agree to our '}
+        <a href="/terms">{messages.termsService || 'Terms of Service'}</a>
+        {messages.termsText2 || ' and '}
+        <a href="/privacy">{messages.privacyPolicy || 'Privacy Policy.'}</a>
       </FieldDescription>
     </div>
   )
