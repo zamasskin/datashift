@@ -1,4 +1,4 @@
-import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '~/components/ui/item'
+import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle, ItemFooter } from '~/components/ui/item'
 import { MergeDataset } from '../datasets/merge-dataset'
 import { Button } from '~/components/ui/button'
 import { Settings, Trash } from 'lucide-react'
@@ -38,12 +38,11 @@ export function MergeCard({ config, isLoading, suggestions, onRemove, onSave }: 
           Объединение Датасета {config?.params.datasetLeftId} с {config?.params.datasetRightId}
         </ItemDescription>
       </ItemContent>
-      <ItemContent className="flex-none text-center">
-        <ItemDescription className="space-x-2">
+      <ItemFooter>
+        <div className="flex items-center gap-2 ml-auto">
           <Button size="icon" variant="outline" onClick={handleRemove}>
             <Trash />
           </Button>
-
           <MergeDataset
             saveBtnName="Сохранить"
             config={config}
@@ -51,12 +50,12 @@ export function MergeCard({ config, isLoading, suggestions, onRemove, onSave }: 
             isLoading={isLoading}
             onSave={onSave}
           >
-            <Button size="icon" variant="outline">
+            <Button size="icon" variant="outline" aria-label="Редактировать">
               <Settings />
             </Button>
           </MergeDataset>
-        </ItemDescription>
-      </ItemContent>
+        </div>
+      </ItemFooter>
     </Item>
   )
 }

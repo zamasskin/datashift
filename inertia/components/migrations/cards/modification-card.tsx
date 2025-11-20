@@ -1,4 +1,4 @@
-import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '~/components/ui/item'
+import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle, ItemFooter } from '~/components/ui/item'
 import { Button } from '~/components/ui/button'
 import { Settings, Trash } from 'lucide-react'
 import { ModificationDataset } from '../datasets/modification-dataset'
@@ -42,12 +42,11 @@ export function ModificationCard({
         </ItemTitle>
         <ItemDescription>Датасет № {config?.params?.datasetId}</ItemDescription>
       </ItemContent>
-      <ItemContent className="flex-none text-center">
-        <ItemDescription className="space-x-2">
+      <ItemFooter>
+        <div className="flex items-center gap-2 ml-auto">
           <Button size="icon" variant="outline" onClick={handleRemove}>
             <Trash />
           </Button>
-
           <ModificationDataset
             saveBtnName="Сохранить"
             config={config}
@@ -55,12 +54,12 @@ export function ModificationCard({
             isLoading={isLoading}
             onSave={onSave}
           >
-            <Button size="icon" variant="outline">
+            <Button size="icon" variant="outline" aria-label="Редактировать">
               <Settings />
             </Button>
           </ModificationDataset>
-        </ItemDescription>
-      </ItemContent>
+        </div>
+      </ItemFooter>
     </Item>
   )
 }
