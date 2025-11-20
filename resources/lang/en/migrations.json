@@ -61,6 +61,10 @@
       },
       "result": {
         "title": "Result"
+      },
+      "schedule": {
+        "title": "Schedule",
+        "description": "Specify a cron expression for when to run the migration."
       }
     },
     "datasetMenu": {

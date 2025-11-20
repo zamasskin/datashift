@@ -68,67 +68,11 @@ export default class MigrationsController {
   async edit({ inertia, params, i18n }: HttpContext) {
     const dataSources = await DataSource.query().preload('user')
     const migration = await Migration.findOrFail(params.id)
-    const messages = {
-      edit: {
-        title: i18n.t('migrations.edit.title'),
-        metrics: {
-          title: i18n.t('migrations.edit.metrics.title'),
-          hint: i18n.t('migrations.edit.metrics.hint'),
-          badge: i18n.t('migrations.edit.metrics.badge'),
-        },
-        labels: {
-          active: i18n.t('migrations.edit.labels.active'),
-          name: i18n.t('migrations.edit.labels.name'),
-        },
-        tabs: {
-          migrations: i18n.t('migrations.edit.tabs.migrations'),
-          settings: i18n.t('migrations.edit.tabs.settings'),
-        },
-        cards: {
-          datasets: {
-            title: i18n.t('migrations.edit.cards.datasets.title'),
-            description: i18n.t('migrations.edit.cards.datasets.description'),
-          },
-          outputs: {
-            title: i18n.t('migrations.edit.cards.outputs.title'),
-            description: i18n.t('migrations.edit.cards.outputs.description'),
-          },
-          params: {
-            title: i18n.t('migrations.edit.cards.params.title'),
-            description: i18n.t('migrations.edit.cards.params.description'),
-          },
-          result: {
-            title: i18n.t('migrations.edit.cards.result.title'),
-          },
-        },
-        datasetMenu: {
-          add: i18n.t('migrations.edit.datasetMenu.add'),
-          sql: i18n.t('migrations.edit.datasetMenu.sql'),
-          sqlBuilder: i18n.t('migrations.edit.datasetMenu.sqlBuilder'),
-          merge: i18n.t('migrations.edit.datasetMenu.merge'),
-          modification: i18n.t('migrations.edit.datasetMenu.modification'),
-        },
-        buttons: {
-          delete: i18n.t('migrations.edit.buttons.delete'),
-          save: i18n.t('migrations.edit.buttons.save'),
-          saving: i18n.t('migrations.edit.buttons.saving'),
-          stop: i18n.t('migrations.edit.buttons.stop'),
-          start: i18n.t('migrations.edit.buttons.start'),
-        },
-        toast: {
-          saved: i18n.t('migrations.edit.toast.saved'),
-          saveFailed: i18n.t('migrations.edit.toast.saveFailed'),
-          deleted: i18n.t('migrations.edit.toast.deleted'),
-          deleteFailed: i18n.t('migrations.edit.toast.deleteFailed'),
-        },
-        confirmDelete: i18n.t('migrations.edit.confirmDelete', { id: '{id}' }),
-      },
-    }
+
     return inertia.render('migrations/edit', {
       migration,
       dataSources,
-      messages,
-      pageTitle: messages.edit.title,
+      pageTitle: i18n.t('migrations.edit.title'),
     })
   }
 

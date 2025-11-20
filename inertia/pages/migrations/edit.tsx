@@ -36,10 +36,11 @@ import { Progress } from '~/components/ui/progress'
 import { Spinner } from '~/components/ui/spinner'
 import { DashboardAreaChart } from '~/components/charts/area-chart'
 import { toast } from 'sonner'
+import { useI18n } from '~/hooks/useI18nLocal'
 
 const MigrationEdit = ({ migration }: { migration: Migration }) => {
-  const { props } = usePage<{ csrfToken?: string; messages?: any; pageTitle?: string }>()
-  const messages = props.messages?.edit
+  const { props } = usePage<{ csrfToken?: string; pageTitle?: string }>()
+  const { t } = useI18n()
   const [name, setName] = useState(migration.name)
   const [cronExpression, setCronExpression] = useState(migration.cronExpression)
   const [fetchConfigs, setFetchConfigs] = useState<FetchConfig[]>(migration.fetchConfigs || [])
@@ -129,20 +130,25 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
           setSaveErrors(map)
           setSaveLoading(false)
           // Toast на ошибку сохранения
-          const firstMsg = Object.values(map)[0] || messages?.toast?.saveFailed || 'Не удалось сохранить миграцию'
+          const firstMsg =
+            Object.values(map)[0] ||
+            t('migrations.edit.toast.saveFailed', 'Не удалось сохранить миграцию')
           toast.error(firstMsg)
         },
         onSuccess: () => {
           setSaveLoading(false)
           // Toast на успешное сохранение
-          toast.success(messages?.toast?.saved || 'Миграция сохранена')
+          toast.success(t('migrations.edit.toast.saved', 'Миграция сохранена'))
         },
       }
     )
   }
 
   const onDelete = () => {
-  const confirmText = (messages?.confirmDelete || `Удалить миграцию #{id}?`).replace('{id}', String(migration.id))
+    const confirmText = t('migrations.edit.confirmDelete', 'Удалить миграцию #{id}?').replace(
+      '{id}',
+      String(migration.id)
+    )
     if (!confirm(confirmText)) return
     let handled = false
     router.delete('/migrations', {
@@ -150,15 +156,15 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
       preserveScroll: true,
       onSuccess: () => {
         handled = true
-        toast.success(messages?.toast?.deleted || 'Миграция удалена')
+        toast.success(t('migrations.edit.toast.deleted', 'Миграция удалена'))
       },
       onError: () => {
         handled = true
-        toast.error(messages?.toast?.deleteFailed || 'Не удалось удалить миграцию')
+        toast.error(t('migrations.edit.toast.deleteFailed', 'Не удалось удалить миграцию'))
       },
       // Сервер сделает редирект, но на случай JSON-ответа — подстрахуемся
       onFinish: () => {
-        if (!handled) toast.success(messages?.toast?.deleted || 'Миграция удалена')
+        if (!handled) toast.success(t('migrations.edit.toast.deleted', 'Миграция удалена'))
         router.visit('/migrations')
       },
     })
@@ -223,15 +229,15 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
 
   return (
     <>
-      <Head title={messages?.title || 'Миграции'} />
+      <Head title={t('migrations.edit.title', 'Миграции')} />
       <div className="px-4 lg:px-6 space-y-6">
         {(() => {
           const metrics = useMigrationMetrics(migration.id)
           return (
             <DashboardAreaChart
-              title={messages?.metrics?.title || 'Активность миграции'}
-              hint={messages?.metrics?.hint || 'Запуски, успешные и отменённые, и ошибки'}
-              badge={messages?.metrics?.badge || '30 дн.'}
+              title={t('migrations.edit.metrics.title', 'Активность миграции')}
+              hint={t('migrations.edit.metrics.hint', 'Запуски, успешные и отменённые, и ошибки')}
+              badge={t('migrations.edit.metrics.badge', '30 дн.')}
               dataRuns={metrics.runs}
               dataErrors={metrics.errors}
               dataSuccess={metrics.runsSuccess}
@@ -271,19 +277,21 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
           <ItemContent>
             <div className="flex items-center space-x-2">
               <Switch id="airplane-mode" checked={isActive} onCheckedChange={setIsActive} />
-              <Label htmlFor="airplane-mode">{messages?.labels?.active || 'Активно'}</Label>
+              <Label htmlFor="airplane-mode">{t('migrations.edit.labels.active', 'Активно')}</Label>
             </div>
           </ItemContent>
           <ItemContent>
             <div className="flex gap-2">
               <Button variant="outline" onClick={onDelete}>
                 <Trash />
-                {messages?.buttons?.delete || 'Удалить'}
+                {t('migrations.edit.buttons.delete', 'Удалить')}
               </Button>
 
               <Button onClick={onSave} disabled={saveLoading}>
                 <Save />
-                {saveLoading ? (messages?.buttons?.saving || 'Сохранение…') : (messages?.buttons?.save || 'Сохранить')}
+                {saveLoading
+                  ? t('migrations.edit.buttons.saving', 'Сохранение…')
+                  : t('migrations.edit.buttons.save', 'Сохранить')}
               </Button>
             </div>
           </ItemContent>
@@ -292,7 +300,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
         <div className={cn('grid grid-cols-1 items-end gap-4', showPlay ? 'md:grid-cols-2' : '')}>
           <div className="space-y-2">
             <div className="grid w-full max-w-sm items-center gap-3">
-              <Label htmlFor="name">Название</Label>
+              <Label htmlFor="name">{t('migrations.edit.labels.name', 'Название')}</Label>
               <Input value={name} onChange={(e) => setName(e.target.value)} className="w-[320px]" />
               {saveErrors?.name && <p className="text-sm text-destructive">{saveErrors.name}</p>}
             </div>
@@ -306,13 +314,13 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                     onClick={() => handleStop()}
                     disabled={fetchStopped}
                   >
-                    {messages?.buttons?.stop || 'Остановить'}
+                    {t('migrations.edit.buttons.stop', 'Остановить')}
                     {fetchStopped && <Spinner className="h-4 w-4 animate-spin" />}
                   </Button>
                 ) : (
                   <Button variant="secondary" onClick={handleRun} disabled={fetchRunning}>
                     <Play />
-                    {messages?.buttons?.start || 'Запустить'}
+                    {t('migrations.edit.buttons.start', 'Запустить')}
                     {fetchRunning && <Spinner className="h-4 w-4 animate-spin" />}
                   </Button>
                 )}
@@ -325,12 +333,12 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
           <TabsList>
             <TabsTrigger value="migrations">
               <ArrowDownUp />
-              {messages?.tabs?.migrations || 'Миграции'}
+              {t('migrations.edit.tabs.migrations', 'Миграции')}
             </TabsTrigger>
 
             <TabsTrigger value="config">
               <Settings />
-              {messages?.tabs?.settings || 'Настройки'}
+              {t('migrations.edit.tabs.settings', 'Настройки')}
             </TabsTrigger>
           </TabsList>
 
@@ -338,9 +346,12 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
             <div className="grid gap-4 lg:grid-cols-2 lg:auto-rows-fr">
               <Card className="h-full flex flex-col">
                 <CardHeader>
-                  <CardTitle>{messages?.cards?.datasets?.title || 'Датасеты'}</CardTitle>
+                  <CardTitle>{t('migrations.edit.cards.datasets.title', 'Датасеты')}</CardTitle>
                   <CardDescription>
-                    {messages?.cards?.datasets?.description || 'Добавьте датасеты, которые будут использоваться в миграции.'}
+                    {t(
+                      'migrations.edit.cards.datasets.description',
+                      'Добавьте датасеты, которые будут использоваться в миграции.'
+                    )}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="flex-1">
@@ -404,21 +415,21 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                         <DropdownMenuTrigger asChild>
                           <Button variant="outline">
                             <Plus />
-                            {messages?.datasetMenu?.add || 'Добавить датасет'}
+                            {t('migrations.edit.datasetMenu.add', 'Добавить датасет')}
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-56" align="start">
                           <DropdownMenuItem onClick={() => setNewDatasetOpen('sql')}>
-                            {messages?.datasetMenu?.sql || 'SQL запрос'}
+                            {t('migrations.edit.datasetMenu.sql', 'SQL запрос')}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setNewDatasetOpen('sql_builder')}>
-                            {messages?.datasetMenu?.sqlBuilder || 'Редактор запроса'}
+                            {t('migrations.edit.datasetMenu.sqlBuilder', 'Редактор запроса')}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setNewDatasetOpen('merge')}>
-                            {messages?.datasetMenu?.merge || 'Объединение'}
+                            {t('migrations.edit.datasetMenu.merge', 'Объединение')}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setNewDatasetOpen('modification')}>
-                            {messages?.datasetMenu?.modification || 'Модификация'}
+                            {t('migrations.edit.datasetMenu.modification', 'Модификация')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -459,9 +470,12 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
 
               <Card className="h-full flex flex-col">
                 <CardHeader>
-                  <CardTitle>{messages?.cards?.outputs?.title || 'Выгрузки'}</CardTitle>
+                  <CardTitle>{t('migrations.edit.cards.outputs.title', 'Выгрузки')}</CardTitle>
                   <CardDescription>
-                    {messages?.cards?.outputs?.description || 'Укажите выгрузки, которые будут использоваться в миграции.'}
+                    {t(
+                      'migrations.edit.cards.outputs.description',
+                      'Укажите выгрузки, которые будут использоваться в миграции.'
+                    )}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="flex-1">
@@ -485,7 +499,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
 
             <Card className="mt-6">
               <CardHeader>
-                <CardTitle>{messages?.cards?.result?.title || 'Результат'}</CardTitle>
+                <CardTitle>{t('migrations.edit.cards.result.title', 'Результат')}</CardTitle>
                 <CardDescription></CardDescription>
               </CardHeader>
               <CardContent>
@@ -497,9 +511,12 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
             <div className="grid gap-4 lg:grid-cols-2 lg:auto-rows-fr">
               <Card>
                 <CardHeader>
-                  <CardTitle>{messages?.cards?.params?.title || 'Параметры'}</CardTitle>
+                  <CardTitle>{t('migrations.edit.cards.params.title', 'Параметры')}</CardTitle>
                   <CardDescription>
-                    {messages?.cards?.params?.description || 'Добавьте настройки, которые будут использоваться в миграции.'}
+                    {t(
+                      'migrations.edit.cards.params.description',
+                      'Добавьте настройки, которые будут использоваться в миграции.'
+                    )}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -509,9 +526,12 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Расписание</CardTitle>
+                  <CardTitle>{t('migrations.edit.cards.schedule.title', 'Расписание')}</CardTitle>
                   <CardDescription>
-                    Укажите расписание выполнения миграции в формате cron-выражения.
+                    {t(
+                      'migrations.edit.cards.schedule.description',
+                      'Укажите расписание выполнения миграции в формате cron-выражения.'
+                    )}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
