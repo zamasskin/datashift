@@ -110,12 +110,19 @@ export function SqlBuilderCard({
   }
 
   const renderJoinsSummary = (
-    joins?: { table: string; alias?: string; type: 'inner' | 'left' | 'right' | 'full' }[],
+    joins?: {
+      table: string
+      alias?: string
+      type: 'inner' | 'left' | 'right' | 'full'
+      on?: { tableColumn: string; aliasColumn: string; operator: string; cond?: 'and' | 'or' }[]
+    }[],
     limit = 2
   ): string => {
-    const list = (joins ?? []).map(
-      (j) => `${j.type.toUpperCase()} ${j.table}${j.alias ? ` (${j.alias})` : ''}`
-    )
+    const list = (joins ?? []).map((j) => {
+      const base = `${j.type.toUpperCase()} ${j.table}${j.alias ? ` (${j.alias})` : ''}`
+      const onStr = j.on && j.on.length ? ` ON ${formatJoinOn(j.on)}` : ''
+      return `${base}${onStr}`
+    })
     return compactList(list, limit)
   }
 
