@@ -10,7 +10,6 @@ import { DateTime } from 'luxon'
 import ErrorLog from '#models/error_log'
 import { randomUUID, createHash } from 'node:crypto'
 import logger from '@adonisjs/core/services/logger'
-import User from '#models/user'
 import EventLog from '#models/event'
 import { EventCreate } from '#events/event'
 
@@ -162,20 +161,29 @@ export default class MigrationRunnerService {
           hostname: process.env.HOSTNAME || null,
         })
 
-        const users = await User.query()
-        for (const user of users) {
-          const event = await EventLog.create({
-            errorId: errorLog.id,
-            userId: user.id,
-            type: 'error',
-            message,
-            muted: false,
-          })
-          // Уведомим слушателей о новом уведомлении
-          try {
-            EventCreate.dispatch(event)
-          } catch {}
+        const migration = await migrationRun.related('migration').query().first()
+        if (!migration) {
+          logger.warn(
+            '[migration_runner_service] Migration record not found for error notification',
+            { migrationId: migrationRun.migrationId }
+          )
+          return
         }
+
+        // TODO: Нужно подписывать остальных пользователей на событие
+        const ownerId = migration.createdBy
+        const event = await EventLog.create({
+          errorId: errorLog.id,
+          userId: ownerId,
+          type: 'error',
+          message,
+          muted: false,
+        })
+        // Уведомим слушателей о новом уведомлении
+        try {
+          EventCreate.dispatch(event)
+        } catch {}
+        // }
       } catch (e) {
         logger.error('[migration_runner_service] Failed to log error to errors table', e)
       }
