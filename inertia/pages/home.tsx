@@ -197,17 +197,6 @@ const Home = () => {
             <Link href="/sources">Подключения</Link>
           </Button>
         </div>
-
-        {/* Запущенные процессы */}
-        {runnings.length > 0 && (
-          <div className="space-y-3">
-            <SectionHeader
-              title="Запущено"
-              right={<Badge variant="secondary">{runningCount}</Badge>}
-            />
-            <DashboardRunningIndicators runnings={runnings} />
-          </div>
-        )}
       </div>
     </>
   )

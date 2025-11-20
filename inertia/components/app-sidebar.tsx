@@ -5,6 +5,8 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -18,7 +20,7 @@ import { BrandMark } from '~/components/ui/brand-logo'
 import { useMigrationRuns } from '~/store/migrations'
 import { RunningIndicators } from './running-indicators'
 import User from '#models/user'
-import { CloudFog, Plug } from 'lucide-react'
+import { ChevronRight, CloudFog, Plug } from 'lucide-react'
 
 const nawMain = [
   {
@@ -83,7 +85,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={nawMain} />
 
         {/* Индикаторы запущенных процессов */}
-        <RunningIndicators runnings={runnings} />
+        {runnings.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupContent className="space-y-2">
+              <RunningIndicators runnings={runnings.slice(0, 3)} />
+              <SidebarMenuItem>
+                <SidebarMenuButton tooltip="Показать все" asChild>
+                  <Link href="/tasks" className="flex items-center gap-2">
+                    <ChevronRight />
+                    <span>Показать все</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
         <NavSecondary items={isAdmin ? navSecondaryAdmin : navSecondary} className="mt-auto" />
       </SidebarContent>
