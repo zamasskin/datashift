@@ -3,6 +3,7 @@ import { usePage } from '@inertiajs/react'
 import { ReactNode, useEffect, useRef } from 'react'
 import { useMigrationRuns } from '~/store/migrations'
 import { useNotifications } from '~/store/notifications'
+import { toast } from 'sonner'
 
 export const GlobalSseProvider = ({ children }: { children: ReactNode }) => {
   const { setRunnings, changeRunning } = useMigrationRuns()
@@ -61,6 +62,11 @@ export const GlobalSseProvider = ({ children }: { children: ReactNode }) => {
           message: payload.message ?? null,
         }
         addItem(e as any)
+        // Показать всплывающую ошибку через Sonner
+        if (payload.type === 'error') {
+          const msg = payload.message || 'Произошла ошибка'
+          toast.error(msg, { duration: 6000 })
+        }
       } catch {}
     })
     es.addEventListener('notification_update', (ev: MessageEvent) => {
