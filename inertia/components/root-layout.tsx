@@ -5,10 +5,12 @@ import { GlobalSseProvider } from './provider/global-sse-provider'
 import { Toaster } from 'sonner'
 import GlobalSearch from '~/components/global-search'
 import { usePage } from '@inertiajs/react'
+import { useI18n } from '~/hooks/useI18nLocal'
 
 export const RootLayout = ({ children, title }: { children: React.ReactNode; title?: string }) => {
-  const { props } = usePage<{ pageTitle?: string; messages?: { h1?: string; title?: string } }>()
-  const computedTitle = title ?? props.pageTitle ?? props.messages?.h1 ?? props.messages?.title ?? 'Datashift'
+  const { props } = usePage<{ pageTitle?: string }>()
+  const { t } = useI18n()
+  const computedTitle = title ?? props.pageTitle ?? String(t('layout.brand', 'Datashift'))
   return (
     <GlobalSseProvider>
       <GlobalSearch />

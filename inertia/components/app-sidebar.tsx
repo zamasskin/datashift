@@ -21,38 +21,23 @@ import { useMigrationRuns } from '~/store/migrations'
 import { RunningIndicators } from './running-indicators'
 import User from '#models/user'
 import { ChevronRight, CloudFog, Plug } from 'lucide-react'
+import { useI18n } from '~/hooks/useI18nLocal'
 
-type LayoutMessages = {
-  brand?: string
-  root?: {
-    nav?: { sources?: string; datasets?: string; migrations?: string; tasks?: string }
-    createMenu?: { source?: string; dataset?: string; migration?: string; task?: string }
-    settingsMenu?: {
-      trigger?: string
-      security?: string
-      users?: string
-      user?: string
-      profile?: string
-      logout?: string
-    }
-    secondary?: { help?: string; search?: string }
-    running?: { showAll?: string }
-  }
-}
+// layout translations now come from i18n hook
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const page = usePage<{ user: User; layoutMessages: LayoutMessages }>()
+  const page = usePage<{ user: User }>()
   const isAdmin = page.props?.user?.role === 'admin'
-  const lm = page.props?.layoutMessages || {}
+  const { t } = useI18n()
   const navMain = [
     {
-      title: lm.root?.nav?.migrations || 'Миграции',
+      title: String(t('layout.root.nav.migrations', 'Миграции')),
       url: '/migrations',
       icon: <CloudFog />,
     },
 
     {
-      title: lm.root?.nav?.sources || 'Подключения',
+      title: String(t('layout.root.nav.sources', 'Подключения')),
       url: '/sources',
       icon: <Plug />,
     },
@@ -60,12 +45,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const navSecondary = [
     {
-      title: lm.root?.secondary?.help || 'Помощь',
+      title: String(t('layout.root.secondary.help', 'Помощь')),
       url: '/help',
       icon: IconHelp,
     },
     {
-      title: lm.root?.secondary?.search || 'Поиск',
+      title: String(t('layout.root.secondary.search', 'Поиск')),
       url: '#',
       icon: IconSearch,
     },
@@ -73,7 +58,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const navSecondaryAdmin = [
     {
-      title: lm.root?.settingsMenu?.trigger || 'Настройки',
+      title: String(t('layout.root.settingsMenu.trigger', 'Настройки')),
       url: '/settings',
       icon: IconSettings,
     },
@@ -92,7 +77,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <BrandMark className="size-5 text-foreground/80" />
                 </div>
                 <span className="text-foreground text-xl font-semibold tracking-tight">
-                  {lm.brand || 'Datashift'}
+                  {String(t('layout.brand', 'Datashift'))}
                 </span>
               </Link>
             </SidebarMenuButton>
@@ -108,10 +93,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarGroupContent className="space-y-2">
               <RunningIndicators runnings={runnings.slice(0, 3)} />
               <SidebarMenuItem>
-                <SidebarMenuButton tooltip={lm.root?.running?.showAll || 'Показать все'} asChild>
+                <SidebarMenuButton
+                  tooltip={String(t('layout.root.running.showAll', 'Показать все'))}
+                  asChild
+                >
                   <Link href="/tasks" className="flex items-center gap-2">
                     <ChevronRight />
-                    <span>{lm.root?.running?.showAll || 'Показать все'}</span>
+                    <span>{String(t('layout.root.running.showAll', 'Показать все'))}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

@@ -5,6 +5,7 @@ import { Card, CardContent } from '../ui/card'
 import { Button } from '../ui/button'
 import { StopCircle } from 'lucide-react'
 import { useState } from 'react'
+import { useI18n } from '~/hooks/useI18nLocal'
 
 type Props = {
   runnings: MigrationRun[]
@@ -14,8 +15,9 @@ export function DashboardRunningIndicators({ runnings }: Props) {
   if (runnings.length === 0) return null
 
   const {
-    props: { csrfToken, messages },
-  } = usePage<{ csrfToken: string; messages?: any }>()
+    props: { csrfToken },
+  } = usePage<{ csrfToken: string }>()
+  const { t } = useI18n()
   const [stopping, setStopping] = useState<Record<number, boolean>>({})
 
   const stopRun = async (r: MigrationRun) => {
@@ -51,7 +53,7 @@ export function DashboardRunningIndicators({ runnings }: Props) {
                     <span className="text-sm text-foreground">
                       {name
                         ? name
-                        : `${messages?.runningIndicators?.noNamePrefix || 'Migration #'}${r.migrationId}`}
+                        : `${String(t('layout.root.runningIndicators.noNamePrefix', 'Миграция #'))}${r.migrationId}`}
                     </span>
                   </Link>
                   <span className="text-xs text-muted-foreground">{r.trigger}</span>
@@ -64,7 +66,7 @@ export function DashboardRunningIndicators({ runnings }: Props) {
                         <Progress value={percent} />
                         <div className="flex items-center justify-between">
                           <span className="text-xs text-muted-foreground">
-                            {`${messages?.runningIndicators?.flowLabel || 'Flow'} ${idx + 1}`}
+                            {`${String(t('layout.root.runningIndicators.flowLabel', 'Поток'))} ${idx + 1}`}
                           </span>
                           <span className="text-xs text-foreground">{percent}%</span>
                         </div>
@@ -77,7 +79,7 @@ export function DashboardRunningIndicators({ runnings }: Props) {
                     size="icon-sm"
                     disabled={!!stopping[r.id]}
                     onClick={() => stopRun(r)}
-                    aria-label={messages?.runningIndicators?.stopAria || 'Stop run'}
+                    aria-label={String(t('layout.root.runningIndicators.stopAria', 'Остановить запуск'))}
                   >
                     <StopCircle className="text-destructive" />
                   </Button>

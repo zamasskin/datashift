@@ -17,13 +17,14 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '~/components/ui/sidebar'
+import { useI18n } from '~/hooks/useI18nLocal'
 export function NavUser() {
   const { isMobile } = useSidebar()
   const { props: pageProps } = usePage<{ user: User; userAvatarUrl: string | null }>()
   const user = pageProps?.user
   const avatarUrl = (pageProps?.userAvatarUrl || '') as string
   const csrfToken = (pageProps?.csrfToken || '') as string
-  const layoutMessages = (pageProps as any)?.layoutMessages as any
+  const { t } = useI18n()
   const fullName = user?.fullName || ''
   const email = user?.email || ''
   const fnSmall = fullName
@@ -46,7 +47,7 @@ export function NavUser() {
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">
-                  {fullName || layoutMessages?.root?.user?.guest || 'Гость'}
+                  {fullName || String(t('layout.root.user.guest', 'Гость'))}
                 </span>
                 <span className="text-muted-foreground truncate text-xs">{email}</span>
               </div>
@@ -67,7 +68,7 @@ export function NavUser() {
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">
-                    {fullName || layoutMessages?.root?.user?.guest || 'Гость'}
+                    {fullName || String(t('layout.root.user.guest', 'Гость'))}
                   </span>
                   <span className="text-muted-foreground truncate text-xs">{email}</span>
                 </div>
@@ -78,7 +79,7 @@ export function NavUser() {
               <DropdownMenuItem asChild>
                 <Link href="/profile">
                   <IconUserCircle />
-                  {layoutMessages?.root?.settingsMenu?.profile || 'Профиль'}
+                  {String(t('layout.root.settingsMenu.profile', 'Профиль'))}
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
@@ -89,7 +90,7 @@ export function NavUser() {
               }}
             >
               <IconLogout />
-              {layoutMessages?.root?.settingsMenu?.logout || 'Выход'}
+              {String(t('layout.root.settingsMenu.logout', 'Выход'))}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
