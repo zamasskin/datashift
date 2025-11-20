@@ -10,9 +10,12 @@ import {
 } from '~/components/ui/dropdown-menu'
 import { Button } from '~/components/ui/button'
 import { useEffect, useState } from 'react'
+import { usePage } from '@inertiajs/react'
 
 export function SiteHeader({ title }: { title: string }) {
+  const page = usePage<{ locale: string }>()
   const [locale, setLocale] = useState<string | null>(null)
+  console.log(page.props.locale)
 
   useEffect(() => {
     const m = document.cookie.match(/(?:^|; )locale=([^;]+)/)

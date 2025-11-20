@@ -33,7 +33,21 @@ export default class DetectUserLocaleMiddleware {
         return supported
       }
     }
-    // По умолчанию используем дефолтную локаль (ru) и не учитываем Accept-Language
+    // Фолбэк: пробуем взять из заголовка Accept-Language
+    const acceptLanguage = ctx.request.header('accept-language')
+    if (acceptLanguage) {
+      const langs = acceptLanguage
+        .split(',')
+        .map((p) => p.split(';')[0].trim())
+        .filter(Boolean)
+
+      const supported = i18nManager.getSupportedLocaleFor(langs)
+      if (supported) {
+        return supported
+      }
+    }
+
+    // В крайнем случае — дефолтная локаль
     return i18nManager.defaultLocale
   }
 

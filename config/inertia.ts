@@ -45,6 +45,7 @@ const inertiaConfig = defineConfig({
         return { items, total }
       })
     },
+    locale: (ctx) => ctx.inertia.always(() => ctx.i18n.locale),
   },
 
   /**
