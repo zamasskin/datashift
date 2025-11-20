@@ -40,5 +40,46 @@
       "flowLabel": "Flow",
       "stopAria": "Stop run"
     }
+  },
+  "pages": {
+    "tasks": {
+      "title": "Tasks",
+      "h1": "Running tasks",
+      "linkMigrations": "All migrations",
+      "empty": "No running tasks.",
+      "table": {
+        "id": "ID",
+        "migration": "Migration",
+        "status": "Status",
+        "progress": "Progress",
+        "trigger": "Trigger",
+        "pid": "PID",
+        "startedAt": "Started",
+        "actions": "Actions"
+      },
+      "progress": {
+        "showAll": "Show all progresses",
+        "noData": "No progress data"
+      },
+      "badge": {
+        "running": "Running",
+        "pending": "Pending",
+        "failed": "Failed",
+        "success": "Success",
+        "canceled": "Canceled"
+      },
+      "action": {
+        "stop": "Stop"
+      },
+      "migration": {
+        "unnamedPrefix": "Migration #"
+      },
+      "trigger": {
+        "manual": "Manual",
+        "cron": "Cron",
+        "api": "API",
+        "resume": "Resume"
+      }
+    }
   }
 }

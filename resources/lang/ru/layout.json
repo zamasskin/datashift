@@ -40,5 +40,46 @@
       "flowLabel": "Поток",
       "stopAria": "Остановить запуск"
     }
+  },
+  "pages": {
+    "tasks": {
+      "title": "Задания",
+      "h1": "Запущенные задания",
+      "linkMigrations": "Все миграции",
+      "empty": "Сейчас нет запущенных заданий.",
+      "table": {
+        "id": "ID",
+        "migration": "Миграция",
+        "status": "Статус",
+        "progress": "Прогресс",
+        "trigger": "Запуск",
+        "pid": "PID",
+        "startedAt": "Начато",
+        "actions": "Действия"
+      },
+      "progress": {
+        "showAll": "Показать все прогрессы",
+        "noData": "Нет данных о прогрессе"
+      },
+      "badge": {
+        "running": "Выполняется",
+        "pending": "В очереди",
+        "failed": "Ошибка",
+        "success": "Успех",
+        "canceled": "Отменено"
+      },
+      "action": {
+        "stop": "Остановить"
+      },
+      "migration": {
+        "unnamedPrefix": "Миграция #"
+      },
+      "trigger": {
+        "manual": "Вручную",
+        "cron": "Cron",
+        "api": "API",
+        "resume": "Возобновление"
+      }
+    }
   }
 }

@@ -90,6 +90,47 @@ const inertiaConfig = defineConfig({
             stopAria: ctx.i18n.t('layout.root.runningIndicators.stopAria'),
           },
         },
+        pages: {
+          tasks: {
+            title: ctx.i18n.t('layout.pages.tasks.title'),
+            h1: ctx.i18n.t('layout.pages.tasks.h1'),
+            linkMigrations: ctx.i18n.t('layout.pages.tasks.linkMigrations'),
+            empty: ctx.i18n.t('layout.pages.tasks.empty'),
+            table: {
+              id: ctx.i18n.t('layout.pages.tasks.table.id'),
+              migration: ctx.i18n.t('layout.pages.tasks.table.migration'),
+              status: ctx.i18n.t('layout.pages.tasks.table.status'),
+              progress: ctx.i18n.t('layout.pages.tasks.table.progress'),
+              trigger: ctx.i18n.t('layout.pages.tasks.table.trigger'),
+              pid: ctx.i18n.t('layout.pages.tasks.table.pid'),
+              startedAt: ctx.i18n.t('layout.pages.tasks.table.startedAt'),
+              actions: ctx.i18n.t('layout.pages.tasks.table.actions'),
+            },
+            progress: {
+              showAll: ctx.i18n.t('layout.pages.tasks.progress.showAll'),
+              noData: ctx.i18n.t('layout.pages.tasks.progress.noData'),
+            },
+            badge: {
+              running: ctx.i18n.t('layout.pages.tasks.badge.running'),
+              pending: ctx.i18n.t('layout.pages.tasks.badge.pending'),
+              failed: ctx.i18n.t('layout.pages.tasks.badge.failed'),
+              success: ctx.i18n.t('layout.pages.tasks.badge.success'),
+              canceled: ctx.i18n.t('layout.pages.tasks.badge.canceled'),
+            },
+            action: {
+              stop: ctx.i18n.t('layout.pages.tasks.action.stop'),
+            },
+            migration: {
+              unnamedPrefix: ctx.i18n.t('layout.pages.tasks.migration.unnamedPrefix'),
+            },
+            trigger: {
+              manual: ctx.i18n.t('layout.pages.tasks.trigger.manual'),
+              cron: ctx.i18n.t('layout.pages.tasks.trigger.cron'),
+              api: ctx.i18n.t('layout.pages.tasks.trigger.api'),
+              resume: ctx.i18n.t('layout.pages.tasks.trigger.resume'),
+            },
+          },
+        },
       })),
   },
 
