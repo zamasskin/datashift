@@ -1,10 +1,59 @@
 {
-  "columns": {
-    "id": "ID",
+  "title": "Sources",
+  "filter": {
+    "searchPlaceholder": "Search...",
+    "columnsConfigure": "Configure columns",
+    "columnsShort": "Columns"
+  },
+  "table": {
     "name": "Name",
     "type": "Type",
     "createdBy": "Created by",
-    "createdAtFormatted": "Created",
-    "updatedAtFormatted": "Updated"
+    "createdAt": "Created at",
+    "updatedAt": "Updated at",
+    "empty": "No results.",
+    "ariaSelectAll": "Select all",
+    "ariaSelectRow": "Select row"
+  },
+  "actions": {
+    "menuAria": "Open menu",
+    "label": "Actions",
+    "edit": "Edit",
+    "delete": "Delete",
+    "bulkDelete": "Delete",
+    "confirmDelete": "Are you sure?"
+  },
+  "selection": {
+    "of": "of",
+    "suffix": "record(s) selected.",
+    "noneSelectedAlert": "Select records to delete."
+  },
+  "form": {
+    "nameLabel": "Name",
+    "nameDescription": "From 3 to 64 characters.",
+    "typeLabel": "Type",
+    "typePlaceholder": "Select source type",
+    "createTitle": "New source",
+    "createSubmit": "Create",
+    "cancel": "Cancel",
+    "editTitle": "Edit source",
+    "save": "Save",
+    "sqliteFileLabel": "File path",
+    "sqliteFilePlaceholder": "db.sqlite",
+    "sqlHostLabel": "Host",
+    "sqlHostPlaceholder": "localhost",
+    "sqlPortLabel": "Port",
+    "sqlUsernameLabel": "Username",
+    "sqlPasswordLabel": "Password",
+    "sqlDatabaseLabel": "Database"
+  },
+  "validation": {
+    "sqliteFileOpen": "Failed to open SQLite file. Check path and permissions.",
+    "connectionRefused": "Connection refused. Check host/port and server availability.",
+    "hostNotFound": "Host not found. Check hostname.",
+    "connectionTimeout": "Connection timeout. Check network and port.",
+    "invalidCredentials": "Invalid username or password.",
+    "databaseNotExist": "Database does not exist.",
+    "genericHostError": "Connection error: {{msg}}"
   }
 }

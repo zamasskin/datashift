@@ -44,7 +44,8 @@ export function EditSource({
   onOpenChange: (open: boolean) => void
   source: Pick<DataSource, 'id' | 'name' | 'type' | 'config'> | null
 }) {
-  const { props } = usePage<{ csrfToken: string }>()
+  const { props } = usePage<{ csrfToken: string; sourcesMessages?: any }>()
+  const m = props.sourcesMessages || {}
 
   const form = useForm<z.infer<typeof schemaInsert>>({
     resolver: zodResolver(schemaInsert),
@@ -105,7 +106,7 @@ export function EditSource({
           <form onSubmit={form.handleSubmit(onSubmit)}>
             {props.csrfToken && <input type="hidden" name="_csrf" value={props.csrfToken} />}
             <SheetHeader>
-              <SheetTitle>Редактировать подключение</SheetTitle>
+              <SheetTitle>{m.form?.editTitle || 'Редактировать подключение'}</SheetTitle>
               <SheetDescription>
                 <div className="flex flex-col gap-6">
                   <FormField
@@ -113,11 +114,13 @@ export function EditSource({
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Наименование</FormLabel>
+                        <FormLabel>{m.form?.nameLabel || 'Наименование'}</FormLabel>
                         <FormControl>
                           <Input placeholder="name" {...field} />
                         </FormControl>
-                        <FormDescription>От 3 до 64 символов.</FormDescription>
+                        <FormDescription>
+                          {m.form?.nameDescription || 'От 3 до 64 символов.'}
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -128,11 +131,13 @@ export function EditSource({
                     name="type"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Тип</FormLabel>
+                        <FormLabel>{m.form?.typeLabel || 'Тип'}</FormLabel>
                         <FormControl>
                           <Select value={field.value} onValueChange={field.onChange}>
                             <SelectTrigger>
-                              <SelectValue placeholder="Выберите тип подключения" />
+                              <SelectValue
+                                placeholder={m.form?.typePlaceholder || 'Выберите тип подключения'}
+                              />
                             </SelectTrigger>
                             <SelectContent>
                               {types.map((type) => (
@@ -155,9 +160,9 @@ export function EditSource({
               </SheetDescription>
             </SheetHeader>
             <SheetFooter>
-              <Button type="submit">Сохранить</Button>
+              <Button type="submit">{m.form?.save || 'Сохранить'}</Button>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Отмена
+                {m.form?.cancel || 'Отмена'}
               </Button>
             </SheetFooter>
           </form>

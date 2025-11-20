@@ -15,6 +15,25 @@ import { typesIcon } from './config'
 import { Avatar, AvatarImage } from '~/components/ui/avatar'
 import { SourcesDelete } from './functions'
 
+type SourcesMessages = {
+  table?: {
+    name?: string
+    type?: string
+    createdBy?: string
+    createdAt?: string
+    updatedAt?: string
+    ariaSelectAll?: string
+    ariaSelectRow?: string
+  }
+  actions?: {
+    menuAria?: string
+    label?: string
+    edit?: string
+    delete?: string
+    confirmDelete?: string
+  }
+}
+
 export type Sources = {
   id: number
   name: string
@@ -25,8 +44,10 @@ export type Sources = {
 
 export const makeColumns = ({
   onEdit,
+  messages,
 }: {
   onEdit: (source: DataSource) => void
+  messages: SourcesMessages
 }): ColumnDef<DataSource>[] => [
   {
     id: 'select',
@@ -36,14 +57,14 @@ export const makeColumns = ({
           table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
+        aria-label={messages.table?.ariaSelectAll || 'Select all'}
       />
     ),
     cell: ({ row }) => (
       <Checkbox
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
+        aria-label={messages.table?.ariaSelectRow || 'Select row'}
       />
     ),
     enableSorting: false,
@@ -56,21 +77,26 @@ export const makeColumns = ({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
+              <span className="sr-only">{messages.actions?.menuAria || 'Open menu'}</span>
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuLabel>{messages.actions?.label || 'Actions'}</DropdownMenuLabel>
             <DropdownMenuItem onClick={() => onEdit(row.original)}>
-              <Pencil /> Изменить
+              <Pencil /> {messages.actions?.edit || 'Изменить'}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               variant="destructive"
-              onClick={() => SourcesDelete([row.original.id])}
+              onClick={() =>
+                SourcesDelete(
+                  [row.original.id],
+                  messages.actions?.confirmDelete || 'Вы точно уверены?'
+                )
+              }
             >
-              <Trash /> Удалить
+              <Trash /> {messages.actions?.delete || 'Удалить'}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -79,11 +105,11 @@ export const makeColumns = ({
   },
   {
     accessorKey: 'name',
-    header: 'Имя',
+    header: messages.table?.name || 'Имя',
   },
   {
     accessorKey: 'type',
-    header: 'Тип',
+    header: messages.table?.type || 'Тип',
     cell: ({ row }) => {
       const type = row.original.type
       const icon = typesIcon[type] || ''
@@ -101,17 +127,17 @@ export const makeColumns = ({
   },
   {
     accessorKey: 'createdBy',
-    header: 'Создано пользователем',
+    header: messages.table?.createdBy || 'Создано пользователем',
     cell: ({ row }) => {
       return row.original.user.fullName
     },
   },
   {
     accessorKey: 'createdAtFormatted',
-    header: 'Дата создания',
+    header: messages.table?.createdAt || 'Дата создания',
   },
   {
     accessorKey: 'updatedAtFormatted',
-    header: 'Дата обновления',
+    header: messages.table?.updatedAt || 'Дата обновления',
   },
 ]

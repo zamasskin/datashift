@@ -25,7 +25,12 @@ import { EditSource } from './edit-source'
 import { SourcesDelete } from './functions'
 
 export function DataTable() {
-  const { props: pageProps } = usePage<{ dataSources: DataSource[]; csrfToken: string }>()
+  const { props: pageProps } = usePage<{
+    dataSources: DataSource[]
+    csrfToken: string
+    sourcesMessages?: any
+  }>()
+  const m = pageProps.sourcesMessages || {}
 
   const [findTimeout, setFindTimeout] = React.useState<NodeJS.Timeout | null>(null)
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -45,8 +50,9 @@ export function DataTable() {
           setEditing(src)
           setEditOpen(true)
         },
+        messages: m,
       }),
-    []
+    [m]
   )
 
   const table = useReactTable({
@@ -62,12 +68,12 @@ export function DataTable() {
   const onSelectedDelete = () => {
     const selectedRows = table.getFilteredSelectedRowModel().rows
     if (selectedRows.length === 0) {
-      alert('Выберите записи для удаления.')
+      alert(m.selection?.noneSelectedAlert || 'Выберите записи для удаления.')
       return
     }
 
     const selectedIds = selectedRows.map((row) => row.original.id)
-    SourcesDelete(selectedIds)
+    SourcesDelete(selectedIds, m.actions?.confirmDelete || 'Вы точно уверены?')
   }
 
   const onFindChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -89,7 +95,11 @@ export function DataTable() {
         <div className="flex items-center justify-between px-4 lg:px-6">
           <div>
             <div className="flex items-center">
-              <Input placeholder="Поиск..." onChange={onFindChange} className="max-w-sm" />
+              <Input
+                placeholder={m.filter?.searchPlaceholder || 'Поиск...'}
+                onChange={onFindChange}
+                className="max-w-sm"
+              />
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -97,8 +107,10 @@ export function DataTable() {
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm">
                   <IconLayoutColumns />
-                  <span className="hidden lg:inline">Настроить столбцы</span>
-                  <span className="lg:hidden">Столбцы</span>
+                  <span className="hidden lg:inline">
+                    {m.filter?.columnsConfigure || 'Настроить столбцы'}
+                  </span>
+                  <span className="lg:hidden">{m.filter?.columnsShort || 'Столбцы'}</span>
                   <IconChevronDown />
                 </Button>
               </DropdownMenuTrigger>
@@ -158,7 +170,7 @@ export function DataTable() {
               ) : (
                 <TableRow>
                   <TableCell colSpan={columns.length} className="h-24 text-center">
-                    Нет не одного результата.
+                    {m.table?.empty || 'Нет ни одного результата.'}
                   </TableCell>
                 </TableRow>
               )}
@@ -168,12 +180,12 @@ export function DataTable() {
         <EditSource open={editOpen} onOpenChange={setEditOpen} source={editing} />
         <div className="flex items-center justify-end space-x-2 py-4">
           <div className="text-muted-foreground flex-1 text-sm">
-            {table.getFilteredSelectedRowModel().rows.length} из{' '}
-            {table.getFilteredRowModel().rows.length} записи(ей) выбрано.
+            {table.getFilteredSelectedRowModel().rows.length} {m.selection?.of || 'из'}{' '}
+            {table.getFilteredRowModel().rows.length} {m.selection?.suffix || 'записи(ей) выбрано.'}
           </div>
           <div className="space-x-2">
             <Button variant="destructive" size="sm" onClick={onSelectedDelete}>
-              Удалить
+              {m.actions?.bulkDelete || 'Удалить'}
             </Button>
           </div>
         </div>

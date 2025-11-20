@@ -1,10 +1,59 @@
 {
-  "columns": {
-    "id": "ID",
+  "title": "Подключения",
+  "filter": {
+    "searchPlaceholder": "Поиск...",
+    "columnsConfigure": "Настроить столбцы",
+    "columnsShort": "Столбцы"
+  },
+  "table": {
     "name": "Имя",
     "type": "Тип",
-    "createdBy": "Создано",
-    "createdAtFormatted": "Создано",
-    "updatedAtFormatted": "Обновлено"
+    "createdBy": "Создано пользователем",
+    "createdAt": "Дата создания",
+    "updatedAt": "Дата обновления",
+    "empty": "Нет ни одного результата.",
+    "ariaSelectAll": "Выбрать все",
+    "ariaSelectRow": "Выбрать запись"
+  },
+  "actions": {
+    "menuAria": "Открыть меню",
+    "label": "Действия",
+    "edit": "Изменить",
+    "delete": "Удалить",
+    "bulkDelete": "Удалить",
+    "confirmDelete": "Вы точно уверены?"
+  },
+  "selection": {
+    "of": "из",
+    "suffix": "записи(ей) выбрано.",
+    "noneSelectedAlert": "Выберите записи для удаления."
+  },
+  "form": {
+    "nameLabel": "Наименование",
+    "nameDescription": "От 3 до 64 символов.",
+    "typeLabel": "Тип",
+    "typePlaceholder": "Выберите тип подключения",
+    "createTitle": "Новое подключение",
+    "createSubmit": "Создать",
+    "cancel": "Отмена",
+    "editTitle": "Редактировать подключение",
+    "save": "Сохранить",
+    "sqliteFileLabel": "Путь к файлу",
+    "sqliteFilePlaceholder": "db.sqlite",
+    "sqlHostLabel": "Хост",
+    "sqlHostPlaceholder": "localhost",
+    "sqlPortLabel": "Порт",
+    "sqlUsernameLabel": "Имя пользователя",
+    "sqlPasswordLabel": "Пароль",
+    "sqlDatabaseLabel": "База данных"
+  },
+  "validation": {
+    "sqliteFileOpen": "Не удалось открыть файл SQLite. Проверьте путь и права доступа.",
+    "connectionRefused": "Подключение отклонено. Проверьте host/port и доступность сервера.",
+    "hostNotFound": "Хост не найден. Проверьте имя хоста.",
+    "connectionTimeout": "Таймаут подключения. Проверьте сеть и порт.",
+    "invalidCredentials": "Неверные имя пользователя или пароль.",
+    "databaseNotExist": "База данных не существует.",
+    "genericHostError": "Ошибка подключения: {{msg}}"
   }
 }

@@ -3,12 +3,15 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '~/comp
 import { Input } from '~/components/ui/input'
 import { schemaInsert } from './config'
 import * as z from 'zod'
+import { usePage } from '@inertiajs/react'
 
 export function SqlDataSourceFormConfig({
   form,
 }: {
   form: UseFormReturn<z.infer<typeof schemaInsert>>
 }) {
+  const { props } = usePage<{ sourcesMessages?: any }>()
+  const m = props.sourcesMessages || {}
   const selectedType = form.watch('type')
   const port = selectedType == 'mysql' ? 3306 : 5432
   return (
@@ -20,9 +23,9 @@ export function SqlDataSourceFormConfig({
             name="config.host"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Хост</FormLabel>
+                <FormLabel>{m.form?.sqlHostLabel || 'Хост'}</FormLabel>
                 <FormControl>
-                  <Input placeholder="localhost" {...field} />
+                  <Input placeholder={m.form?.sqlHostPlaceholder || 'localhost'} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -35,7 +38,7 @@ export function SqlDataSourceFormConfig({
             name="config.port"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Порт</FormLabel>
+                <FormLabel>{m.form?.sqlPortLabel || 'Порт'}</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
@@ -58,7 +61,7 @@ export function SqlDataSourceFormConfig({
         name="config.username"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Имя пользователя</FormLabel>
+            <FormLabel>{m.form?.sqlUsernameLabel || 'Имя пользователя'}</FormLabel>
             <FormControl>
               <Input placeholder="" {...field} />
             </FormControl>
@@ -71,7 +74,7 @@ export function SqlDataSourceFormConfig({
         name="config.password"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Пароль</FormLabel>
+            <FormLabel>{m.form?.sqlPasswordLabel || 'Пароль'}</FormLabel>
             <FormControl>
               <Input type="password" {...field} />
             </FormControl>
@@ -84,7 +87,7 @@ export function SqlDataSourceFormConfig({
         name="config.database"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>База данных</FormLabel>
+            <FormLabel>{m.form?.sqlDatabaseLabel || 'База данных'}</FormLabel>
             <FormControl>
               <Input {...field} />
             </FormControl>
@@ -101,6 +104,8 @@ export function SqliteDataSourceFormConfig({
 }: {
   form: UseFormReturn<z.infer<typeof schemaInsert>>
 }) {
+  const { props } = usePage<{ sourcesMessages?: any }>()
+  const m = props.sourcesMessages || {}
   return (
     <>
       <FormField
@@ -108,9 +113,9 @@ export function SqliteDataSourceFormConfig({
         name="config.file"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Путь к файлу</FormLabel>
+            <FormLabel>{m.form?.sqliteFileLabel || 'Путь к файлу'}</FormLabel>
             <FormControl>
-              <Input placeholder="db.sqlite" {...field} />
+              <Input placeholder={m.form?.sqliteFilePlaceholder || 'db.sqlite'} {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>

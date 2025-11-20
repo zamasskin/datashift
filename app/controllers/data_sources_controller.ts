@@ -9,18 +9,19 @@ export default class DataSourcesController {
   /**
    * Display a list of resource
    */
-  async index({ inertia }: HttpContext) {
+  async index({ inertia, i18n }: HttpContext) {
     const dataSources = await DataSource.query().preload('user')
 
     return inertia.render('sources/index', {
       dataSources,
+      sourcesMessages: this.buildSourcesMessages(i18n),
     })
   }
 
   /**
    * Массовое удаление источников данных по массиву ID
    */
-  async destroy({ request, response, inertia }: HttpContext) {
+  async destroy({ request, response, inertia, i18n }: HttpContext) {
     try {
       const { ids } = await this.validateDeleteIds(request)
       const uniqueIds = Array.from(new Set(ids))
@@ -63,14 +64,18 @@ export default class DataSourcesController {
     } catch (error: any) {
       const fieldErrors = this.mapVineErrors(error)
       const dataSources = await DataSource.query().preload('user')
-      return inertia.render('sources/index', { dataSources, errors: fieldErrors }, { status: 422 })
+      return inertia.render(
+        'sources/index',
+        { dataSources, errors: fieldErrors, sourcesMessages: this.buildSourcesMessages(i18n) },
+        { status: 422 }
+      )
     }
   }
 
   /**
    * Обновление источника данных
    */
-  async update({ request, response, inertia }: HttpContext) {
+  async update({ request, response, inertia, i18n }: HttpContext) {
     const id = request.input('id')
     try {
       if (!Number.isFinite(id)) {
@@ -136,6 +141,7 @@ export default class DataSourcesController {
                             'Не удалось переименовать файл SQLite. Проверьте права доступа.',
                         },
                         editId: id,
+                        sourcesMessages: this.buildSourcesMessages(i18n),
                       },
                       { status: 422 }
                     )
@@ -151,11 +157,16 @@ export default class DataSourcesController {
       try {
         await this.checkConnection(basePayload.type, configPayload)
       } catch (connError) {
-        const connErrors = this.mapConnectionErrors(connError, basePayload.type)
+        const connErrors = this.mapConnectionErrors(connError, basePayload.type, i18n)
         const dataSources = await DataSource.query().preload('user')
         return inertia.render(
           'sources/index',
-          { dataSources, errors: connErrors, editId: id },
+          {
+            dataSources,
+            errors: connErrors,
+            editId: id,
+            sourcesMessages: this.buildSourcesMessages(i18n),
+          },
           { status: 422 }
         )
       }
@@ -169,7 +180,12 @@ export default class DataSourcesController {
       const dataSources = await DataSource.query().preload('user')
       return inertia.render(
         'sources/index',
-        { dataSources, errors: fieldErrors, editId: id },
+        {
+          dataSources,
+          errors: fieldErrors,
+          editId: id,
+          sourcesMessages: this.buildSourcesMessages(i18n),
+        },
         { status: 422 }
       )
     }
@@ -188,7 +204,7 @@ export default class DataSourcesController {
     return schema.validate(request.only(['ids']))
   }
 
-  async store({ request, auth, response, inertia }: HttpContext) {
+  async store({ request, auth, response, inertia, i18n }: HttpContext) {
     try {
       const { basePayload, configPayload } = await this.validateAndNormalize(request)
 
@@ -196,11 +212,16 @@ export default class DataSourcesController {
       try {
         await this.checkConnection(basePayload.type, configPayload)
       } catch (connError) {
-        const connErrors = this.mapConnectionErrors(connError, basePayload.type)
+        const connErrors = this.mapConnectionErrors(connError, basePayload.type, i18n)
         const dataSources = await DataSource.query().preload('user')
         return inertia.render(
           'sources/index',
-          { dataSources, errors: connErrors, newOpen: true },
+          {
+            dataSources,
+            errors: connErrors,
+            newOpen: true,
+            sourcesMessages: this.buildSourcesMessages(i18n),
+          },
           { status: 422 }
         )
       }
@@ -218,9 +239,67 @@ export default class DataSourcesController {
       const dataSources = await DataSource.query().preload('user')
       return inertia.render(
         'sources/index',
-        { dataSources, errors: fieldErrors, newOpen: true },
+        {
+          dataSources,
+          errors: fieldErrors,
+          newOpen: true,
+          sourcesMessages: this.buildSourcesMessages(i18n),
+        },
         { status: 422 }
       )
+    }
+  }
+
+  private buildSourcesMessages(i18n: HttpContext['i18n']) {
+    return {
+      title: i18n.t('sources.title'),
+      filter: {
+        searchPlaceholder: i18n.t('sources.filter.searchPlaceholder'),
+        columnsConfigure: i18n.t('sources.filter.columnsConfigure'),
+        columnsShort: i18n.t('sources.filter.columnsShort'),
+      },
+      table: {
+        name: i18n.t('sources.table.name'),
+        type: i18n.t('sources.table.type'),
+        createdBy: i18n.t('sources.table.createdBy'),
+        createdAt: i18n.t('sources.table.createdAt'),
+        updatedAt: i18n.t('sources.table.updatedAt'),
+        empty: i18n.t('sources.table.empty'),
+        ariaSelectAll: i18n.t('sources.table.ariaSelectAll'),
+        ariaSelectRow: i18n.t('sources.table.ariaSelectRow'),
+      },
+      actions: {
+        menuAria: i18n.t('sources.actions.menuAria'),
+        label: i18n.t('sources.actions.label'),
+        edit: i18n.t('sources.actions.edit'),
+        delete: i18n.t('sources.actions.delete'),
+        bulkDelete: i18n.t('sources.actions.bulkDelete'),
+        confirmDelete: i18n.t('sources.actions.confirmDelete'),
+      },
+      selection: {
+        of: i18n.t('sources.selection.of'),
+        suffix: i18n.t('sources.selection.suffix'),
+        noneSelectedAlert: i18n.t('sources.selection.noneSelectedAlert'),
+      },
+      form: {
+        nameLabel: i18n.t('sources.form.nameLabel'),
+        nameDescription: i18n.t('sources.form.nameDescription'),
+        typeLabel: i18n.t('sources.form.typeLabel'),
+        typePlaceholder: i18n.t('sources.form.typePlaceholder'),
+        createTitle: i18n.t('sources.form.createTitle'),
+        createSubmit: i18n.t('sources.form.createSubmit'),
+        cancel: i18n.t('sources.form.cancel'),
+        editTitle: i18n.t('sources.form.editTitle'),
+        save: i18n.t('sources.form.save'),
+        sqliteFileLabel: i18n.t('sources.form.sqliteFileLabel'),
+        sqliteFilePlaceholder: i18n.t('sources.form.sqliteFilePlaceholder'),
+        sqlHostLabel: i18n.t('sources.form.sqlHostLabel'),
+        sqlHostPlaceholder: i18n.t('sources.form.sqlHostPlaceholder'),
+        sqlPortLabel: i18n.t('sources.form.sqlPortLabel'),
+        sqlUsernameLabel: i18n.t('sources.form.sqlUsernameLabel'),
+        sqlPasswordLabel: i18n.t('sources.form.sqlPasswordLabel'),
+        sqlDatabaseLabel: i18n.t('sources.form.sqlDatabaseLabel'),
+      },
     }
   }
 
@@ -386,41 +465,45 @@ export default class DataSourcesController {
   /**
    * Возвращает дружественные сообщения ошибок для проблем подключения.
    */
-  private mapConnectionErrors(error: any, type: string): Record<string, string> {
+  private mapConnectionErrors(
+    error: any,
+    type: string,
+    i18n: HttpContext['i18n']
+  ): Record<string, string> {
     const msg = (error?.message && String(error.message)) || 'Не удалось подключиться'
     const code = String(error?.code || error?.errno || '')
 
     // Базовые сообщения по типам
     if (type === 'sqlite') {
       return {
-        'config.file': 'Не удалось открыть файл SQLite. Проверьте путь и права доступа.',
+        'config.file': i18n.t('sources.validation.sqliteFileOpen'),
       }
     }
 
     // Для SQL баз пытаемся дать подсказку
     if (code === 'ECONNREFUSED') {
-      return { 'config.host': 'Подключение отклонено. Проверьте host/port и доступность сервера.' }
+      return { 'config.host': i18n.t('sources.validation.connectionRefused') }
     }
     if (code === 'ENOTFOUND') {
-      return { 'config.host': 'Хост не найден. Проверьте имя хоста.' }
+      return { 'config.host': i18n.t('sources.validation.hostNotFound') }
     }
     if (code === 'ETIMEDOUT') {
-      return { 'config.host': 'Таймаут подключения. Проверьте сеть и порт.' }
+      return { 'config.host': i18n.t('sources.validation.connectionTimeout') }
     }
     // MySQL: неверные учётные данные
     if (code === 'ER_ACCESS_DENIED_ERROR') {
-      return { 'config.username': 'Неверные имя пользователя или пароль.' }
+      return { 'config.username': i18n.t('sources.validation.invalidCredentials') }
     }
     // Postgres: неверный пароль
     if (code === '28P01') {
-      return { 'config.username': 'Неверные имя пользователя или пароль.' }
+      return { 'config.username': i18n.t('sources.validation.invalidCredentials') }
     }
     // Postgres: база не существует
     if (code === '3D000') {
-      return { 'config.database': 'База данных не существует.' }
+      return { 'config.database': i18n.t('sources.validation.databaseNotExist') }
     }
 
     // По умолчанию — показать общий текст у поля host
-    return { 'config.host': `Ошибка подключения: ${msg}` }
+    return { 'config.host': i18n.t('sources.validation.genericHostError', { msg }) }
   }
 }

@@ -38,7 +38,8 @@ import { schemaInsert, types, typesIcon } from './config'
 
 export function CreateSource() {
   const [open, setOpen] = useState(false)
-  const { props } = usePage<{ csrfToken: string }>()
+  const { props } = usePage<{ csrfToken: string; sourcesMessages?: any }>()
+  const m = props.sourcesMessages || {}
 
   const form = useForm<z.infer<typeof schemaInsert>>({
     resolver: zodResolver(schemaInsert),
@@ -70,14 +71,14 @@ export function CreateSource() {
         <SheetTrigger asChild>
           <Button variant="outline" size="sm">
             <IconPlus />
-            <span className="hidden lg:inline">Создать</span>
+            <span className="hidden lg:inline">{m.form?.createSubmit || 'Создать'}</span>
           </Button>
         </SheetTrigger>
         <SheetContent>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             {props.csrfToken && <input type="hidden" name="_csrf" value={props.csrfToken} />}
             <SheetHeader>
-              <SheetTitle>Новое подключение</SheetTitle>
+              <SheetTitle>{m.form?.createTitle || 'Новое подключение'}</SheetTitle>
               <SheetDescription>
                 {/* ... existing code ... */}
                 <div className="flex flex-col gap-6">
@@ -86,11 +87,13 @@ export function CreateSource() {
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Наименование</FormLabel>
+                        <FormLabel>{m.form?.nameLabel || 'Наименование'}</FormLabel>
                         <FormControl>
                           <Input placeholder="name" {...field} />
                         </FormControl>
-                        <FormDescription>От 3 до 64 символов.</FormDescription>
+                        <FormDescription>
+                          {m.form?.nameDescription || 'От 3 до 64 символов.'}
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -102,11 +105,13 @@ export function CreateSource() {
                     name="type"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Тип</FormLabel>
+                        <FormLabel>{m.form?.typeLabel || 'Тип'}</FormLabel>
                         <FormControl>
                           <Select value={field.value} onValueChange={field.onChange}>
                             <SelectTrigger>
-                              <SelectValue placeholder="Выберите тип подключения" />
+                              <SelectValue
+                                placeholder={m.form?.typePlaceholder || 'Выберите тип подключения'}
+                              />
                             </SelectTrigger>
                             <SelectContent>
                               {types.map((type) => (
@@ -129,9 +134,9 @@ export function CreateSource() {
               </SheetDescription>
             </SheetHeader>
             <SheetFooter>
-              <Button type="submit">Создать</Button>
+              <Button type="submit">{m.form?.createSubmit || 'Создать'}</Button>
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-                Отмена
+                {m.form?.cancel || 'Отмена'}
               </Button>
             </SheetFooter>
           </form>
