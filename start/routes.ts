@@ -42,6 +42,7 @@ router
     // Unified REST search
     router.get('/search', [SearchController, 'index'])
     router.get('/metrics/dashboard', [MetricsController, 'dashboard'])
+    router.get('/metrics/migration/:id', [MetricsController, 'migration'])
 
     // SSE
     router.get('/stream', [StreamsController, 'stream'])

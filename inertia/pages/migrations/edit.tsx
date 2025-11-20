@@ -34,6 +34,7 @@ import { cn } from '~/lib/utils'
 import { useMigrationRuns } from '~/store/migrations'
 import { Progress } from '~/components/ui/progress'
 import { Spinner } from '~/components/ui/spinner'
+import { DashboardAreaChart } from '~/components/charts/area-chart'
 import { toast } from 'sonner'
 
 const MigrationEdit = ({ migration }: { migration: Migration }) => {
@@ -217,6 +218,21 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
     <>
       <Head title="Миграции" />
       <div className="px-4 lg:px-6 space-y-6">
+        {(() => {
+          const metrics = useMigrationMetrics(migration.id)
+          return (
+            <DashboardAreaChart
+              title="Активность миграции"
+              hint="Запуски, успешные и отменённые, и ошибки"
+              badge="30 дн."
+              dataRuns={metrics.runs}
+              dataErrors={metrics.errors}
+              dataSuccess={metrics.runsSuccess}
+              dataCanceled={metrics.runsCanceled}
+            />
+          )
+        })()}
+
         <Item variant="outline">
           <ItemContent>
             <div className="flex items-center space-x-2">
@@ -486,6 +502,47 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
       </div>
     </>
   )
+}
+
+function useMigrationMetrics(migrationId: number) {
+  const [runs, setRuns] = useState<Array<{ date: string; value: number }>>([])
+  const [errors, setErrors] = useState<Array<{ date: string; value: number }>>([])
+  const [runsSuccess, setRunsSuccess] = useState<Array<{ date: string; value: number }>>([])
+  const [runsCanceled, setRunsCanceled] = useState<Array<{ date: string; value: number }>>([])
+  useEffect(() => {
+    let aborted = false
+    ;(async () => {
+      try {
+        const res = await fetch(`/metrics/migration/${migrationId}?days=30`, {
+          credentials: 'same-origin',
+          headers: { accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        })
+        if (!res.ok) return
+        const json = await res.json()
+        const runsRaw = json?.series?.migrationRuns
+        const errorsRaw = json?.series?.errors
+        const runsSuccessRaw = json?.series?.runsSuccess
+        const runsCanceledRaw = json?.series?.runsCanceled
+        const toPoints = (raw: any): Array<{ date: string; value: number }> =>
+          Array.isArray(raw)
+            ? raw
+            : Object.entries(raw ?? {}).map(([date, value]) => ({
+                date,
+                value: Number(value) || 0,
+              }))
+        if (!aborted) {
+          setRuns(toPoints(runsRaw))
+          setErrors(toPoints(errorsRaw))
+          setRunsSuccess(toPoints(runsSuccessRaw))
+          setRunsCanceled(toPoints(runsCanceledRaw))
+        }
+      } catch {}
+    })()
+    return () => {
+      aborted = true
+    }
+  }, [migrationId])
+  return { runs, errors, runsSuccess, runsCanceled }
 }
 
 MigrationEdit.layout = (page: React.ReactNode) => {
