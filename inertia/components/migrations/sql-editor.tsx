@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import Editor, { useMonaco } from '@monaco-editor/react'
 import { useTheme } from '../theme-provider'
 import _ from 'lodash'
+import { usePage } from '@inertiajs/react'
 
 type SqlEditorProps = {
   value: string
@@ -11,6 +12,9 @@ type SqlEditorProps = {
 }
 
 export function SqlEditor(props: SqlEditorProps) {
+  const page = usePage<{ layoutMessages: { components: { sqlEditor: Record<string, string> } } }>()
+  const messages = page.props.layoutMessages.components.sqlEditor
+
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
 
@@ -40,17 +44,6 @@ export function SqlEditor(props: SqlEditorProps) {
 
         console.log('suggestions', props?.suggestions)
 
-        const paramSuggestions = params.map((param, i) => ({
-          label: `{params.${param}}`,
-          kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: `params.${param}`,
-          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-          range,
-          detail: 'Параметр',
-          sortText: `00${i}`,
-          preselect: i === 0,
-        }))
-
         const prevResultSuggestions = Object.entries(fields).flatMap(([alias, cols]) =>
           (cols || []).map((c, i) => ({
             label: `{${alias}.${c}}`,
@@ -58,10 +51,21 @@ export function SqlEditor(props: SqlEditorProps) {
             insertText: `${alias}.${c}`,
             insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
             range,
-            detail: `Из результата ${alias}`,
-            sortText: `01${i}`,
+            detail: `${messages.fromResult || 'Из результата'} ${alias}`,
+            sortText: `0001${i}`,
           }))
         )
+
+        const paramSuggestions = params.map((param, i) => ({
+          label: `{params.${param}}`,
+          kind: monaco.languages.CompletionItemKind.Snippet,
+          insertText: `params.${param}`,
+          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          range,
+          detail: messages.param || 'Параметр',
+          sortText: `0002${i}`,
+          preselect: i === 0,
+        }))
 
         const suggestions = [
           ...paramSuggestions,
@@ -72,8 +76,8 @@ export function SqlEditor(props: SqlEditorProps) {
             insertText: 'SELECT * FROM ${1:table} WHERE ${2:condition};',
             insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
             range,
-            detail: 'Шаблон запроса',
-            documentation: 'Быстрый шаблон SELECT',
+            detail: messages.templateQuery || 'Шаблон запроса',
+            documentation: messages.templateQuickSelect || 'Быстрый шаблон SELECT',
             sortText: '1',
           },
           ...['SELECT', 'FROM', 'WHERE', 'GROUP BY', 'ORDER BY'].map((kw, i) => ({
@@ -81,7 +85,7 @@ export function SqlEditor(props: SqlEditorProps) {
             kind: monaco.languages.CompletionItemKind.Keyword,
             insertText: kw,
             range,
-            detail: 'Ключевое слово',
+            detail: messages.keyword || 'Ключевое слово',
             sortText: `2${i}`,
           })),
           ...tables.map((t, i) => ({
@@ -89,7 +93,7 @@ export function SqlEditor(props: SqlEditorProps) {
             kind: monaco.languages.CompletionItemKind.Keyword,
             insertText: t,
             range,
-            detail: 'Таблица',
+            detail: messages.table || 'Таблица',
             sortText: `3${i}`,
           })),
         ]

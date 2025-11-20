@@ -134,6 +134,16 @@ const inertiaConfig = defineConfig({
             },
           },
         },
+        components: {
+          sqlEditor: {
+            param: ctx.i18n.t('layout.components.sqlEditor.param'),
+            fromResult: ctx.i18n.t('layout.components.sqlEditor.fromResult'),
+            templateQuery: ctx.i18n.t('layout.components.sqlEditor.templateQuery'),
+            templateQuickSelect: ctx.i18n.t('layout.components.sqlEditor.templateQuickSelect'),
+            keyword: ctx.i18n.t('layout.components.sqlEditor.keyword'),
+            table: ctx.i18n.t('layout.components.sqlEditor.table'),
+          },
+        },
       })),
   },
 

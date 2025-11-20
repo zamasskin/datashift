@@ -84,5 +84,15 @@
         "resume": "Resume"
       }
     }
+  },
+  "components": {
+    "sqlEditor": {
+      "param": "Parameter",
+      "fromResult": "From result ",
+      "templateQuery": "Query template",
+      "templateQuickSelect": "Quick SELECT template",
+      "keyword": "Keyword",
+      "table": "Table"
+    }
   }
 }

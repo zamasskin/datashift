@@ -84,5 +84,15 @@
         "resume": "Возобновление"
       }
     }
+  },
+  "components": {
+    "sqlEditor": {
+      "param": "Параметр",
+      "fromResult": "Из результата ",
+      "templateQuery": "Шаблон запроса",
+      "templateQuickSelect": "Быстрый шаблон SELECT",
+      "keyword": "Ключевое слово",
+      "table": "Таблица"
+    }
   }
 }
