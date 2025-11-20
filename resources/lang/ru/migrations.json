@@ -103,5 +103,114 @@
     "isActiveInvalid": "Укажите корректную активность",
     "cronInvalid": "Укажите корректное расписание",
     "valueInvalid": "Укажите корректное значение"
+  },
+  "mappingEditor": {
+    "title": "Создание соответствия",
+    "mappingsTitle": "Соответствия колонок",
+    "addMapping": "Добавить соответствие",
+    "noMappings": "Пока нет добавленных соответствий",
+    "invalidColumnsHint": " (есть недоступные колонки)",
+    "deleteMapping": "Удалить соответствие",
+    "updateTitle": "Условия обновления",
+    "addCondition": "Добавить условие",
+    "noConditions": "Пока нет добавленных условий",
+    "deleteCondition": "Удалить условие",
+    "saveBtnName": "Добавить",
+    "loading": "Загрузка данных...",
+    "addMappingTitle": "Добавить соответствие",
+    "tableColumnLabel": "Колонка таблицы",
+    "selectColumnPlaceholder": "Выберите колонку",
+    "noColumns": "Нет колонок",
+    "resultColumnLabel": "Колонка результата",
+    "addUpdateConditionTitle": "Добавить условие обновления",
+    "aliasColumnLabel": "Alias колонка",
+    "operatorLabel": "Оператор",
+    "selectOperatorPlaceholder": "Выберите оператор",
+    "condLabel": "Условие (cond)",
+    "mappingsRequiredError": "Добавьте хотя бы одно соответствие колонок перед сохранением.",
+    "invalidColumnsError": "Найдены выбранные колонки, которых нет в доступных списках. Исправьте соответствия/условия перед сохранением."
+  },
+  "paramsEditor": {
+    "label": "Параметры",
+    "addParam": "Добавить параметр",
+    "type": {
+      "string": "Строка",
+      "number": "Число",
+      "boolean": "Булево",
+      "dateOp": "Дата (операция)"
+    },
+    "typePrefix": "Тип:",
+    "valuePrefix": "Значение:",
+    "editParam": "Редактировать параметр",
+    "edit": "Редактировать",
+    "delete": "Удалить",
+    "deleteParam": "Удалить параметр",
+    "dialog": {
+      "addTitle": "Добавить параметр",
+      "editTitle": "Редактировать параметр"
+    },
+    "errors": {
+      "fillKey": "Заполните ключ",
+      "keyFormat": "Ключ должен соответствовать: [A-Za-z_][A-Za-z0-9_]*",
+      "keyUnique": "Ключ должен быть уникальным"
+    },
+    "keyLabel": "Ключ",
+    "keyPlaceholder": "ключ (имя переменной)",
+    "typeLabel": "Тип",
+    "typeParamTitle": "Тип параметра",
+    "typePlaceholder": "тип",
+    "valueLabel": "Значение",
+    "valuePlaceholder": "значение",
+    "stringValueTitle": "Строковое значение",
+    "booleanValueTitle": "Булево значение",
+    "numberPlaceholder": "число",
+    "date": {
+      "opTitle": "Операция даты",
+      "opPlaceholder": "операция",
+      "ops": {
+        "add": "Прибавить",
+        "subtract": "Отнять",
+        "start": "Начало",
+        "end": "Конец",
+        "exact": "Точная дата"
+      },
+      "unitTitle": "Единица измерения",
+      "unitPlaceholder": "единица",
+      "deleteStep": "Удалить шаг",
+      "addStep": "Добавить шаг",
+      "boundaryTitle": "Единица (граница)",
+      "boundaryPlaceholder": "единица",
+      "periodTitle": "Период",
+      "periodPlaceholder": "период",
+      "chooseDate": "Выберите дату",
+      "units": {
+        "second": "Секунды",
+        "minute": "Минуты",
+        "hour": "Часы",
+        "day": "Дни",
+        "week": "Недели",
+        "month": "Месяцы",
+        "quarter": "Кварталы",
+        "year": "Годы"
+      },
+      "boundary": {
+        "day": "День",
+        "week": "Неделя",
+        "month": "Месяц",
+        "quarter": "Квартал",
+        "year": "Год"
+      },
+      "position": {
+        "current": "Текущей",
+        "next": "Следующей",
+        "previous": "Предыдущей"
+      }
+    },
+    "summary": {
+      "add": "Прибавить",
+      "subtract": "Отнять",
+      "start": "Начало",
+      "end": "Конец"
+    }
   }
 }

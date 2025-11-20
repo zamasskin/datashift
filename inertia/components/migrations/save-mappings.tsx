@@ -5,6 +5,7 @@ import { FileWarning, Trash2, Settings } from 'lucide-react'
 import { MappingEditor } from './mapping-editor'
 import type { SaveMapping } from '#interfaces/save_mapping'
 import { Item, ItemContent, ItemFooter } from '../ui/item'
+import { useI18n } from '~/hooks/useI18nLocal'
 
 export function SaveMappings({
   error,
@@ -21,10 +22,13 @@ export function SaveMappings({
   saveMappings?: SaveMapping[]
   onSave?: (mapping: SaveMapping[]) => void
 }) {
+  const { t } = useI18n()
   if (error) {
     return (
       <Alert variant="destructive">
-        <AlertTitle className="text-destructive">Ошибка</AlertTitle>
+        <AlertTitle className="text-destructive">
+          {t('migrations.saveMappings.error', 'Ошибка')}
+        </AlertTitle>
         <AlertDescription className="text-destructive">
           <pre className="whitespace-pre-wrap break-words max-h-48 overflow-auto">{error}</pre>
         </AlertDescription>
@@ -36,7 +40,7 @@ export function SaveMappings({
     return (
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Spinner />
-        Загрузка…
+        {t('migrations.saveMappings.loading', 'Загрузка…')}
       </div>
     )
   }
@@ -46,14 +50,19 @@ export function SaveMappings({
       {fetchConfigsLength === 0 && (
         <Alert>
           <FileWarning />
-          <AlertTitle>Датасеты ещё не настроены</AlertTitle>
+          <AlertTitle>
+            {t('migrations.saveMappings.datasetsNotConfiguredTitle', 'Датасеты ещё не настроены')}
+          </AlertTitle>
           <AlertDescription>
-            Чтобы настраивать соответствия, добавьте хотя бы один датасет.
+            {t(
+              'migrations.saveMappings.datasetsNotConfiguredDesc',
+              'Чтобы настраивать соответствия, добавьте хотя бы один датасет.'
+            )}
           </AlertDescription>
           <div className="col-start-2 mt-2">
             <a href="/sources">
               <Button size="sm" variant="outline">
-                Открыть подключения
+                {t('migrations.saveMappings.openConnectionsBtn', 'Открыть подключения')}
               </Button>
             </a>
           </div>
@@ -67,11 +76,17 @@ export function SaveMappings({
               <ItemContent>
                 <div className="space-y-2 p-1">
                   <div className="text-sm text-muted-foreground">
-                    ID: {mapping.id} · Подключение: {mapping.sourceId}
+                    {t('migrations.saveMappings.idPrefix', 'ID:')} {mapping.id} · {t(
+                      'migrations.saveMappings.sourcePrefix',
+                      'Подключение:'
+                    )}{' '}
+                    {mapping.sourceId}
                   </div>
 
                   <div className="space-y-1">
-                    <div className="font-medium">Соответствия колонок</div>
+                    <div className="font-medium">
+                      {t('migrations.mappingEditor.mappingsTitle', 'Соответствия колонок')}
+                    </div>
                     {mapping.savedMapping?.length ? (
                       <div className="flex flex-wrap gap-2">
                         {mapping.savedMapping.map((m: any, idx: number) => (
@@ -87,12 +102,16 @@ export function SaveMappings({
                         ))}
                       </div>
                     ) : (
-                      <div className="text-sm text-muted-foreground">Нет соответствий</div>
+                      <div className="text-sm text-muted-foreground">
+                        {t('migrations.mappingEditor.noMappings', 'Нет соответствий')}
+                      </div>
                     )}
                   </div>
 
                   <div className="space-y-1">
-                    <div className="font-medium">Условия обновления</div>
+                    <div className="font-medium">
+                      {t('migrations.mappingEditor.updateTitle', 'Условия обновления')}
+                    </div>
                     {mapping.updateOn?.length ? (
                       <div className="flex flex-wrap gap-2">
                         {mapping.updateOn.map((u: any, idx: number) => (
@@ -111,7 +130,9 @@ export function SaveMappings({
                         ))}
                       </div>
                     ) : (
-                      <div className="text-sm text-muted-foreground">Нет условий</div>
+                      <div className="text-sm text-muted-foreground">
+                        {t('migrations.mappingEditor.noConditions', 'Нет условий')}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -139,7 +160,7 @@ export function SaveMappings({
                         ...saveMappings.slice(0, idx).map((m) => `${m.id}.ID`),
                       ])
                     )}
-                    saveBtnName="Сохранить"
+                    saveBtnName={t('migrations.home.submit', 'Сохранить')}
                     onSave={(updated) => {
                       if (onSave) {
                         const next = saveMappings.map((m) => (m.id === updated.id ? updated : m))
@@ -166,7 +187,9 @@ export function SaveMappings({
               }
             }}
           >
-            <Button variant="outline">Добавить соответствие</Button>
+            <Button variant="outline">
+              {t('migrations.mappingEditor.addMapping', 'Добавить соответствие')}
+            </Button>
           </MappingEditor>
         </>
       )}

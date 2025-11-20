@@ -103,5 +103,114 @@
     "isActiveInvalid": "Please provide a valid activity",
     "cronInvalid": "Please provide a valid schedule",
     "valueInvalid": "Please provide a valid value"
+  },
+  "mappingEditor": {
+    "title": "Create mapping",
+    "mappingsTitle": "Column mappings",
+    "addMapping": "Add mapping",
+    "noMappings": "No mappings yet",
+    "invalidColumnsHint": " (unavailable columns present)",
+    "deleteMapping": "Delete mapping",
+    "updateTitle": "Update conditions",
+    "addCondition": "Add condition",
+    "noConditions": "No conditions yet",
+    "deleteCondition": "Delete condition",
+    "saveBtnName": "Add",
+    "loading": "Loading data...",
+    "addMappingTitle": "Add mapping",
+    "tableColumnLabel": "Table column",
+    "selectColumnPlaceholder": "Select a column",
+    "noColumns": "No columns",
+    "resultColumnLabel": "Result column",
+    "addUpdateConditionTitle": "Add update condition",
+    "aliasColumnLabel": "Alias column",
+    "operatorLabel": "Operator",
+    "selectOperatorPlaceholder": "Select operator",
+    "condLabel": "Condition (cond)",
+    "mappingsRequiredError": "Add at least one column mapping before saving.",
+    "invalidColumnsError": "Selected columns were not found among available lists. Fix mappings/conditions before saving."
+  },
+  "paramsEditor": {
+    "label": "Parameters",
+    "addParam": "Add parameter",
+    "type": {
+      "string": "String",
+      "number": "Number",
+      "boolean": "Boolean",
+      "dateOp": "Date (operation)"
+    },
+    "typePrefix": "Type:",
+    "valuePrefix": "Value:",
+    "editParam": "Edit parameter",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteParam": "Delete parameter",
+    "dialog": {
+      "addTitle": "Add parameter",
+      "editTitle": "Edit parameter"
+    },
+    "errors": {
+      "fillKey": "Enter a key",
+      "keyFormat": "Key must match: [A-Za-z_][A-Za-z0-9_]*",
+      "keyUnique": "Key must be unique"
+    },
+    "keyLabel": "Key",
+    "keyPlaceholder": "key (variable name)",
+    "typeLabel": "Type",
+    "typeParamTitle": "Parameter type",
+    "typePlaceholder": "type",
+    "valueLabel": "Value",
+    "valuePlaceholder": "value",
+    "stringValueTitle": "String value",
+    "booleanValueTitle": "Boolean value",
+    "numberPlaceholder": "number",
+    "date": {
+      "opTitle": "Date operation",
+      "opPlaceholder": "operation",
+      "ops": {
+        "add": "Add",
+        "subtract": "Subtract",
+        "start": "Start",
+        "end": "End",
+        "exact": "Exact date"
+      },
+      "unitTitle": "Unit",
+      "unitPlaceholder": "unit",
+      "deleteStep": "Delete step",
+      "addStep": "Add step",
+      "boundaryTitle": "Unit (boundary)",
+      "boundaryPlaceholder": "unit",
+      "periodTitle": "Period",
+      "periodPlaceholder": "period",
+      "chooseDate": "Choose date",
+      "units": {
+        "second": "Seconds",
+        "minute": "Minutes",
+        "hour": "Hours",
+        "day": "Days",
+        "week": "Weeks",
+        "month": "Months",
+        "quarter": "Quarters",
+        "year": "Years"
+      },
+      "boundary": {
+        "day": "Day",
+        "week": "Week",
+        "month": "Month",
+        "quarter": "Quarter",
+        "year": "Year"
+      },
+      "position": {
+        "current": "Current",
+        "next": "Next",
+        "previous": "Previous"
+      }
+    },
+    "summary": {
+      "add": "Add",
+      "subtract": "Subtract",
+      "start": "Start",
+      "end": "End"
+    }
   }
 }

@@ -1,6 +1,7 @@
 import { FetchConfigResult } from '#interfaces/fetchсonfigs'
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 import { Spinner } from '../ui/spinner'
+import { useI18n } from '~/hooks/useI18nLocal'
 
 export type FetchConfigResultProps = {
   result?: FetchConfigResult
@@ -9,10 +10,13 @@ export type FetchConfigResultProps = {
 }
 
 export function FetchConfigResultCard({ result, isLoading, error }: FetchConfigResultProps) {
+  const { t } = useI18n()
   if (error) {
     return (
       <Alert variant="destructive">
-        <AlertTitle className="text-destructive">Ошибка</AlertTitle>
+        <AlertTitle className="text-destructive">
+          {t('migrations.fetchConfigCard.error', 'Ошибка')}
+        </AlertTitle>
         <AlertDescription className="text-destructive">
           <pre className="whitespace-pre-wrap break-words max-h-48 overflow-auto">{error}</pre>
         </AlertDescription>
@@ -24,7 +28,7 @@ export function FetchConfigResultCard({ result, isLoading, error }: FetchConfigR
     return (
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Spinner />
-        Загрузка…
+        {t('migrations.fetchConfigCard.loading', 'Загрузка…')}
       </div>
     )
   }
@@ -35,12 +39,11 @@ export function FetchConfigResultCard({ result, isLoading, error }: FetchConfigR
 }
 
 export function ArrayColumnsResult({ result }: { result: FetchConfigResult }) {
+  const { t } = useI18n()
   if (!result || result.dataType !== 'array_columns') return null
 
   const columns = result.meta.columns || []
   const rows = Array.isArray(result.data) ? result.data : []
-  const count = typeof result.count === 'number' ? result.count : rows.length
-  const progress = typeof result.progress === 'number' ? result.progress : undefined
 
   const formatCell = (value: any) => {
     if (value === null || value === undefined) return ''
@@ -80,7 +83,7 @@ export function ArrayColumnsResult({ result }: { result: FetchConfigResult }) {
             {rows.length === 0 && (
               <tr>
                 <td className="p-3 text-muted-foreground" colSpan={columns.length || 1}>
-                  Нет данных для отображения
+                  {t('migrations.fetchConfigCard.noData', 'Нет данных для отображения')}
                 </td>
               </tr>
             )}

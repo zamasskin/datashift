@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { DurationInputArg1, DurationInputArg2 } from 'moment'
+import { DurationInputArg2 } from 'moment'
 import { Button } from '~/components/ui/button'
 import { Field, FieldContent, FieldError, FieldLabel } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
@@ -25,6 +25,7 @@ import {
 import { PlusIcon, Trash2Icon, Calendar as CalendarIcon } from 'lucide-react'
 import { format as formatDate, parse as parseDate } from 'date-fns'
 import { DateOp, DateParamValue, Param, ParamItem, ParamType } from '#interfaces/params'
+import { useI18n } from '~/hooks/useI18nLocal'
 
 export type ParamsEditorProps = {
   params?: Param[]
@@ -39,6 +40,7 @@ export function ParamsEditor({
   className,
   label = 'Параметры',
 }: ParamsEditorProps) {
+  const { t } = useI18n()
   const [items, setItems] = useState<ParamItem[]>(() => toItems(params))
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
@@ -94,26 +96,28 @@ export function ParamsEditor({
   }
 
   const typeOptions: { value: ParamType; label: string }[] = [
-    { value: 'string', label: 'Строка' },
-    { value: 'number', label: 'Число' },
-    { value: 'boolean', label: 'Булево' },
-    { value: 'date', label: 'Дата (операция)' },
+    { value: 'string', label: t('migrations.paramsEditor.type.string', 'Строка') },
+    { value: 'number', label: t('migrations.paramsEditor.type.number', 'Число') },
+    { value: 'boolean', label: t('migrations.paramsEditor.type.boolean', 'Булево') },
+    { value: 'date', label: t('migrations.paramsEditor.type.dateOp', 'Дата (операция)') },
   ]
 
   return (
     <Field className={className}>
       <FieldLabel className="flex items-center justify-between">
-        <span className="text-sm font-medium">{label}</span>
+        <span className="text-sm font-medium">
+          {t('migrations.paramsEditor.label', label ?? 'Параметры')}
+        </span>
         <Button
           variant="secondary"
           size="sm"
           type="button"
           onClick={openAdd}
           className="h-8 gap-1"
-          title="Добавить параметр"
+          title={t('migrations.paramsEditor.addParam', 'Добавить параметр')}
         >
           <PlusIcon className="h-3.5 w-3.5" />
-          Добавить параметр
+          {t('migrations.paramsEditor.addParam', 'Добавить параметр')}
         </Button>
       </FieldLabel>
       <FieldContent>
@@ -132,9 +136,12 @@ export function ParamsEditor({
                   <div className="flex w-full items-start justify-between gap-2">
                     <div className="flex flex-col">
                       <div className="text-sm font-medium">{keyTrim || '(без ключа)'}</div>
-                      <div className="text-xs text-muted-foreground">Тип: {item.type}</div>
                       <div className="text-xs text-muted-foreground">
-                        Значение: {renderValueSummary(item)}
+                        {t('migrations.paramsEditor.typePrefix', 'Тип:')} {item.type}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {t('migrations.paramsEditor.valuePrefix', 'Значение:')}{' '}
+                        {renderValueSummary(item)}
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
@@ -144,9 +151,9 @@ export function ParamsEditor({
                         size="sm"
                         type="button"
                         onClick={() => openEdit(idx)}
-                        title="Редактировать параметр"
+                        title={t('migrations.paramsEditor.editParam', 'Редактировать параметр')}
                       >
-                        Редактировать
+                        {t('migrations.paramsEditor.edit', 'Редактировать')}
                       </Button>
                       <Button
                         className="h-8 p-2"
@@ -154,8 +161,8 @@ export function ParamsEditor({
                         size="sm"
                         type="button"
                         onClick={() => removeItem(idx)}
-                        aria-label="Удалить"
-                        title="Удалить параметр"
+                        aria-label={t('migrations.paramsEditor.delete', 'Удалить')}
+                        title={t('migrations.paramsEditor.deleteParam', 'Удалить параметр')}
                       >
                         <Trash2Icon className="h-4 w-4" />
                       </Button>
@@ -171,7 +178,9 @@ export function ParamsEditor({
           <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle>
-                {editingIndex === null ? 'Добавить параметр' : 'Редактировать параметр'}
+                {editingIndex === null
+                  ? t('migrations.paramsEditor.dialog.addTitle', 'Добавить параметр')
+                  : t('migrations.paramsEditor.dialog.editTitle', 'Редактировать параметр')}
               </DialogTitle>
             </DialogHeader>
             <div className="flex flex-col gap-3">
@@ -186,20 +195,28 @@ export function ParamsEditor({
                     (it.key || '').trim().toLowerCase() === keyTrim.toLowerCase()
                 )
                 const keyErrorMsg = isEmpty
-                  ? 'Заполните ключ'
+                  ? t('migrations.paramsEditor.errors.fillKey', 'Заполните ключ')
                   : isInvalidName
-                    ? 'Ключ должен соответствовать: [A-Za-z_][A-Za-z0-9_]*'
+                    ? t(
+                        'migrations.paramsEditor.errors.keyFormat',
+                        'Ключ должен соответствовать: [A-Za-z_][A-Za-z0-9_]*'
+                      )
                     : duplicate
-                      ? 'Ключ должен быть уникальным'
+                      ? t('migrations.paramsEditor.errors.keyUnique', 'Ключ должен быть уникальным')
                       : ''
                 return (
                   <Field>
-                    <FieldLabel htmlFor={keyId}>Ключ</FieldLabel>
+                    <FieldLabel htmlFor={keyId}>
+                      {t('migrations.paramsEditor.keyLabel', 'Ключ')}
+                    </FieldLabel>
                     <FieldContent>
                       <Input
                         id={keyId}
                         className={`${isEmpty || isInvalidName || duplicate ? 'border-red-500' : ''}`}
-                        placeholder="ключ (имя переменной)"
+                        placeholder={t(
+                          'migrations.paramsEditor.keyPlaceholder',
+                          'ключ (имя переменной)'
+                        )}
                         aria-invalid={isEmpty || isInvalidName || duplicate}
                         value={draft.key}
                         onChange={(e) => {
@@ -220,7 +237,9 @@ export function ParamsEditor({
                 const typeId = `param-type`
                 return (
                   <Field>
-                    <FieldLabel htmlFor={typeId}>Тип</FieldLabel>
+                    <FieldLabel htmlFor={typeId}>
+                      {t('migrations.paramsEditor.typeLabel', 'Тип')}
+                    </FieldLabel>
                     <FieldContent>
                       <Select
                         value={draft.type}
@@ -228,13 +247,19 @@ export function ParamsEditor({
                           setDraft({ ...draft, type: v as ParamType, value: undefined })
                         }
                       >
-                        <SelectTrigger id={typeId} className="min-w-32 h-8" title="Тип параметра">
-                          <SelectValue placeholder="тип" />
+                        <SelectTrigger
+                          id={typeId}
+                          className="min-w-32 h-8"
+                          title={t('migrations.paramsEditor.typeParamTitle', 'Тип параметра')}
+                        >
+                          <SelectValue
+                            placeholder={t('migrations.paramsEditor.typePlaceholder', 'тип')}
+                          />
                         </SelectTrigger>
                         <SelectContent>
-                          {typeOptions.map((t) => (
-                            <SelectItem key={t.value} value={t.value}>
-                              {t.label}
+                          {typeOptions.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>
+                              {opt.label}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -248,14 +273,19 @@ export function ParamsEditor({
                 const valueId = `param-value`
                 return (
                   <Field>
-                    <FieldLabel htmlFor={valueId}>Значение</FieldLabel>
+                    <FieldLabel htmlFor={valueId}>
+                      {t('migrations.paramsEditor.valueLabel', 'Значение')}
+                    </FieldLabel>
                     <FieldContent>
                       {draft.type === 'string' && (
                         <Input
                           id={valueId}
                           className="h-8 w-full"
-                          placeholder="значение"
-                          title="Строковое значение"
+                          placeholder={t('migrations.paramsEditor.valuePlaceholder', 'значение')}
+                          title={t(
+                            'migrations.paramsEditor.stringValueTitle',
+                            'Строковое значение'
+                          )}
                           value={String(draft.value ?? '')}
                           onChange={(e) => setDraft({ ...draft, value: e.target.value })}
                         />
@@ -277,9 +307,17 @@ export function ParamsEditor({
                           <SelectTrigger
                             id={valueId}
                             className="h-8 w-full"
-                            title="Булево значение"
+                            title={t(
+                              'migrations.paramsEditor.booleanValueTitle',
+                              'Булево значение'
+                            )}
                           >
-                            <SelectValue placeholder="значение" />
+                            <SelectValue
+                              placeholder={t(
+                                'migrations.paramsEditor.valuePlaceholder',
+                                'значение'
+                              )}
+                            />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="true">true</SelectItem>
@@ -303,10 +341,10 @@ export function ParamsEditor({
             </div>
             <DialogFooter>
               <Button variant="secondary" type="button" onClick={() => setIsDialogOpen(false)}>
-                Отмена
+                {t('migrations.home.cancel', 'Отмена')}
               </Button>
               <Button type="button" onClick={saveDraft}>
-                Сохранить
+                {t('migrations.home.submit', 'Сохранить')}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -348,6 +386,48 @@ function equalOps(
     if (ai.unit !== bi.unit) return false
   }
   return true
+}
+
+// Приведение единицы измерения длительности из форматов Moment ('years', 'y', и т.п.)
+// к согласованным единицам, используемым в параметрах миграции ('year', 'month', ...)
+function singularizeDurationUnit(u: DurationInputArg2): 'second' | 'minute' | 'hour' | 'day' | 'week' | 'month' | 'quarter' | 'year' {
+  switch (u) {
+    case 'years':
+    case 'year':
+    case 'y':
+      return 'year'
+    case 'months':
+    case 'month':
+    case 'M':
+      return 'month'
+    case 'weeks':
+    case 'week':
+    case 'w':
+      return 'week'
+    case 'days':
+    case 'day':
+    case 'd':
+      return 'day'
+    case 'hours':
+    case 'hour':
+    case 'h':
+      return 'hour'
+    case 'minutes':
+    case 'minute':
+    case 'm':
+      return 'minute'
+    case 'seconds':
+    case 'second':
+    case 's':
+      return 'second'
+    case 'quarters':
+    case 'quarter':
+    case 'Q':
+      return 'quarter'
+    default:
+      // На случай редких значений — по умолчанию возвращаем 'day'
+      return 'day'
+  }
 }
 
 function deepEqualDateParamValue(a?: DateParamValue, b?: DateParamValue) {
@@ -409,6 +489,7 @@ function NumberValueEditor({
   value?: number
   onChange: (v: number) => void
 }) {
+  const { t } = useI18n()
   const [text, setText] = useState<string>(() => (typeof value === 'number' ? String(value) : ''))
 
   useEffect(() => {
@@ -442,7 +523,7 @@ function NumberValueEditor({
       type="number"
       min={1}
       step={1}
-      placeholder="число"
+      placeholder={t('migrations.paramsEditor.numberPlaceholder', 'число')}
       value={text}
       onChange={handleChange}
       onBlur={handleBlur}
@@ -457,6 +538,7 @@ function DateValueEditor({
   value?: DateParamValue
   onChange: (v: DateParamValue) => void
 }) {
+  const { t } = useI18n()
   const [isOpen, setIsOpen] = useState(false)
   const [kind, setKind] = useState<DateParamValue['type']>(value?.type || 'startOf')
   const defaultOp: { amount: number; unit: DurationInputArg2 } = {
@@ -524,7 +606,7 @@ function DateValueEditor({
     if (kind === 'add' || kind === 'subtract') {
       payload = {
         type: kind,
-        ops: ops.map((o) => ({ amount: o.amount as DurationInputArg1, unit: o.unit })),
+        ops: ops.map((o) => ({ amount: o.amount, unit: singularizeDurationUnit(o.unit) })),
       }
     } else if (kind === 'startOf' || kind === 'endOf') {
       payload = {
@@ -541,41 +623,57 @@ function DateValueEditor({
   }, [kind, ops, unitBoundary, position, exactDate])
 
   const dateUnits: { value: DurationInputArg2; label: string }[] = [
-    { value: 'second', label: 'Секунды' },
-    { value: 'minute', label: 'Минуты' },
-    { value: 'hour', label: 'Часы' },
-    { value: 'day', label: 'Дни' },
-    { value: 'week', label: 'Недели' },
-    { value: 'month', label: 'Месяцы' },
-    { value: 'quarter', label: 'Кварталы' },
-    { value: 'year', label: 'Годы' },
+    { value: 'second', label: t('migrations.paramsEditor.date.units.second', 'Секунды') },
+    { value: 'minute', label: t('migrations.paramsEditor.date.units.minute', 'Минуты') },
+    { value: 'hour', label: t('migrations.paramsEditor.date.units.hour', 'Часы') },
+    { value: 'day', label: t('migrations.paramsEditor.date.units.day', 'Дни') },
+    { value: 'week', label: t('migrations.paramsEditor.date.units.week', 'Недели') },
+    { value: 'month', label: t('migrations.paramsEditor.date.units.month', 'Месяцы') },
+    { value: 'quarter', label: t('migrations.paramsEditor.date.units.quarter', 'Кварталы') },
+    { value: 'year', label: t('migrations.paramsEditor.date.units.year', 'Годы') },
   ]
 
   const startEndUnits: { value: 'day' | 'week' | 'month' | 'quarter' | 'year'; label: string }[] = [
-    { value: 'day', label: 'День' },
-    { value: 'week', label: 'Неделя' },
-    { value: 'month', label: 'Месяц' },
-    { value: 'quarter', label: 'Квартал' },
-    { value: 'year', label: 'Год' },
+    { value: 'day', label: t('migrations.paramsEditor.date.boundary.day', 'День') },
+    { value: 'week', label: t('migrations.paramsEditor.date.boundary.week', 'Неделя') },
+    { value: 'month', label: t('migrations.paramsEditor.date.boundary.month', 'Месяц') },
+    { value: 'quarter', label: t('migrations.paramsEditor.date.boundary.quarter', 'Квартал') },
+    { value: 'year', label: t('migrations.paramsEditor.date.boundary.year', 'Год') },
   ]
   const positionOptions: { value: 'current' | 'next' | 'previous'; label: string }[] = [
-    { value: 'current', label: 'Текущей' },
-    { value: 'next', label: 'Следующей' },
-    { value: 'previous', label: 'Предыдущей' },
+    { value: 'current', label: t('migrations.paramsEditor.date.position.current', 'Текущей') },
+    { value: 'next', label: t('migrations.paramsEditor.date.position.next', 'Следующей') },
+    {
+      value: 'previous',
+      label: t('migrations.paramsEditor.date.position.previous', 'Предыдущей'),
+    },
   ]
 
   return (
     <div className="flex flex-wrap gap-1.5 items-start">
       <Select value={kind} onValueChange={(v) => setKind(v as DateParamValue['type'])}>
-        <SelectTrigger className="min-w-40" title="Операция даты">
-          <SelectValue placeholder="операция" />
+        <SelectTrigger
+          className="min-w-40"
+          title={t('migrations.paramsEditor.date.opTitle', 'Операция даты')}
+        >
+          <SelectValue placeholder={t('migrations.paramsEditor.date.opPlaceholder', 'операция')} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="add">Прибавить</SelectItem>
-          <SelectItem value="subtract">Отнять</SelectItem>
-          <SelectItem value="startOf">Начало</SelectItem>
-          <SelectItem value="endOf">Конец</SelectItem>
-          <SelectItem value="exact">Точная дата</SelectItem>
+          <SelectItem value="add">
+            {t('migrations.paramsEditor.date.ops.add', 'Прибавить')}
+          </SelectItem>
+          <SelectItem value="subtract">
+            {t('migrations.paramsEditor.date.ops.subtract', 'Отнять')}
+          </SelectItem>
+          <SelectItem value="startOf">
+            {t('migrations.paramsEditor.date.ops.start', 'Начало')}
+          </SelectItem>
+          <SelectItem value="endOf">
+            {t('migrations.paramsEditor.date.ops.end', 'Конец')}
+          </SelectItem>
+          <SelectItem value="exact">
+            {t('migrations.paramsEditor.date.ops.exact', 'Точная дата')}
+          </SelectItem>
         </SelectContent>
       </Select>
 
@@ -599,8 +697,13 @@ function DateValueEditor({
                   setOps(next)
                 }}
               >
-                <SelectTrigger className="min-w-40" title="Единица измерения">
-                  <SelectValue placeholder="единица" />
+                <SelectTrigger
+                  className="min-w-40"
+                  title={t('migrations.paramsEditor.date.unitTitle', 'Единица измерения')}
+                >
+                  <SelectValue
+                    placeholder={t('migrations.paramsEditor.date.unitPlaceholder', 'единица')}
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   {dateUnits.map((u) => (
@@ -620,8 +723,8 @@ function DateValueEditor({
                   const next = ops.filter((_, i) => i !== idx)
                   setOps(next)
                 }}
-                aria-label="Удалить шаг"
-                title="Удалить шаг"
+                aria-label={t('migrations.paramsEditor.date.deleteStep', 'Удалить шаг')}
+                title={t('migrations.paramsEditor.date.deleteStep', 'Удалить шаг')}
               >
                 <Trash2Icon className="h-4 w-4" />
               </Button>
@@ -634,10 +737,10 @@ function DateValueEditor({
               type="button"
               className="h-8 gap-1"
               onClick={() => setOps([...ops, { ...defaultOp }])}
-              title="Добавить шаг"
+              title={t('migrations.paramsEditor.date.addStep', 'Добавить шаг')}
             >
               <PlusIcon className="h-3.5 w-3.5" />
-              Добавить шаг
+              {t('migrations.paramsEditor.date.addStep', 'Добавить шаг')}
             </Button>
           </div>
         </div>
@@ -651,8 +754,13 @@ function DateValueEditor({
               setUnitBoundary(v as 'day' | 'week' | 'month' | 'quarter' | 'year')
             }
           >
-            <SelectTrigger className="min-w-40" title="Единица (граница)">
-              <SelectValue placeholder="единица" />
+            <SelectTrigger
+              className="min-w-40"
+              title={t('migrations.paramsEditor.date.boundaryTitle', 'Единица (граница)')}
+            >
+              <SelectValue
+                placeholder={t('migrations.paramsEditor.date.boundaryPlaceholder', 'единица')}
+              />
             </SelectTrigger>
             <SelectContent>
               {startEndUnits.map((u) => (
@@ -666,8 +774,13 @@ function DateValueEditor({
             value={position}
             onValueChange={(v) => setPosition(v as 'current' | 'next' | 'previous')}
           >
-            <SelectTrigger className="min-w-40" title="Период">
-              <SelectValue placeholder="период" />
+            <SelectTrigger
+              className="min-w-40"
+              title={t('migrations.paramsEditor.date.periodTitle', 'Период')}
+            >
+              <SelectValue
+                placeholder={t('migrations.paramsEditor.date.periodPlaceholder', 'период')}
+              />
             </SelectTrigger>
             <SelectContent>
               {positionOptions.map((p) => (
@@ -685,7 +798,7 @@ function DateValueEditor({
           <PopoverTrigger asChild>
             <Button variant="outline" className="h-8 w-full justify-start">
               <CalendarIcon className="mr-2" />
-              {exactDate || 'Выберите дату'}
+              {exactDate || t('migrations.paramsEditor.date.chooseDate', 'Выберите дату')}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0">

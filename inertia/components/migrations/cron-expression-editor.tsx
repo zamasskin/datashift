@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Input } from '../ui/input'
 import { Checkbox } from '../ui/checkbox'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
+import { useI18n } from '~/hooks/useI18nLocal'
 
 export type CronExpressionEditorProps = {
   config?: CronConfig | null
@@ -13,6 +14,7 @@ export type CronExpressionEditorProps = {
 }
 
 export function CronExpressionEditor({ config, onChange }: CronExpressionEditorProps) {
+  const { t } = useI18n()
   const [type, setType] = useState(config?.type || 'none')
 
   useEffect(() => {
@@ -54,16 +56,16 @@ export function CronExpressionEditor({ config, onChange }: CronExpressionEditorP
   return (
     <div className="space-y-6">
       <Field>
-        <FieldLabel>Повторять</FieldLabel>
+        <FieldLabel>{t('migrations.cronEditor.repeatLabel', 'Повторять')}</FieldLabel>
         <Select onValueChange={handleSelectType} value={type}>
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="none">Нет</SelectItem>
-            <SelectItem value="interval">с интервалом</SelectItem>
-            <SelectItem value="interval-time">с интервалом в промежутке</SelectItem>
-            <SelectItem value="time">в определенное время</SelectItem>
+            <SelectItem value="none">{t('migrations.cronEditor.type.none', 'Нет')}</SelectItem>
+            <SelectItem value="interval">{t('migrations.cronEditor.type.interval', 'с интервалом')}</SelectItem>
+            <SelectItem value="interval-time">{t('migrations.cronEditor.type.intervalTime', 'с интервалом в промежутке')}</SelectItem>
+            <SelectItem value="time">{t('migrations.cronEditor.type.time', 'в определенное время')}</SelectItem>
           </SelectContent>
         </Select>
       </Field>
@@ -82,6 +84,7 @@ export type IntervalEditorProps = {
 }
 
 export function IntervalEditor({ config, onChange }: IntervalEditorProps) {
+  const { t } = useI18n()
   const [count, setCount] = useState(config?.count || 1)
   const [countText, setCountText] = useState(String(config?.count || 1))
   const [units, setUnits] = useState(config?.units || 's')
@@ -102,7 +105,7 @@ export function IntervalEditor({ config, onChange }: IntervalEditorProps) {
   return (
     <div className="space-y-4">
       <Field>
-        <FieldLabel>Каждые</FieldLabel>
+        <FieldLabel>{t('migrations.cronEditor.everyLabel', 'Каждые')}</FieldLabel>
         <Input
           type="number"
           value={countText}
@@ -138,9 +141,9 @@ export function IntervalEditor({ config, onChange }: IntervalEditorProps) {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="s">Секунд</SelectItem>
-            <SelectItem value="m">Минут</SelectItem>
-            <SelectItem value="h">Часов</SelectItem>
+            <SelectItem value="s">{t('migrations.cronEditor.units.seconds', 'Секунд')}</SelectItem>
+            <SelectItem value="m">{t('migrations.cronEditor.units.minutes', 'Минут')}</SelectItem>
+            <SelectItem value="h">{t('migrations.cronEditor.units.hours', 'Часов')}</SelectItem>
           </SelectContent>
         </Select>
       </Field>
@@ -154,6 +157,7 @@ export type IntervalTimeEditorProps = {
 }
 
 export function IntervalTimeEditor({ config, onChange }: IntervalTimeEditorProps) {
+  const { t } = useI18n()
   const [timeUnits, setTimeUnits] = useState(config?.timeUnits || 1)
   const [timeUnitsText, setTimeUnitsText] = useState(String(config?.timeUnits || 1))
   const [timeStart, setTimeStart] = useState(config?.timeStart || '00:00')
@@ -200,7 +204,7 @@ export function IntervalTimeEditor({ config, onChange }: IntervalTimeEditorProps
   return (
     <div className="space-y-4">
       <Field>
-        <FieldLabel>Каждые</FieldLabel>
+        <FieldLabel>{t('migrations.cronEditor.everyLabel', 'Каждые')}</FieldLabel>
         <InputGroup>
           <InputGroupInput
             type="number"
@@ -235,13 +239,17 @@ export function IntervalTimeEditor({ config, onChange }: IntervalTimeEditorProps
               }
             }}
           />
-          <InputGroupAddon align="inline-end">мин</InputGroupAddon>
+          <InputGroupAddon align="inline-end">
+            {t('migrations.cronEditor.minutesShort', 'мин')}
+          </InputGroupAddon>
         </InputGroup>
       </Field>
 
       <Field>
         <div className="flex items-center gap-3">
-          <span className="text-sm text-muted-foreground">между</span>
+          <span className="text-sm text-muted-foreground">
+            {t('migrations.cronEditor.between', 'между')}
+          </span>
           <InputGroup>
             <InputGroupInput
               type="time"
@@ -300,7 +308,7 @@ export function IntervalTimeEditor({ config, onChange }: IntervalTimeEditorProps
               }}
             />
           </InputGroup>
-          <span className="text-sm text-muted-foreground">и</span>
+          <span className="text-sm text-muted-foreground">{t('migrations.cronEditor.and', 'и')}</span>
           <InputGroup>
             <InputGroupInput
               type="time"
@@ -353,7 +361,7 @@ export function IntervalTimeEditor({ config, onChange }: IntervalTimeEditorProps
       </Field>
 
       <Field>
-        <FieldLabel>Дни недели</FieldLabel>
+        <FieldLabel>{t('migrations.cronEditor.weekDays', 'Дни недели')}</FieldLabel>
         <div className="flex flex-wrap gap-3" data-slot="checkbox-group">
           {(Object.keys(cronDays) as CronDays[]).map((d) => (
             <label key={d} className="inline-flex items-center gap-2">
@@ -369,8 +377,10 @@ export function IntervalTimeEditor({ config, onChange }: IntervalTimeEditorProps
                   }
                 }}
               />
-              <span className="text-sm">{cronDays[d]}</span>
-            </label>
+              <span className="text-sm">
+                {t(`migrations.cronEditor.day.${d}`, cronDays[d])}
+              </span>
+              </label>
           ))}
         </div>
       </Field>
@@ -384,6 +394,7 @@ export type TimeEditorProps = {
 }
 
 export function TimeEditor({ config, onChange }: TimeEditorProps) {
+  const { t } = useI18n()
   const [time, setTime] = useState(config?.time || '12:00')
   const [days, setDays] = useState<CronDays[]>(
     config?.days || (Object.keys(cronDays) as CronDays[])
@@ -392,7 +403,7 @@ export function TimeEditor({ config, onChange }: TimeEditorProps) {
   return (
     <div className="space-y-4">
       <Field>
-        <FieldLabel>Время</FieldLabel>
+        <FieldLabel>{t('migrations.cronEditor.timeLabel', 'Время')}</FieldLabel>
         <Input
           type="time"
           value={time}
@@ -407,7 +418,7 @@ export function TimeEditor({ config, onChange }: TimeEditorProps) {
       </Field>
 
       <Field>
-        <FieldLabel>Дни недели</FieldLabel>
+        <FieldLabel>{t('migrations.cronEditor.weekDays', 'Дни недели')}</FieldLabel>
         <div className="flex flex-wrap gap-3" data-slot="checkbox-group">
           {(Object.keys(cronDays) as CronDays[]).map((d) => (
             <label key={d} className="inline-flex items-center gap-2">
@@ -423,7 +434,9 @@ export function TimeEditor({ config, onChange }: TimeEditorProps) {
                   }
                 }}
               />
-              <span className="text-sm">{cronDays[d]}</span>
+              <span className="text-sm">
+                {t(`migrations.cronEditor.day.${d}`, cronDays[d])}
+              </span>
             </label>
           ))}
         </div>
