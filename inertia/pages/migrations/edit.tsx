@@ -1,15 +1,6 @@
 import type Migration from '#models/migration'
 import { Head, router, usePage } from '@inertiajs/react'
-import {
-  ArrowDownUp,
-  CircleStop,
-  Play,
-  Plus,
-  Save,
-  Settings,
-  SquareStop,
-  Trash,
-} from 'lucide-react'
+import { ArrowDownUp, CircleStop, Play, Plus, Save, Settings, Trash } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { MergeCard } from '~/components/migrations/cards/merge-card'
 import { ModificationCard } from '~/components/migrations/cards/modification-card'
