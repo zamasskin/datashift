@@ -1,0 +1,22 @@
+{
+  "name": "Sql запрос",
+  "closeBtnName": "Закрыть",
+  "saveBtnName": "Добавить",
+
+  "card": {
+    "titlePrefix": "Sql запрос —",
+    "descriptionPrefix": "Подключение № ",
+    "connectionPrefix": "Подключение № ",
+    "prevPage": "Предыдущая страница",
+    "nextPage": "Следующая страница",
+    "pageLabel": "Страница",
+    "pageNumber": "Номер страницы",
+    "totalPages": "Всего страниц",
+    "totalItems": "Всего элементов",
+    "itemsPerPage": "Элементов на странице",
+    "itemsPerPageLabel": "Элементов на странице",
+    "btnDelete": "Удалить",
+    "btnSave": "Сохранить",
+    "btnSettings": "Настройки"
+  }
+}

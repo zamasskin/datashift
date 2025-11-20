@@ -81,6 +81,17 @@ export default class DetectUserLocaleMiddleware {
       ctx.view.share({ i18n: ctx.i18n })
     }
 
+    /**
+     * Sharing translations and locale to inertia view
+     */
+    if ('inertia' in ctx) {
+      // Проверяем, что контекст поддерживает Inertia
+      ctx.inertia.share({
+        locale: language,
+        translations: i18nManager.getTranslationsFor(language),
+      })
+    }
+
     return next()
   }
 }

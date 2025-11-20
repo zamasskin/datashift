@@ -1,9 +1,17 @@
 import { ChevronLeft, ChevronRight, Settings, Trash } from 'lucide-react'
 import { Button } from '~/components/ui/button'
-import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle, ItemFooter } from '~/components/ui/item'
+import {
+  Item,
+  ItemContent,
+  ItemDescription,
+  ItemMedia,
+  ItemTitle,
+  ItemFooter,
+} from '~/components/ui/item'
 import { SqlSnippet } from '~/components/ui/sql-snippet'
 import { SqlDataset } from '../datasets/sql-dataset'
 import { SqlConfig } from '#interfaces/sql_config'
+import { useI18n } from '~/hooks/useI18nLocal'
 
 export type SqlCardProps = {
   isLoading?: boolean
@@ -25,6 +33,7 @@ export function SqlCard({
   onChangePage,
   onUpdate,
 }: SqlCardProps) {
+  const { t } = useI18n()
   const handleRemove = () => {
     if (onRemove) {
       onRemove(config?.id || '')
@@ -33,7 +42,10 @@ export function SqlCard({
 
   return (
     <div className="relative">
-      <Item variant="outline" className={`relative rounded-md bg-card shadow-sm transition hover:shadow-md ${isLoading ? 'opacity-50 pointer-events-none' : ''}`}>
+      <Item
+        variant="outline"
+        className={`relative rounded-md bg-card shadow-sm transition hover:shadow-md ${isLoading ? 'opacity-50 pointer-events-none' : ''}`}
+      >
         <ItemMedia>
           <img
             src="/icons/sql-edit.png"
@@ -45,11 +57,13 @@ export function SqlCard({
         </ItemMedia>
         <ItemContent>
           <ItemTitle className="line-clamp-1">
-            Sql запрос — <span className="text-muted-foreground">{config?.id}</span>
+            {String(t('datasets.sql.card.titlePrefix', 'SQL запрос —'))}{' '}
+            <span className="text-muted-foreground">{config?.id}</span>
           </ItemTitle>
           <ItemDescription>
             <span className="inline-flex items-center rounded border px-2 py-0.5 text-xs text-muted-foreground">
-            Подключение № {config?.params?.sourceId}
+              {String(t('datasets.sql.card.connectionPrefix', 'Подключение № '))}
+              {config?.params?.sourceId}
             </span>
           </ItemDescription>
           {config?.params?.query && (
@@ -58,11 +72,11 @@ export function SqlCard({
             </ItemDescription>
           )}
         </ItemContent>
-        
+
         <ItemFooter>
           <div className="flex items-center gap-2">
             <Button
-              aria-label="Предыдущая страница"
+              aria-label={String(t('datasets.sql.card.prevPage', 'Предыдущая страница'))}
               size="icon"
               variant="ghost"
               disabled={isLoading || (page || 1) <= 1}
@@ -70,9 +84,11 @@ export function SqlCard({
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <span className="text-xs text-muted-foreground">Стр. {page || 1}</span>
+            <span className="text-xs text-muted-foreground">
+              {String(t('datasets.sql.card.pageLabel', `Стр. ${page || 1}`))}
+            </span>
             <Button
-              aria-label="Следующая страница"
+              aria-label={String(t('datasets.sql.card.nextPage', 'Следующая страница'))}
               size="icon"
               variant="ghost"
               disabled={isLoading}
@@ -82,7 +98,12 @@ export function SqlCard({
             </Button>
           </div>
           <div className="flex items-center gap-2">
-            <Button aria-label="Удалить" size="icon" variant="outline" onClick={handleRemove}>
+            <Button
+              aria-label={String(t('datasets.sql.card.btnDelete', 'Удалить'))}
+              size="icon"
+              variant="outline"
+              onClick={handleRemove}
+            >
               <Trash className="h-4 w-4" />
             </Button>
 
@@ -91,9 +112,13 @@ export function SqlCard({
               onSave={onUpdate}
               isLoading={isLoading}
               config={config}
-              saveBtnName="Сохранить"
+              saveBtnName={String(t('datasets.sql.card.btnSave', 'Сохранить'))}
             >
-              <Button aria-label="Настройки" size="icon" variant="outline">
+              <Button
+                aria-label={String(t('datasets.sql.card.btnSettings', 'Настройки'))}
+                size="icon"
+                variant="outline"
+              >
                 <Settings className="h-4 w-4" />
               </Button>
             </SqlDataset>

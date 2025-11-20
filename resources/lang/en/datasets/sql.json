@@ -1,0 +1,21 @@
+{
+  "name": "SQL query",
+  "closeBtnName": "Close",
+  "saveBtnName": "Add",
+  "card": {
+    "titlePrefix": "SQL query —",
+    "descriptionPrefix": "Connection #",
+    "connectionPrefix": "Connection #",
+    "prevPage": "Previous page",
+    "nextPage": "Next page",
+    "pageLabel": "Page",
+    "pageNumber": "Page number",
+    "totalPages": "Total pages",
+    "totalItems": "Total items",
+    "itemsPerPage": "Items per page",
+    "itemsPerPageLabel": "Items per page",
+    "btnDelete": "Delete",
+    "btnSave": "Save",
+    "btnSettings": "Settings"
+  }
+}
