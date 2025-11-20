@@ -33,6 +33,8 @@
     "nameDescription": "From 3 to 64 characters.",
     "typeLabel": "Type",
     "typePlaceholder": "Select source type",
+    "sourceLabel": "Source",
+    "sourcePlaceholder": "Select source",
     "createTitle": "New source",
     "createSubmit": "Create",
     "cancel": "Cancel",

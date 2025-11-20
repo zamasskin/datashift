@@ -33,6 +33,8 @@
     "nameDescription": "От 3 до 64 символов.",
     "typeLabel": "Тип",
     "typePlaceholder": "Выберите тип подключения",
+    "sourceLabel": "Подключение",
+    "sourcePlaceholder": "Выберите подключение",
     "createTitle": "Новое подключение",
     "createSubmit": "Создать",
     "cancel": "Отмена",

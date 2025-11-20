@@ -16,6 +16,7 @@ import { Spinner } from '~/components/ui/spinner'
 import { usePage } from '@inertiajs/react'
 import DataSource from '#models/data_source'
 import { SqlConfig } from '#interfaces/sql_config'
+import { useI18n } from '~/hooks/useI18nLocal'
 
 export type SqlEditorProps = {
   isLoading?: boolean
@@ -29,6 +30,7 @@ export type SqlEditorProps = {
 }
 
 export function SqlDataset(props: SqlEditorProps) {
+  const { t } = useI18n()
   const { csrfToken, dataSources } = usePage().props as any
   const [sourceId, setSourceId] = useState(0)
   const [query, setQuery] = useState(props?.config?.params?.query || '')
@@ -99,7 +101,7 @@ export function SqlDataset(props: SqlEditorProps) {
       <DialogTrigger asChild>{props.children}</DialogTrigger>
       <DialogContent className="max-w-[92vw] sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl max-h-[75vh] overflow-y-auto p-4">
         <DialogHeader>
-          <DialogTitle>Sql запрос</DialogTitle>
+          <DialogTitle>{String(t('datasets.sql.name', 'Sql запрос'))}</DialogTitle>
           <DialogDescription></DialogDescription>
         </DialogHeader>
 
@@ -122,10 +124,10 @@ export function SqlDataset(props: SqlEditorProps) {
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline">Закрыть</Button>
+            <Button variant="outline">{String(t('datasets.sql.closeBtnName', 'Закрыть'))}</Button>
           </DialogClose>
           <Button type="submit" onClick={handleSave}>
-            {props.saveBtnName || 'Добавить'}
+            {props.saveBtnName || String(t('datasets.sql.saveBtnName', 'Добавить'))}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -2,6 +2,7 @@ import { usePage } from '@inertiajs/react'
 import { Field, FieldLabel } from '../ui/field'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
 import DataSource from '#models/data_source'
+import { useI18n } from '~/hooks/useI18nLocal'
 
 export type DataSourceSelectProps = {
   value?: number
@@ -9,14 +10,15 @@ export type DataSourceSelectProps = {
 }
 
 export function DataSourceSelect(props: DataSourceSelectProps) {
+  const { t } = useI18n()
   const value = props.value ? props.value.toString() : undefined
   const { props: pageProps } = usePage<{ dataSources: DataSource[] }>()
   return (
     <Field>
-      <FieldLabel>Подключение</FieldLabel>
+      <FieldLabel>{t('sources.form.sourceLabel', 'Подключение')}</FieldLabel>
       <Select value={value} onValueChange={(v) => props.onChange?.(Number(v))}>
         <SelectTrigger>
-          <SelectValue placeholder="Выберите подключение" />
+          <SelectValue placeholder={t('sources.form.sourcePlaceholder', 'Выберите подключение')} />
         </SelectTrigger>
         <SelectContent>
           {pageProps.dataSources.map((source) => (
