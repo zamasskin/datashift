@@ -26,8 +26,15 @@ export default class DetectUserLocaleMiddleware {
    * Feel free to use different mechanism for finding user language.
    */
   protected getRequestLocale(ctx: HttpContext) {
-    const userLanguages = ctx.request.languages()
-    return i18nManager.getSupportedLocaleFor(userLanguages)
+    const cookieLocale = ctx.request.cookie('locale') as string | undefined
+    if (cookieLocale) {
+      const supported = i18nManager.getSupportedLocaleFor([cookieLocale])
+      if (supported) {
+        return supported
+      }
+    }
+    // По умолчанию используем дефолтную локаль (ru) и не учитываем Accept-Language
+    return i18nManager.defaultLocale
   }
 
   async handle(ctx: HttpContext, next: NextFn) {
