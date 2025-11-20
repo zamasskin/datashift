@@ -212,5 +212,15 @@
       "start": "Начало",
       "end": "Конец"
     }
+  },
+  "sqlEditor": {
+    "textareaPlaceholder": "SELECT * FROM table WHERE ...",
+    "fromResult": "Из результата",
+    "param": "Параметр",
+    "templateQuery": "Шаблон запроса",
+    "templateQuickSelect": "Быстрый шаблон SELECT",
+    "keyword": "Ключевое слово",
+    "table": "Таблица",
+    "templateLabel": "SELECT * FROM ..."
   }
 }

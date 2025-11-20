@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import Editor, { useMonaco } from '@monaco-editor/react'
 import { useTheme } from '../theme-provider'
 import _ from 'lodash'
-import { usePage } from '@inertiajs/react'
+import { useI18n } from '~/hooks/useI18nLocal'
 
 type SqlEditorProps = {
   value: string
@@ -12,8 +12,9 @@ type SqlEditorProps = {
 }
 
 export function SqlEditor(props: SqlEditorProps) {
-  const page = usePage<{ layoutMessages: { components: { sqlEditor: Record<string, string> } } }>()
-  const messages = page.props.layoutMessages.components.sqlEditor
+  const { t } = useI18n()
+
+  console.log(t('migrations.sqlEditor.param', 'Параметр'))
 
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
@@ -51,7 +52,7 @@ export function SqlEditor(props: SqlEditorProps) {
             insertText: `${alias}.${c}`,
             insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
             range,
-            detail: `${messages.fromResult || 'Из результата'} ${alias}`,
+            detail: `${t('migrations.sqlEditor.fromResult', 'Из результата')} ${alias}`,
             sortText: `0001${i}`,
           }))
         )
@@ -62,7 +63,7 @@ export function SqlEditor(props: SqlEditorProps) {
           insertText: `params.${param}`,
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           range,
-          detail: messages.param || 'Параметр',
+          detail: `${t('migrations.sqlEditor.param', 'Параметр')}`,
           sortText: `0002${i}`,
           preselect: i === 0,
         }))
@@ -71,13 +72,13 @@ export function SqlEditor(props: SqlEditorProps) {
           ...paramSuggestions,
           ...prevResultSuggestions,
           {
-            label: 'SELECT * FROM ...',
+            label: `${t('migrations.sqlEditor.templateLabel', 'SELECT * FROM ...')}`,
             kind: monaco.languages.CompletionItemKind.Snippet,
             insertText: 'SELECT * FROM ${1:table} WHERE ${2:condition};',
             insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
             range,
-            detail: messages.templateQuery || 'Шаблон запроса',
-            documentation: messages.templateQuickSelect || 'Быстрый шаблон SELECT',
+            detail: `${t('migrations.sqlEditor.templateQuery', 'Шаблон запроса')}`,
+            documentation: `${t('migrations.sqlEditor.templateQuickSelect', 'Быстрый шаблон SELECT')}`,
             sortText: '1',
           },
           ...['SELECT', 'FROM', 'WHERE', 'GROUP BY', 'ORDER BY'].map((kw, i) => ({
@@ -85,15 +86,15 @@ export function SqlEditor(props: SqlEditorProps) {
             kind: monaco.languages.CompletionItemKind.Keyword,
             insertText: kw,
             range,
-            detail: messages.keyword || 'Ключевое слово',
+            detail: `${t('migrations.sqlEditor.keyword', 'Ключевое слово')}`,
             sortText: `2${i}`,
           })),
-          ...tables.map((t, i) => ({
-            label: t,
+          ...tables.map((tbl, i) => ({
+            label: tbl,
             kind: monaco.languages.CompletionItemKind.Keyword,
-            insertText: t,
+            insertText: tbl,
             range,
-            detail: messages.table || 'Таблица',
+            detail: `${t('migrations.sqlEditor.table', 'Таблица')}`,
             sortText: `3${i}`,
           })),
         ]
@@ -132,7 +133,7 @@ export function SqlEditor(props: SqlEditorProps) {
   ) : (
     <textarea
       className="min-h-40 w-full rounded-md border px-3 py-2 text-sm"
-      placeholder="SELECT * FROM table WHERE ..."
+      placeholder={`${t('migrations.sqlEditor.textareaPlaceholder', 'SELECT * FROM table WHERE ...')}`}
       value={props.value}
       onChange={(ev) => props?.onChange(ev.target.value)}
     />

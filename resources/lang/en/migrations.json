@@ -212,5 +212,15 @@
       "start": "Start",
       "end": "End"
     }
+  },
+  "sqlEditor": {
+    "textareaPlaceholder": "SELECT * FROM table WHERE ...",
+    "fromResult": "From result",
+    "param": "Parameter",
+    "templateQuery": "Query template",
+    "templateQuickSelect": "Quick SELECT template",
+    "keyword": "Keyword",
+    "table": "Table",
+    "templateLabel": "SELECT * FROM ..."
   }
 }
