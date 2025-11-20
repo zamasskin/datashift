@@ -183,6 +183,9 @@ export function SqlBuilderCard({
               {hasWhereContent(config?.params?.where) ? (
                 <div>· WHERE: {renderWhereSummaryFull(config?.params?.where)}</div>
               ) : null}
+              {hasWhereContent(config?.params?.hawing) ? (
+                <div>· HAVING: {renderWhereSummaryFull(config?.params?.hawing)}</div>
+              ) : null}
               {config?.params?.orders?.length ? (
                 <div>· Сортировки: {renderOrdersSummary(config?.params?.orders)}</div>
               ) : null}
