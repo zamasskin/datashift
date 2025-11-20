@@ -1,6 +1,15 @@
 import type Migration from '#models/migration'
 import { Head, router, usePage } from '@inertiajs/react'
-import { ArrowDownUp, Play, Plus, Save, Settings, Trash } from 'lucide-react'
+import {
+  ArrowDownUp,
+  CircleStop,
+  Play,
+  Plus,
+  Save,
+  Settings,
+  SquareStop,
+  Trash,
+} from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { MergeCard } from '~/components/migrations/cards/merge-card'
 import { ModificationCard } from '~/components/migrations/cards/modification-card'
@@ -65,6 +74,11 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
       runnings.find(
         (r) => r.migrationId === migration.id && r.trigger === 'manual' && r.status === 'running'
       ),
+    [runnings]
+  )
+
+  const migrationRunnings = useMemo(
+    () => runnings.filter((r) => r.migrationId === migration.id && r.status === 'running'),
     [runnings]
   )
 
@@ -184,13 +198,13 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
     }
   }
 
-  const handleStop = async () => {
+  const handleStop = async (trigger = 'manual') => {
     setFetchStopped(true)
     try {
       await fetch('/migrations/stop', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': props.csrfToken || '' },
-        body: JSON.stringify({ migrationId: migration.id, trigger: 'manual' }),
+        body: JSON.stringify({ migrationId: migration.id, trigger: trigger }),
       })
     } finally {
       setTimeout(() => setFetchStopped(false), 300)
@@ -233,16 +247,32 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
           )
         })()}
 
-        {running?.progress && (
-          <div className="space-y-3">
-            {running?.progress.map((percent, idx) => (
-              <div className="flex items-center gap-3" key={idx}>
-                <Progress value={percent} className="h-2 rounded-full" />
-                <span className="text-sm font-medium text-muted-foreground">{percent}%</span>
+        {migrationRunnings.map((running, rIdx) => (
+          <div key={`running-${rIdx}`} className="flex gap-2 items-center">
+            <div className="space-y-3 flex-1">
+              {running?.progress.map((percent, idx) => (
+                <div className="flex items-center gap-3" key={idx}>
+                  <Progress value={percent} className="h-2 rounded-full" />
+                  <span className="text-sm font-medium text-muted-foreground">{percent}%</span>
+                </div>
+              ))}
+            </div>
+
+            {running?.progress.length > 0 && (
+              <div className="space-y-2">
+                <div className="text-xs text-muted-foreground">{running.trigger}</div>
+
+                <Button
+                  variant="ghost"
+                  onClick={() => handleStop(running.trigger)}
+                  disabled={fetchStopped}
+                >
+                  <CircleStop className=" text-destructive" />
+                </Button>
               </div>
-            ))}
+            )}
           </div>
-        )}
+        ))}
 
         <Item variant="outline">
           <ItemContent>
@@ -278,7 +308,11 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
             <div className="flex justify-start md:justify-end">
               <div className="flex gap-2">
                 {running ? (
-                  <Button variant="destructive" onClick={handleStop} disabled={fetchStopped}>
+                  <Button
+                    variant="destructive"
+                    onClick={() => handleStop()}
+                    disabled={fetchStopped}
+                  >
                     Остановить
                     {fetchStopped && <Spinner className="h-4 w-4 animate-spin" />}
                   </Button>
