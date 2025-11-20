@@ -36,64 +36,8 @@ export default class HomeController {
       occurredAt: e.occurredAt?.toISO() ?? null,
     }))
 
-    const messages = {
-      title: i18n.t('dashboard.title'),
-      h1: i18n.t('dashboard.h1'),
-      stats: {
-        migrationsTitle: i18n.t('dashboard.stats.migrationsTitle'),
-        migrationsHintActive: i18n.t('dashboard.stats.migrationsHintActive', {
-          count: activeMigrationsCount,
-        }),
-        sourcesTitle: i18n.t('dashboard.stats.sourcesTitle'),
-        sourcesHintTotal: i18n.t('dashboard.stats.sourcesHintTotal'),
-        errorsTitle: i18n.t('dashboard.stats.errorsTitle'),
-        errorsHintOpen: i18n.t('dashboard.stats.errorsHintOpen'),
-        runningTitle: i18n.t('dashboard.stats.runningTitle'),
-        runningHintNow: i18n.t('dashboard.stats.runningHintNow'),
-        openLink: i18n.t('dashboard.stats.openLink'),
-      },
-      analytics: {
-        title: i18n.t('dashboard.analytics.title'),
-        hint: i18n.t('dashboard.analytics.hint'),
-        badge: i18n.t('dashboard.analytics.badge'),
-      },
-      migrations: {
-        title: i18n.t('dashboard.migrations.title'),
-        allLink: i18n.t('dashboard.migrations.allLink'),
-        table: {
-          id: i18n.t('dashboard.migrations.table.id'),
-          name: i18n.t('dashboard.migrations.table.name'),
-          status: i18n.t('dashboard.migrations.table.status'),
-          actions: i18n.t('dashboard.migrations.table.actions'),
-          statusActive: i18n.t('dashboard.migrations.table.statusActive'),
-          statusInactive: i18n.t('dashboard.migrations.table.statusInactive'),
-          run: i18n.t('dashboard.migrations.table.run'),
-          open: i18n.t('dashboard.migrations.table.open'),
-          noData: i18n.t('dashboard.migrations.table.noData'),
-        },
-      },
-      errors: {
-        title: i18n.t('dashboard.errors.title'),
-        allLink: i18n.t('dashboard.errors.allLink'),
-        noMessage: i18n.t('dashboard.errors.noMessage'),
-        noData: i18n.t('dashboard.errors.noData'),
-      },
-      quickActions: {
-        title: i18n.t('dashboard.quickActions.title'),
-        createMigration: i18n.t('dashboard.quickActions.createMigration'),
-        sources: i18n.t('dashboard.quickActions.sources'),
-      },
-      chartLegend: {
-        runs: i18n.t('dashboard.chartLegend.runs'),
-        success: i18n.t('dashboard.chartLegend.success'),
-        canceled: i18n.t('dashboard.chartLegend.canceled'),
-        errors: i18n.t('dashboard.chartLegend.errors'),
-      },
-    }
-
     return inertia.render('home', {
-      messages,
-      pageTitle: messages.h1,
+      pageTitle: i18n.t('dashboard.h1'),
       counts: {
         migrations: migrationsCount,
         activeMigrations: activeMigrationsCount,

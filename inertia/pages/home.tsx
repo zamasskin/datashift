@@ -18,6 +18,7 @@ import {
 import { useMigrationRuns } from '~/store/migrations'
 import { useEffect, useMemo, useState } from 'react'
 import { DashboardAreaChart } from '~/components/charts/area-chart'
+import { useI18n } from '~/hooks/useI18nLocal'
 
 type HomeProps = {
   counts: { migrations: number; activeMigrations?: number; sources: number; openErrors: number }
@@ -38,54 +39,57 @@ const Home = () => {
   const runningCount = useMemo(() => runnings.length, [runnings])
   const { props } = usePage<HomeProps>()
   const visibleErrorCount = props.latestErrors?.length ?? 0
-  const msg = props.messages || {}
-  const locale = String(props.locale || 'ru')
+  const { t, locale } = useI18n()
+
+  const migrationsHint = String(
+    t('dashboard.stats.migrationsHintActive', 'Активных: {count}')
+  ).replace('{count}', String(props.counts?.activeMigrations ?? 0))
 
   return (
     <>
-      <Head title={msg.title || 'Dashboard'} />
+      <Head title={t('dashboard.title', 'Главная')} />
       {/* Статистика */}
       <div className="px-4 space-y-4">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           <StatCard
-            title={msg.stats?.migrationsTitle || 'Migrations'}
+            title={t('dashboard.stats.migrationsTitle', 'Миграции')}
             value={props.counts?.migrations ?? '—'}
-            hint={msg.stats?.migrationsHintActive || undefined}
-            link={{ href: '/migrations', text: msg.stats?.openLink || 'Open' }}
+            hint={migrationsHint || undefined}
+            link={{ href: '/migrations', text: t('dashboard.stats.openLink', 'Открыть') }}
           />
 
           <StatCard
-            title={msg.stats?.sourcesTitle || 'Sources'}
+            title={t('dashboard.stats.sourcesTitle', 'Подключения')}
             value={props.counts?.sources ?? '—'}
-            hint={msg.stats?.sourcesHintTotal || undefined}
-            link={{ href: '/sources', text: msg.stats?.openLink || 'Open' }}
+            hint={t('dashboard.stats.sourcesHintTotal', 'Всего подключений') || undefined}
+            link={{ href: '/sources', text: t('dashboard.stats.openLink', 'Открыть') }}
           />
 
           <StatCard
-            title={msg.stats?.errorsTitle || 'Errors'}
+            title={t('dashboard.stats.errorsTitle', 'Ошибки')}
             value={props.counts?.openErrors ?? '—'}
-            hint={msg.stats?.errorsHintOpen || undefined}
-            link={{ href: '/errors', text: msg.stats?.openLink || 'Open' }}
+            hint={t('dashboard.stats.errorsHintOpen', 'Открытые ошибки') || undefined}
+            link={{ href: '/errors', text: t('dashboard.stats.openLink', 'Открыть') }}
           />
           <StatCard
-            title={msg.stats?.runningTitle || 'Running'}
+            title={t('dashboard.stats.runningTitle', 'Запущено')}
             value={runningCount}
-            hint={msg.stats?.runningHintNow || undefined}
-            link={{ href: '/tasks', text: msg.stats?.openLink || 'Open' }}
+            hint={t('dashboard.stats.runningHintNow', 'Сейчас выполняется') || undefined}
+            link={{ href: '/tasks', text: t('dashboard.stats.openLink', 'Открыть') }}
           />
         </div>
 
         <Separator className="my-2" />
 
         {/* Аналитика */}
-        <SectionHeader title={msg.analytics?.title || 'Analytics'} />
+        <SectionHeader title={t('dashboard.analytics.title', 'Аналитика')} />
         {(() => {
           const metrics = useMetrics()
           return (
             <DashboardAreaChart
-              title={msg.analytics?.title || undefined}
-              hint={msg.analytics?.hint || undefined}
-              badge={msg.analytics?.badge || undefined}
+              title={t('dashboard.analytics.title', 'Аналитика') || undefined}
+              hint={t('dashboard.analytics.hint', 'Запуски, успешные и отменённые, и ошибки') || undefined}
+              badge={t('dashboard.analytics.badge', '30 дн.') || undefined}
               dataRuns={metrics.runs}
               dataErrors={metrics.errors}
               dataSuccess={metrics.runsSuccess}
@@ -96,18 +100,18 @@ const Home = () => {
 
         {/* Последние миграции */}
         <SectionHeader
-          title={msg.migrations?.title || 'Latest migrations'}
-          right={<Link href="/migrations">{msg.migrations?.allLink || 'All migrations'}</Link>}
+          title={t('dashboard.migrations.title', 'Последние миграции')}
+          right={<Link href="/migrations">{t('dashboard.migrations.allLink', 'Все миграции')}</Link>}
         />
         <Card>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{msg.migrations?.table?.id || 'ID'}</TableHead>
-                  <TableHead>{msg.migrations?.table?.name || 'Name'}</TableHead>
-                  <TableHead>{msg.migrations?.table?.status || 'Status'}</TableHead>
-                  <TableHead className="text-right">{msg.migrations?.table?.actions || 'Actions'}</TableHead>
+                  <TableHead>{t('dashboard.migrations.table.id', 'ID')}</TableHead>
+                  <TableHead>{t('dashboard.migrations.table.name', 'Название')}</TableHead>
+                  <TableHead>{t('dashboard.migrations.table.status', 'Статус')}</TableHead>
+                  <TableHead className="text-right">{t('dashboard.migrations.table.actions', 'Действия')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -118,7 +122,9 @@ const Home = () => {
                       <TableCell className="font-medium">{m.name}</TableCell>
                       <TableCell>
                         <Badge variant={m.isActive ? 'secondary' : 'outline'}>
-                          {m.isActive ? msg.migrations?.table?.statusActive || 'active' : msg.migrations?.table?.statusInactive || 'disabled'}
+                          {m.isActive
+                            ? t('dashboard.migrations.table.statusActive', 'активна')
+                            : t('dashboard.migrations.table.statusInactive', 'выключена')}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
@@ -128,10 +134,10 @@ const Home = () => {
                             size="sm"
                             onClick={() => handleRun(m.id, props.csrfToken)}
                           >
-                            {msg.migrations?.table?.run || 'Run'}
+                            {t('dashboard.migrations.table.run', 'Запустить')}
                           </Button>
                           <Button variant="outline" size="sm" asChild>
-                            <Link href={`/migrations/${m.id}`}>{msg.migrations?.table?.open || 'Open'}</Link>
+                            <Link href={`/migrations/${m.id}`}>{t('dashboard.migrations.table.open', 'Открыть')}</Link>
                           </Button>
                         </div>
                       </TableCell>
@@ -140,7 +146,7 @@ const Home = () => {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={4}>
-                      <div className="text-sm text-muted-foreground">{msg.migrations?.table?.noData || 'No data'}</div>
+                      <div className="text-sm text-muted-foreground">{t('dashboard.migrations.table.noData', 'Нет данных')}</div>
                     </TableCell>
                   </TableRow>
                 )}
@@ -151,12 +157,12 @@ const Home = () => {
 
         {/* Последние ошибки */}
         <SectionHeader
-          title={msg.errors?.title || 'Latest errors'}
+          title={t('dashboard.errors.title', 'Последние ошибки')}
           right={
             <div className="flex items-center gap-3">
               <Badge variant="secondary">{visibleErrorCount}</Badge>
               <Link href="/errors" className="text-sm">
-                {msg.errors?.allLink || 'All errors'}
+                {t('dashboard.errors.allLink', 'Все ошибки')}
               </Link>
             </div>
           }
@@ -168,11 +174,11 @@ const Home = () => {
                 <div key={e.id} className="flex items-start justify-between gap-4">
                   <div className="flex-1 space-y-1">
                     <div className="text-sm font-medium text-foreground">
-                      <Link href={`/errors/${e.id}`}>{e.message || msg.errors?.noMessage || 'No message'}</Link>
+                      <Link href={`/errors/${e.id}`}>{e.message || t('dashboard.errors.noMessage', 'Без сообщения')}</Link>
                     </div>
                     {e.occurredAt && (
                       <div className="text-xs text-muted-foreground">
-                        {formatUtc(e.occurredAt || undefined, locale)}
+                        {formatUtc(e.occurredAt || undefined, locale || 'ru-RU')}
                       </div>
                     )}
                   </div>
@@ -182,19 +188,19 @@ const Home = () => {
                 </div>
               ))
             ) : (
-              <div className="text-sm text-muted-foreground">{msg.errors?.noData || 'No data'}</div>
+              <div className="text-sm text-muted-foreground">{t('dashboard.errors.noData', 'Нет данных')}</div>
             )}
           </CardContent>
         </Card>
 
         {/* Быстрые действия */}
-        <SectionHeader title={msg.quickActions?.title || 'Quick actions'} />
+        <SectionHeader title={t('dashboard.quickActions.title', 'Быстрые действия')} />
         <div className="flex flex-wrap gap-2">
           <Button asChild>
-            <Link href="/migrations">{msg.quickActions?.createMigration || 'Create migration'}</Link>
+            <Link href="/migrations">{t('dashboard.quickActions.createMigration', 'Создать миграцию')}</Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link href="/sources">{msg.quickActions?.sources || 'Sources'}</Link>
+            <Link href="/sources">{t('dashboard.quickActions.sources', 'Подключения')}</Link>
           </Button>
         </div>
       </div>

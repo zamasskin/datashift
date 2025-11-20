@@ -8,7 +8,7 @@ import {
   ChartLegendContent,
 } from '~/components/ui/chart'
 import { AreaChart as ReAreaChart, Area, CartesianGrid, XAxis, YAxis } from 'recharts'
-import { usePage } from '@inertiajs/react'
+import { useI18n } from '~/hooks/useI18nLocal'
 
 type Point = { date: string; value: number }
 type ChartPoint = {
@@ -20,8 +20,8 @@ type ChartPoint = {
 }
 
 export function DashboardAreaChart({
-  title = 'Активность миграций',
-  hint = 'Показывает число запусков за период',
+  title,
+  hint,
   badge,
   data,
   dataRuns,
@@ -38,9 +38,13 @@ export function DashboardAreaChart({
   dataSuccess?: Point[]
   dataCanceled?: Point[]
 }) {
-  const { props } = usePage<{ messages?: { chartLegend?: Record<string, string> }; locale?: string }>()
-  const legend = props.messages?.chartLegend || {}
-  const locale = String(props.locale || 'ru-RU')
+  const { t, locale } = useI18n()
+  const legend = {
+    runs: String(t('dashboard.chartLegend.runs', 'Runs')),
+    success: String(t('dashboard.chartLegend.success', 'Successful')),
+    canceled: String(t('dashboard.chartLegend.canceled', 'Canceled')),
+    errors: String(t('dashboard.chartLegend.errors', 'Errors')),
+  }
   const defaultData: ChartPoint[] = [
     { date: 'Янв', runs: 12 },
     { date: 'Фев', runs: 18 },
@@ -90,19 +94,19 @@ export function DashboardAreaChart({
   // Theme-aware colors: ensure higher contrast on light theme
   const chartConfig = {
     runs: {
-      label: legend.runs || 'Runs',
+      label: legend.runs,
       theme: { light: '#2563eb', dark: '#60a5fa' }, // blue
     },
     success: {
-      label: legend.success || 'Successful',
+      label: legend.success,
       theme: { light: '#16a34a', dark: '#22c55e' }, // green
     },
     canceled: {
-      label: legend.canceled || 'Canceled',
+      label: legend.canceled,
       theme: { light: '#d97706', dark: '#f59e0b' }, // amber
     },
     errors: {
-      label: legend.errors || 'Errors',
+      label: legend.errors,
       theme: { light: '#dc2626', dark: '#ef4444' }, // red
     },
   }
@@ -111,10 +115,18 @@ export function DashboardAreaChart({
     <Card>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between gap-2">
-          <CardTitle className="text-base font-medium text-muted-foreground">{title}</CardTitle>
-          {badge && <Badge variant="secondary">{badge}</Badge>}
+          <CardTitle className="text-base font-medium text-muted-foreground">
+            {title ?? String(t('dashboard.analytics.title', 'Аналитика'))}
+          </CardTitle>
+          {(badge ?? t('dashboard.analytics.badge', '')) && (
+            <Badge variant="secondary">{badge ?? String(t('dashboard.analytics.badge', ''))}</Badge>
+          )}
         </div>
-        {hint && <div className="text-xs text-muted-foreground">{hint}</div>}
+        {(hint ?? t('dashboard.analytics.hint', '')) && (
+          <div className="text-xs text-muted-foreground">
+            {hint ?? String(t('dashboard.analytics.hint', ''))}
+          </div>
+        )}
       </CardHeader>
       <CardContent className="pt-0">
         <ChartContainer config={chartConfig} className="h-[240px] w-full">
@@ -162,7 +174,7 @@ export function DashboardAreaChart({
             <Area
               type="monotone"
               dataKey="errors"
-              name={legend.errors || 'Errors'}
+              name={legend.errors}
               stroke="var(--color-errors)"
               strokeOpacity={0.7}
               fill="url(#areaErrors)"
@@ -172,7 +184,7 @@ export function DashboardAreaChart({
             <Area
               type="monotone"
               dataKey="canceled"
-              name={legend.canceled || 'Canceled'}
+              name={legend.canceled}
               stroke="var(--color-canceled)"
               strokeOpacity={0.75}
               fill="none"
@@ -182,7 +194,7 @@ export function DashboardAreaChart({
             <Area
               type="monotone"
               dataKey="success"
-              name={legend.success || 'Successful'}
+              name={legend.success}
               stroke="var(--color-success)"
               strokeOpacity={0.75}
               fill="none"
@@ -192,7 +204,7 @@ export function DashboardAreaChart({
             <Area
               type="monotone"
               dataKey="runs"
-              name={legend.runs || 'Runs'}
+              name={legend.runs}
               stroke="var(--color-runs)"
               strokeOpacity={0.7}
               fill="url(#areaRuns)"
