@@ -102,10 +102,7 @@ export function SqlBuilderCard({
     return compactList(group, limit)
   }
 
-  const renderOrdersSummary = (
-    orders?: Record<string, 'asc' | 'desc'>[],
-    limit = 3
-  ): string => {
+  const renderOrdersSummary = (orders?: Record<string, 'asc' | 'desc'>[], limit = 3): string => {
     const list = (orders ?? []).flatMap((o) =>
       Object.entries(o).map(([col, dir]) => `${col} ${dir.toUpperCase()}`)
     )
@@ -116,10 +113,31 @@ export function SqlBuilderCard({
     joins?: { table: string; alias?: string; type: 'inner' | 'left' | 'right' | 'full' }[],
     limit = 2
   ): string => {
-    const list = (joins ?? []).map((j) =>
-      `${j.type.toUpperCase()} ${j.table}${j.alias ? ` (${j.alias})` : ''}`
+    const list = (joins ?? []).map(
+      (j) => `${j.type.toUpperCase()} ${j.table}${j.alias ? ` (${j.alias})` : ''}`
     )
     return compactList(list, limit)
+  }
+
+  const renderWhereSummaryFull = (data?: {
+    fields?: { key: string; value?: any; values?: any[]; op?: string }[]
+    $and?: Record<string, any>
+    $or?: Record<string, any>
+  }): string => {
+    if (!data) return ''
+    const parts: string[] = []
+    parts.push(...formatWhereFields(data.fields))
+    if (data.$and) {
+      for (const [k, v] of Object.entries(data.$and)) {
+        parts.push(`$and ${k} = ${formatSqlValue(v)}`)
+      }
+    }
+    if (data.$or) {
+      for (const [k, v] of Object.entries(data.$or)) {
+        parts.push(`$or ${k} = ${formatSqlValue(v)}`)
+      }
+    }
+    return parts.join(', ')
   }
 
   return (
@@ -146,7 +164,7 @@ export function SqlBuilderCard({
               Источник данных № {config?.params?.sourceId}
             </span>
           </ItemDescription>
-          <ItemDescription>
+          <ItemDescription className="line-clamp-none">
             <div className="text-xs text-muted-foreground space-y-0.5">
               <div>
                 Таблица: <span className="font-medium">{config?.params?.table}</span>{' '}
@@ -160,7 +178,10 @@ export function SqlBuilderCard({
                 <div>· Поля: {renderSelectsSummary(config?.params?.selects)}</div>
               ) : null}
               {config?.params?.joins?.length ? (
-                <div>· Join: {renderJoinsSummary(config?.params?.joins)}</div>
+                <div>· Join: {renderJoinsSummary(config?.params?.joins, 9999)}</div>
+              ) : null}
+              {hasWhereContent(config?.params?.where) ? (
+                <div>· WHERE: {renderWhereSummaryFull(config?.params?.where)}</div>
               ) : null}
               {config?.params?.orders?.length ? (
                 <div>· Сортировки: {renderOrdersSummary(config?.params?.orders)}</div>
@@ -171,139 +192,6 @@ export function SqlBuilderCard({
             </div>
           </ItemDescription>
         </ItemContent>
-        {config?.params && (
-          <ItemContent>
-            <ItemDescription>
-              <div className="space-y-2 text-xs text-muted-foreground">
-                {config.params.selects && config.params.selects.length > 0 && (
-                  <div>
-                    <span className="font-medium text-foreground">Поля:</span>{' '}
-                    <span className="inline-flex flex-wrap gap-1 align-middle">
-                      {config.params.selects.map((s) => (
-                        <span key={s} className="rounded border px-1 py-0.5">
-                          {s}
-                        </span>
-                      ))}
-                    </span>
-                  </div>
-                )}
-                {config.params.joins && config.params.joins.length > 0 && (
-                  <div>
-                    <span className="font-medium text-foreground">Join:</span>
-                    <div className="mt-1 space-y-1">
-                      {config.params.joins.map((j, idx) => (
-                        <div key={`${j.table}-${idx}`} className="rounded border px-2 py-1">
-                          <span className="text-foreground">
-                            {j.type.toUpperCase()} {j.table}
-                            {j.alias ? ` AS ${j.alias}` : ''}
-                          </span>
-                          {j.on && j.on.length > 0 && (
-                            <div className="mt-0.5">
-                              <span className="text-foreground">ON</span>{' '}
-                              <span>{formatJoinOn(j.on)}</span>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {hasWhereContent(config.params.where) && (
-                  <div>
-                    <span className="font-medium text-foreground">Фильтры WHERE:</span>
-                    <div className="mt-1 inline-flex flex-wrap gap-1">
-                      {formatWhereFields(config.params.where?.fields).map((w, i) => (
-                        <code
-                          key={`where-${i}`}
-                          className="rounded bg-muted px-1 py-0.5 font-mono text-foreground"
-                        >
-                          {w}
-                        </code>
-                      ))}
-                      {config.params.where?.$and &&
-                        Object.entries(config.params.where?.$and ?? {}).map(([k, v], i) => (
-                          <code
-                            key={`where-and-${k}-${i}`}
-                            className="rounded bg-muted px-1 py-0.5 font-mono text-foreground"
-                          >
-                            $and {k} = {formatSqlValue(v)}
-                          </code>
-                        ))}
-                      {config.params.where?.$or &&
-                        Object.entries(config.params.where?.$or ?? {}).map(([k, v], i) => (
-                          <code
-                            key={`where-or-${k}-${i}`}
-                            className="rounded bg-muted px-1 py-0.5 font-mono text-foreground"
-                          >
-                            $or {k} = {formatSqlValue(v)}
-                          </code>
-                        ))}
-                    </div>
-                  </div>
-                )}
-                {hasWhereContent(config.params.hawing) && (
-                  <div>
-                    <span className="font-medium text-foreground">Фильтры HAVING:</span>
-                    <div className="mt-1 inline-flex flex-wrap gap-1">
-                      {formatWhereFields(config.params.hawing?.fields).map((h, i) => (
-                        <code
-                          key={`having-${i}`}
-                          className="rounded bg-muted px-1 py-0.5 font-mono text-foreground"
-                        >
-                          {h}
-                        </code>
-                      ))}
-                      {config.params.hawing?.$and &&
-                        Object.entries(config.params.hawing?.$and ?? {}).map(([k, v], i) => (
-                          <code
-                            key={`having-and-${k}-${i}`}
-                            className="rounded bg-muted px-1 py-0.5 font-mono text-foreground"
-                          >
-                            $and {k} = {formatSqlValue(v)}
-                          </code>
-                        ))}
-                      {config.params.hawing?.$or &&
-                        Object.entries(config.params.hawing?.$or ?? {}).map(([k, v], i) => (
-                          <code
-                            key={`having-or-${k}-${i}`}
-                            className="rounded bg-muted px-1 py-0.5 font-mono text-foreground"
-                          >
-                            $or {k} = {formatSqlValue(v)}
-                          </code>
-                        ))}
-                    </div>
-                  </div>
-                )}
-                {config.params.group && config.params.group.length > 0 && (
-                  <div>
-                    <span className="font-medium text-foreground">Группировки:</span>{' '}
-                    <span className="inline-flex flex-wrap gap-1">
-                      {config.params.group.map((g) => (
-                        <span key={g} className="rounded border px-1 py-0.5">
-                          {g}
-                        </span>
-                      ))}
-                    </span>
-                  </div>
-                )}
-                {config.params.orders && config.params.orders.length > 0 && (
-                  <div>
-                    <span className="font-medium text-foreground">Сортировки:</span>
-                    <div className="mt-1 inline-flex flex-wrap gap-1">
-                      {config.params.orders.flatMap((o, oi) =>
-                        Object.entries(o).map(([col, dir]) => (
-                          <span key={`${col}-${oi}`} className="rounded border px-1 py-0.5">
-                            {col} {dir}
-                          </span>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </ItemDescription>
-          </ItemContent>
-        )}
         <ItemFooter>
           <div className="flex items-center gap-2">
             <Button
