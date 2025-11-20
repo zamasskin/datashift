@@ -67,7 +67,7 @@ export function SaveMappings({
               <ItemContent>
                 <div className="space-y-2 p-1">
                   <div className="text-sm text-muted-foreground">
-                    ID: {mapping.id} · Источник: {mapping.sourceId}
+                    ID: {mapping.id} · Подключение: {mapping.sourceId}
                   </div>
 
                   <div className="space-y-1">

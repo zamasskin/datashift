@@ -105,7 +105,7 @@ export function EditSource({
           <form onSubmit={form.handleSubmit(onSubmit)}>
             {props.csrfToken && <input type="hidden" name="_csrf" value={props.csrfToken} />}
             <SheetHeader>
-              <SheetTitle>Редактировать источник данных</SheetTitle>
+              <SheetTitle>Редактировать подключение</SheetTitle>
               <SheetDescription>
                 <div className="flex flex-col gap-6">
                   <FormField
@@ -132,7 +132,7 @@ export function EditSource({
                         <FormControl>
                           <Select value={field.value} onValueChange={field.onChange}>
                             <SelectTrigger>
-                              <SelectValue placeholder="Выберите тип источника" />
+                              <SelectValue placeholder="Выберите тип подключения" />
                             </SelectTrigger>
                             <SelectContent>
                               {types.map((type) => (

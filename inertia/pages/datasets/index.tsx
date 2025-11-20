@@ -136,7 +136,7 @@ const Datasets = () => {
       return
     }
     if (!last.dataSourceId || !last.value?.trim()) {
-      setOverallResult({ rows: [], loading: false, error: 'Заполните источник и SQL' })
+        setOverallResult({ rows: [], loading: false, error: 'Заполните подключение и SQL' })
       return
     }
     try {

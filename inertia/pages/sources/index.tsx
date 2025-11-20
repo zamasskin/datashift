@@ -7,14 +7,14 @@ import React from 'react'
 const SourcesPage = () => {
   return (
     <>
-      <Head title="Источники данных" />
+      <Head title="Подключения" />
       <DataTable />
     </>
   )
 }
 
 SourcesPage.layout = (page: React.ReactNode) => {
-  return <RootLayout title="Источники данных">{page}</RootLayout>
+  return <RootLayout title="Подключения">{page}</RootLayout>
 }
 
 export default SourcesPage

@@ -293,13 +293,13 @@ const ProfilePage = () => {
           </CardContent>
         </Card>
 
-        {/* Обзор: Источники данных и Миграции — две колонки (источники уже, миграции шире) */}
+        {/* Обзор: Подключения данных и Миграции — две колонки (подключения уже, миграции шире) */}
         <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 items-stretch gap-4">
-          {/* Левая колонка: Источники данных — компактный список */}
+          {/* Левая колонка: Подключения данных — компактный список */}
           <div className="md:col-span-1">
             <Card className="h-full">
               <CardHeader className="py-2">
-                <CardTitle className="text-sm text-muted-foreground">Источники данных</CardTitle>
+                <CardTitle className="text-sm text-muted-foreground">Подключения данных</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col h-full space-y-2 p-3">
                 <div className="flex items-center justify-between">
@@ -317,12 +317,12 @@ const ProfilePage = () => {
                       </Item>
                     ))
                   ) : (
-                    <p className="text-xs text-muted-foreground">Нет источников</p>
+                    <p className="text-xs text-muted-foreground">Нет подключений</p>
                   )}
                 </div>
                 <div className="pt-1 mt-auto">
                   <Button variant="outline" size="sm" asChild>
-                    <Link href="/sources">Все источники</Link>
+                    <Link href="/sources">Все подключения</Link>
                   </Button>
                 </div>
               </CardContent>

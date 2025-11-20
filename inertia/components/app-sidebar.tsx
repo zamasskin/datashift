@@ -27,7 +27,7 @@ import User from '#models/user'
 
 const nawMain = [
   {
-    title: 'Источники данных',
+    title: 'Подключения',
     url: '/sources',
     icon: IconBrandCodepen,
   },

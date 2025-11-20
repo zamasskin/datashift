@@ -1,4 +1,10 @@
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '~/components/ui/select'
 import { Field, FieldLabel } from '~/components/ui/field'
 
 export type DataSourceOption = {
@@ -8,7 +14,7 @@ export type DataSourceOption = {
 }
 
 export function DataSourceSelect({
-  label = 'Источник данных',
+  label = 'Подключение',
   value,
   options,
   onChange,
@@ -26,7 +32,7 @@ export function DataSourceSelect({
         onValueChange={(v) => onChange?.(v ? Number(v) : null)}
       >
         <SelectTrigger>
-          <SelectValue placeholder="Выберите источник" />
+          <SelectValue placeholder="Выберите подключение" />
         </SelectTrigger>
         <SelectContent>
           {options.map((ds) => (

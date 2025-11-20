@@ -168,7 +168,7 @@ export function SqlBuilderCard({
           </ItemTitle>
           <ItemDescription>
             <span className="inline-flex items-center rounded border px-2 py-0.5 text-xs text-muted-foreground">
-              Источник данных № {config?.params?.sourceId}
+          Подключение № {config?.params?.sourceId}
             </span>
           </ItemDescription>
           <ItemDescription className="line-clamp-none">

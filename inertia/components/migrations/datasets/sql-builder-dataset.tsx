@@ -216,7 +216,7 @@ export function SqlBuilderDataset({ config, ...props }: SqlBuilderProps) {
           </div>
         )}
 
-        {tables.length == 0 && <div>Для выбранных источников данных таблицы не найдены.</div>}
+        {tables.length == 0 && <div>Для выбранных подключений таблицы не найдены.</div>}
 
         <div className="mt-4 max-h-[68vh] overflow-y-auto pr-1">
           <Tabs defaultValue="selects">

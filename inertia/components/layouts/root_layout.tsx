@@ -37,7 +37,7 @@ function RootLayout({ children, title }: RootLayoutProps) {
               <NavigationMenuItem>
                 <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
                   <Link href="/sources" className="flex justify-end items-end gap-2">
-                    Источники данных
+                    Подключения
                   </Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
@@ -77,7 +77,7 @@ function RootLayout({ children, title }: RootLayoutProps) {
                   <ul className="grid w-[200px] gap-2">
                     <li>
                       <NavigationMenuLink asChild>
-                        <Link href="/sources/new">Источник данных</Link>
+                        <Link href="/sources/new">Подключение</Link>
                       </NavigationMenuLink>
                     </li>
                     <li>

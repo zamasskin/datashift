@@ -28,11 +28,11 @@ const Help = () => {
           </CardHeader>
           <CardContent className="space-y-2 text-sm text-muted-foreground">
             <p>
-              На этой странице собраны краткие инструкции по основным разделам и действиям. В
-              каждом разделе есть место для скриншота интерфейса.
+              На этой странице собраны краткие инструкции по основным разделам и действиям. В каждом
+              разделе есть место для скриншота интерфейса.
             </p>
             <div className="flex gap-2 flex-wrap">
-              <Badge variant="secondary">Источники</Badge>
+              <Badge variant="secondary">Подключения</Badge>
               <Badge variant="secondary">Миграции</Badge>
               <Badge variant="secondary">Датасеты</Badge>
               <Badge variant="secondary">Ошибки</Badge>
@@ -45,7 +45,7 @@ const Help = () => {
         <Tabs defaultValue="start" className="w-full">
           <TabsList className="grid grid-cols-3 md:grid-cols-6 gap-1">
             <TabsTrigger value="start">Начало</TabsTrigger>
-            <TabsTrigger value="sources">Источники</TabsTrigger>
+            <TabsTrigger value="sources">Подключения</TabsTrigger>
             <TabsTrigger value="migrations">Миграции</TabsTrigger>
             <TabsTrigger value="datasets">Датасеты</TabsTrigger>
             <TabsTrigger value="errors">Ошибки</TabsTrigger>
@@ -59,8 +59,8 @@ const Help = () => {
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
                 <ol className="list-decimal pl-5 space-y-1">
-                  <li>Создайте источник данных в разделе «Источники».</li>
-                  <li>Настройте миграцию: выберите источник и параметры.</li>
+                  <li>Создайте подключение данных в разделе «Подключения».</li>
+                  <li>Настройте миграцию: выберите подключение и параметры.</li>
                   <li>Запустите миграцию и отслеживайте прогресс.</li>
                 </ol>
                 <ScreenshotPlaceholder label="Главная страница и быстрые действия" />
@@ -71,14 +71,14 @@ const Help = () => {
           <TabsContent value="sources" className="space-y-4">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-base">Источники данных</CardTitle>
+                <CardTitle className="text-base">Подключения</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
                 <p>
-                  В разделе «Источники» вы добавляете подключения: базы данных, API, файлы.
+                  В разделе «Подключения» вы добавляете подключения: базы данных, API, файлы.
                   Укажите параметры, проверьте подключение и сохраните.
                 </p>
-                <ScreenshotPlaceholder label="Список и форма создания источника" />
+                <ScreenshotPlaceholder label="Список и форма создания подключения" />
               </CardContent>
             </Card>
           </TabsContent>
@@ -90,9 +90,8 @@ const Help = () => {
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
                 <p>
-                  Миграции описывают, что из источника и как переносится. Настройте шаги,
-                  фильтры и расписание (cron) при необходимости. Запускайте и следите за
-                  статусами.
+                  Миграции описывают, что из подключения и как переносится. Настройте шаги, фильтры
+                  и расписание (cron) при необходимости. Запускайте и следите за статусами.
                 </p>
                 <ScreenshotPlaceholder label="Список миграций и экран редактирования" />
               </CardContent>
@@ -106,8 +105,8 @@ const Help = () => {
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
                 <p>
-                  Датасеты помогают формировать подготовленные выборки для отображения и
-                  анализа. Настройте SQL/правила и протестируйте результат.
+                  Датасеты помогают формировать подготовленные выборки для отображения и анализа.
+                  Настройте SQL/правила и протестируйте результат.
                 </p>
                 <ScreenshotPlaceholder label="Список датасетов и тестирование выборки" />
               </CardContent>
@@ -121,8 +120,8 @@ const Help = () => {
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
                 <p>
-                  В «Ошибках» отображаются сообщения о проблемах, их статус и детали. Вы
-                  можете помечать ошибки прочитанными и фильтровать по типу.
+                  В «Ошибках» отображаются сообщения о проблемах, их статус и детали. Вы можете
+                  помечать ошибки прочитанными и фильтровать по типу.
                 </p>
                 <ScreenshotPlaceholder label="Журнал ошибок и фильтры" />
               </CardContent>

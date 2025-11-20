@@ -74,7 +74,7 @@ const ErrorShow = () => {
               <Detail label="UUID" value={error.uuid} />
               <Detail label="Код" value={error.code || '—'} />
               <Detail label="Когда" value={formatUtcRu(error.occurredAt || undefined)} />
-              <Detail label="Источник" value={error.source || '—'} />
+              <Detail label="Подключение" value={error.source || '—'} />
               <Detail label="Триггер" value={error.trigger || '—'} />
               <Detail label="Окружение" value={error.environment || '—'} />
               <Detail label="Хост" value={error.hostname || '—'} />

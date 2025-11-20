@@ -35,7 +35,7 @@ type CommandLink = {
 
 const navCommands: CommandLink[] = [
   { label: 'Главная', href: '/', icon: IconSearch },
-  { label: 'Источники данных', href: '/sources', icon: IconBrandCodepen },
+  { label: 'Подключения', href: '/sources', icon: IconBrandCodepen },
   { label: 'Миграции', href: '/migrations', icon: IconArrowUpToArc },
   { label: 'Ошибки', href: '/errors', icon: IconAlertCircle },
   { label: 'Настройки', href: '/settings', icon: IconSettings },
@@ -190,7 +190,7 @@ export function GlobalSearch({ className }: { className?: string }) {
             </CommandGroup>
 
             <CommandSeparator />
-            <CommandGroup heading={loading ? 'Поиск…' : 'Источники данных'}>
+            <CommandGroup heading={loading ? 'Поиск…' : 'Подключения данных'}>
               {results.dataSources.map((s) => (
                 <CommandItem key={`source-${s.id}`} onSelect={() => setOpen(false)}>
                   <IconBrandCodepen className="size-4" />

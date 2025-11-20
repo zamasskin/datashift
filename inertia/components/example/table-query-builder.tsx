@@ -77,7 +77,7 @@ export function TableQueryBuilder({
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Выбор источника и таблицы</CardTitle>
+        <CardTitle>Выбор подключения и таблицы</CardTitle>
           <CardAction>
             <Button
               type="button"

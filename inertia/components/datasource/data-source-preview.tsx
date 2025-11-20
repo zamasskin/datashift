@@ -8,7 +8,7 @@ export function DataSourcePreview(props: { dataSourceId: number }) {
   if (!dataSource) {
     return (
       <div className="flex gap-4">
-        <p>Источник:</p>
+        <p>Подключение:</p>
         <Badge>Не выбрано</Badge>
       </div>
     )
@@ -16,7 +16,7 @@ export function DataSourcePreview(props: { dataSourceId: number }) {
 
   return (
     <div className="flex gap-4">
-      <p>Источник:</p>
+      <p>Подключение:</p>
       <Badge>{dataSource.name}</Badge>
     </div>
   )

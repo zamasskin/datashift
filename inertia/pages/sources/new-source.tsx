@@ -77,7 +77,7 @@ export function CreateSource() {
           <form onSubmit={form.handleSubmit(onSubmit)}>
             {props.csrfToken && <input type="hidden" name="_csrf" value={props.csrfToken} />}
             <SheetHeader>
-              <SheetTitle>Новый источник данных</SheetTitle>
+              <SheetTitle>Новое подключение</SheetTitle>
               <SheetDescription>
                 {/* ... existing code ... */}
                 <div className="flex flex-col gap-6">
@@ -106,7 +106,7 @@ export function CreateSource() {
                         <FormControl>
                           <Select value={field.value} onValueChange={field.onChange}>
                             <SelectTrigger>
-                              <SelectValue placeholder="Выберите тип источника" />
+                              <SelectValue placeholder="Выберите тип подключения" />
                             </SelectTrigger>
                             <SelectContent>
                               {types.map((type) => (

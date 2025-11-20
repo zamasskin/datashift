@@ -45,7 +45,7 @@ export function JoinEditor({
   onChange,
 }: JoinEditorProps) {
   if (!tables || tables.length === 0) {
-    return <div>Для выбранных источников данных таблицы не найдены.</div>
+  return <div>Для выбранных подключений таблицы не найдены.</div>
   }
 
   const operators = ['=', '!=', '<', '<=', '>', '>='] as const

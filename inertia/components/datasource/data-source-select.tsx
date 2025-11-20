@@ -13,10 +13,10 @@ export function DataSourceSelect(props: DataSourceSelectProps) {
   const { props: pageProps } = usePage<{ dataSources: DataSource[] }>()
   return (
     <Field>
-      <FieldLabel>Источник данных</FieldLabel>
+      <FieldLabel>Подключение</FieldLabel>
       <Select value={value} onValueChange={(v) => props.onChange?.(Number(v))}>
         <SelectTrigger>
-          <SelectValue placeholder="Выберите источник данных" />
+          <SelectValue placeholder="Выберите подключение" />
         </SelectTrigger>
         <SelectContent>
           {pageProps.dataSources.map((source) => (
