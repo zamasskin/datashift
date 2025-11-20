@@ -233,6 +233,17 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
           )
         })()}
 
+        {running?.progress && (
+          <div className="space-y-3">
+            {running?.progress.map((percent, idx) => (
+              <div className="flex items-center gap-3" key={idx}>
+                <Progress value={percent} className="h-2 rounded-full" />
+                <span className="text-sm font-medium text-muted-foreground">{percent}%</span>
+              </div>
+            ))}
+          </div>
+        )}
+
         <Item variant="outline">
           <ItemContent>
             <div className="flex items-center space-x-2">
@@ -282,17 +293,6 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
             </div>
           )}
         </div>
-
-        {running?.progress && (
-          <div className="space-y-3">
-            {running?.progress.map((percent, idx) => (
-              <div className="flex items-center gap-3" key={idx}>
-                <Progress value={percent} className="h-2 rounded-full" />
-                <span className="text-sm font-medium text-muted-foreground">{percent}%</span>
-              </div>
-            ))}
-          </div>
-        )}
 
         <Tabs defaultValue="migrations" className="mt-6">
           <TabsList>
@@ -515,7 +515,7 @@ function useMigrationMetrics(migrationId: number) {
       try {
         const res = await fetch(`/metrics/migration/${migrationId}?days=30`, {
           credentials: 'same-origin',
-          headers: { accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+          headers: { 'accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
         })
         if (!res.ok) return
         const json = await res.json()
