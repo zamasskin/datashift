@@ -31,6 +31,14 @@
     },
     "running": {
       "showAll": "Показать все"
+    },
+    "runningIndicators": {
+      "header": "Запущено",
+      "noNamePrefix": "Миграция #",
+      "progress": "Прогресс",
+      "streamsLabel": "Потоки",
+      "flowLabel": "Поток",
+      "stopAria": "Остановить запуск"
     }
   }
 }

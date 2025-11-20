@@ -22,8 +22,8 @@ export function RunningIndicators({ runnings }: Props) {
   if (runnings.length === 0) return null
 
   const {
-    props: { csrfToken },
-  } = usePage<{ csrfToken: string }>()
+    props: { csrfToken, layoutMessages },
+  } = usePage<{ csrfToken: string; layoutMessages: any }>()
   const [stopping, setStopping] = useState<Record<number, boolean>>({})
 
   const stopRun = async (r: MigrationRun) => {
@@ -45,7 +45,7 @@ export function RunningIndicators({ runnings }: Props) {
   return (
     <div className="mt-4 p-2 rounded-md border border-[hsl(var(--sidebar-border))]">
       <div className="text-xs font-medium text-muted-foreground mb-2">
-        Запущено ({runnings.length})
+        {`${layoutMessages?.root?.runningIndicators?.header || 'Running'} (${runnings.length})`}
       </div>
       <ScrollArea className="max-h-56">
         <ul className="space-y-2">
@@ -58,7 +58,9 @@ export function RunningIndicators({ runnings }: Props) {
                   <Link href={`/migrations/${r.migrationId}`} className="flex items-center gap-2">
                     <span className="inline-block size-2 rounded-full bg-emerald-500 animate-pulse" />
                     <span className="text-sm text-foreground">
-                      {name ? name : `Миграция #${r.migrationId}`}
+                      {name
+                        ? name
+                        : `${layoutMessages?.root?.runningIndicators?.noNamePrefix || 'Migration #'}${r.migrationId}`}
                     </span>
                   </Link>
 
@@ -73,17 +75,25 @@ export function RunningIndicators({ runnings }: Props) {
                         <div className="cursor-pointer">
                           <Progress value={r.progress[0]} />
                           <div className="flex items-center justify-between">
-                            <span className="text-xs text-muted-foreground">Прогресс</span>
+                            <span className="text-xs text-muted-foreground">
+                              {layoutMessages?.root?.runningIndicators?.progress || 'Progress'}
+                            </span>
                             <span className="text-xs text-foreground">{r.progress[0]}%</span>
                           </div>
                         </div>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" side="right">
-                        <DropdownMenuLabel>Потоки</DropdownMenuLabel>
+                        <DropdownMenuLabel>
+                          {layoutMessages?.root?.runningIndicators?.streamsLabel || 'Streams'}
+                        </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         {r.progress.map((percent, idx) => (
                           <DropdownMenuItem key={idx} className="flex flex-col gap-1">
-                            <span className="text-xs text-muted-foreground">{`Поток ${idx + 1}`}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {`${layoutMessages?.root?.runningIndicators?.flowLabel || 'Flow'} ${
+                                idx + 1
+                              }`}
+                            </span>
                             <Progress value={percent} />
                             <span className="text-xs text-foreground">{`${percent}%`}</span>
                           </DropdownMenuItem>
@@ -95,7 +105,9 @@ export function RunningIndicators({ runnings }: Props) {
                   <div className="flex-1">
                     <Progress value={0} />
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">Прогресс</span>
+                      <span className="text-xs text-muted-foreground">
+                        {layoutMessages?.root?.runningIndicators?.progress || 'Progress'}
+                      </span>
                       <span className="text-xs text-foreground">{0}%</span>
                     </div>
                   </div>
@@ -106,6 +118,7 @@ export function RunningIndicators({ runnings }: Props) {
                   size="icon-sm"
                   disabled={!!stopping[r.id]}
                   onClick={() => stopRun(r)}
+                  aria-label={layoutMessages?.root?.runningIndicators?.stopAria || 'Stop run'}
                 >
                   <StopCircle className="text-destructive" />
                 </Button>

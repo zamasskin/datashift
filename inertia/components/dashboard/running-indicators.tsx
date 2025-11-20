@@ -64,9 +64,7 @@ export function DashboardRunningIndicators({ runnings }: Props) {
                         <Progress value={percent} />
                         <div className="flex items-center justify-between">
                           <span className="text-xs text-muted-foreground">
-                            {messages?.runningIndicators?.flowLabel
-                              ? String(messages.runningIndicators.flowLabel).replace('{n}', String(idx + 1))
-                              : `Flow ${idx + 1}`}
+                            {`${messages?.runningIndicators?.flowLabel || 'Flow'} ${idx + 1}`}
                           </span>
                           <span className="text-xs text-foreground">{percent}%</span>
                         </div>

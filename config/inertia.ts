@@ -81,6 +81,14 @@ const inertiaConfig = defineConfig({
           running: {
             showAll: ctx.i18n.t('layout.root.running.showAll'),
           },
+          runningIndicators: {
+            header: ctx.i18n.t('layout.root.runningIndicators.header'),
+            noNamePrefix: ctx.i18n.t('layout.root.runningIndicators.noNamePrefix'),
+            progress: ctx.i18n.t('layout.root.runningIndicators.progress'),
+            streamsLabel: ctx.i18n.t('layout.root.runningIndicators.streamsLabel'),
+            flowLabel: ctx.i18n.t('layout.root.runningIndicators.flowLabel'),
+            stopAria: ctx.i18n.t('layout.root.runningIndicators.stopAria'),
+          },
         },
       })),
   },
