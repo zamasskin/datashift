@@ -46,13 +46,15 @@ export function SaveMappings({
       {fetchConfigsLength === 0 && (
         <Alert>
           <FileWarning />
-          <AlertTitle>Датасеты ещё не добавлены</AlertTitle>
+          <AlertTitle>Датасеты ещё не настроены</AlertTitle>
           <AlertDescription>
             Чтобы настраивать соответствия, добавьте хотя бы один датасет.
           </AlertDescription>
           <div className="col-start-2 mt-2">
             <a href="/sources">
-              <Button size="sm" variant="outline">Перейти к источникам</Button>
+              <Button size="sm" variant="outline">
+                Открыть подключения
+              </Button>
             </a>
           </div>
         </Alert>
