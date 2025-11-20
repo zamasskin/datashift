@@ -1,6 +1,7 @@
 import { ChevronLeft, ChevronRight, Settings, Trash } from 'lucide-react'
 import { Button } from '~/components/ui/button'
 import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle, ItemFooter } from '~/components/ui/item'
+import { SqlSnippet } from '~/components/ui/sql-snippet'
 import { SqlDataset } from '../datasets/sql-dataset'
 import { SqlConfig } from '#interfaces/sql_config'
 
@@ -53,9 +54,7 @@ export function SqlCard({
           </ItemDescription>
           {config?.params?.query && (
             <ItemDescription>
-              <code className="block w-full overflow-hidden whitespace-pre-wrap break-words rounded bg-muted px-2 py-1 text-xs font-mono text-muted-foreground line-clamp-2">
-                {config.params.query}
-              </code>
+              <SqlSnippet code={config.params.query} />
             </ItemDescription>
           )}
         </ItemContent>
