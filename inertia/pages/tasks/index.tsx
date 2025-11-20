@@ -23,38 +23,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuItem,
 } from '~/components/ui/dropdown-menu'
+import { useI18n } from '~/hooks/useI18nLocal'
 
-type LayoutMessages = {
-  pages?: {
-    tasks?: {
-      title?: string
-      h1?: string
-      linkMigrations?: string
-      empty?: string
-      table?: {
-        id?: string
-        migration?: string
-        status?: string
-        progress?: string
-        trigger?: string
-        pid?: string
-        startedAt?: string
-        actions?: string
-      }
-      progress?: { showAll?: string; noData?: string }
-      badge?: { running?: string; pending?: string; failed?: string; success?: string; canceled?: string }
-      action?: { stop?: string }
-      migration?: { unnamedPrefix?: string }
-      trigger?: { manual?: string; cron?: string; api?: string; resume?: string }
-    }
-  }
-}
+// All translations now come from useI18nLocal (layout.pages.tasks.*)
 
 const Tasks = () => {
   const { runnings } = useMigrationRuns()
-  const { props } = usePage<{ csrfToken?: string; layoutMessages?: LayoutMessages }>()
+  const { t, locale } = useI18n()
+  const { props } = usePage<{ csrfToken?: string }>()
   const csrfToken = props.csrfToken
-  const lm = (props.layoutMessages || {}) as LayoutMessages
   const [stopping, setStopping] = useState<Record<number, boolean>>({})
 
   const stopRun = async (run: any) => {
@@ -76,48 +53,48 @@ const Tasks = () => {
   const statusBadge = (s: any) => {
     switch (s) {
       case 'running':
-        return <Badge variant="default">{lm.pages?.tasks?.badge?.running || 'Выполняется'}</Badge>
+        return <Badge variant="default">{t('layout.pages.tasks.badge.running', 'Выполняется')}</Badge>
       case 'pending':
-        return <Badge variant="secondary">{lm.pages?.tasks?.badge?.pending || 'В очереди'}</Badge>
+        return <Badge variant="secondary">{t('layout.pages.tasks.badge.pending', 'В очереди')}</Badge>
       case 'failed':
-        return <Badge variant="destructive">{lm.pages?.tasks?.badge?.failed || 'Ошибка'}</Badge>
+        return <Badge variant="destructive">{t('layout.pages.tasks.badge.failed', 'Ошибка')}</Badge>
       case 'success':
         return (
           <Badge variant="default" className="bg-emerald-600 text-white">
-            {lm.pages?.tasks?.badge?.success || 'Успех'}
+            {t('layout.pages.tasks.badge.success', 'Успех')}
           </Badge>
         )
       case 'canceled':
-        return <Badge variant="outline">{lm.pages?.tasks?.badge?.canceled || 'Отменено'}</Badge>
+        return <Badge variant="outline">{t('layout.pages.tasks.badge.canceled', 'Отменено')}</Badge>
       default:
         return <Badge variant="outline">—</Badge>
     }
   }
   return (
     <>
-      <Head title={lm.pages?.tasks?.title || 'Задания'} />
+      <Head title={t('layout.pages.tasks.title', 'Задания')} />
       <div className="px-4 lg:px-6 space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-lg font-semibold">{lm.pages?.tasks?.h1 || 'Запущенные задания'}</h1>
+          <h1 className="text-lg font-semibold">{t('layout.pages.tasks.h1', 'Запущенные задания')}</h1>
           <Button asChild variant="outline" size="sm">
-            <Link href="/migrations">{lm.pages?.tasks?.linkMigrations || 'Все миграции'}</Link>
+            <Link href="/migrations">{t('layout.pages.tasks.linkMigrations', 'Все миграции')}</Link>
           </Button>
         </div>
         <Separator />
         {runnings.length === 0 ? (
-          <div className="text-muted-foreground">{lm.pages?.tasks?.empty || 'Сейчас нет запущенных заданий.'}</div>
+          <div className="text-muted-foreground">{t('layout.pages.tasks.empty', 'Сейчас нет запущенных заданий.')}</div>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{lm.pages?.tasks?.table?.id || 'ID'}</TableHead>
-                <TableHead>{lm.pages?.tasks?.table?.migration || 'Миграция'}</TableHead>
-                <TableHead>{lm.pages?.tasks?.table?.status || 'Статус'}</TableHead>
-                <TableHead>{lm.pages?.tasks?.table?.progress || 'Прогресс'}</TableHead>
-                <TableHead>{lm.pages?.tasks?.table?.trigger || 'Запуск'}</TableHead>
-                <TableHead>{lm.pages?.tasks?.table?.pid || 'PID'}</TableHead>
-                <TableHead>{lm.pages?.tasks?.table?.startedAt || 'Начато'}</TableHead>
-                <TableHead>{lm.pages?.tasks?.table?.actions || 'Действия'}</TableHead>
+                <TableHead>{t('layout.pages.tasks.table.id', 'ID')}</TableHead>
+                <TableHead>{t('layout.pages.tasks.table.migration', 'Миграция')}</TableHead>
+                <TableHead>{t('layout.pages.tasks.table.status', 'Статус')}</TableHead>
+                <TableHead>{t('layout.pages.tasks.table.progress', 'Прогресс')}</TableHead>
+                <TableHead>{t('layout.pages.tasks.table.trigger', 'Запуск')}</TableHead>
+                <TableHead>{t('layout.pages.tasks.table.pid', 'PID')}</TableHead>
+                <TableHead>{t('layout.pages.tasks.table.startedAt', 'Начато')}</TableHead>
+                <TableHead>{t('layout.pages.tasks.table.actions', 'Действия')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -126,7 +103,7 @@ const Tasks = () => {
                   <TableCell>{run.id}</TableCell>
                   <TableCell>
                     <Link href={`/migrations/${run.migrationId}`} className="hover:underline">
-                      {run?.migrationName ?? run?.migration?.name ?? `${lm.pages?.tasks?.migration?.unnamedPrefix || 'Миграция #'}${run.migrationId}`}
+                      {run?.migrationName ?? run?.migration?.name ?? `${t('layout.pages.tasks.migration.unnamedPrefix', 'Миграция #')}${run.migrationId}`}
                     </Link>
                   </TableCell>
                   <TableCell>{statusBadge(run.status)}</TableCell>
@@ -140,7 +117,7 @@ const Tasks = () => {
                             <button
                               type="button"
                               className="flex items-center gap-2 w-48 cursor-pointer hover:opacity-90"
-                              title={lm.pages?.tasks?.progress?.showAll || 'Показать все прогрессы'}
+                              title={t('layout.pages.tasks.progress.showAll', 'Показать все прогрессы')}
                             >
                               <Progress value={value} />
                               <span className="text-xs text-muted-foreground">{value}%</span>
@@ -148,7 +125,7 @@ const Tasks = () => {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent className="w-64">
                             <DropdownMenuLabel>
-                              {run?.migrationName ?? run?.migration?.name ?? `${lm.pages?.tasks?.migration?.unnamedPrefix || 'Миграция #'}${run.migrationId}`}
+                              {run?.migrationName ?? run?.migration?.name ?? `${t('layout.pages.tasks.migration.unnamedPrefix', 'Миграция #')}${run.migrationId}`}
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             {Array.isArray(run.progress) && run.progress.length > 0 ? (
@@ -162,7 +139,7 @@ const Tasks = () => {
                                 </DropdownMenuItem>
                               ))
                             ) : (
-                              <DropdownMenuItem disabled>{lm.pages?.tasks?.progress?.noData || 'Нет данных о прогрессе'}</DropdownMenuItem>
+                              <DropdownMenuItem disabled>{t('layout.pages.tasks.progress.noData', 'Нет данных о прогрессе')}</DropdownMenuItem>
                             )}
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -170,12 +147,12 @@ const Tasks = () => {
                     })()}
                   </TableCell>
                   <TableCell className="capitalize">
-                    {lm.pages?.tasks?.trigger?.[String(run.trigger) as 'manual' | 'cron' | 'api' | 'resume'] || String(run.trigger)}
+                    {t(`layout.pages.tasks.trigger.${String(run.trigger)}`, String(run.trigger))}
                   </TableCell>
                   <TableCell>{typeof run.pid === 'number' ? run.pid : '—'}</TableCell>
                   <TableCell>
                     {typeof run.createdAt === 'string'
-                      ? new Date(run.createdAt).toLocaleString()
+                      ? new Date(run.createdAt).toLocaleString(locale)
                       : '—'}
                   </TableCell>
                   <TableCell>
@@ -186,7 +163,7 @@ const Tasks = () => {
                         onClick={() => stopRun(run)}
                         disabled={!!stopping[run.id]}
                       >
-                        <StopCircle className="mr-1 h-4 w-4" /> {lm.pages?.tasks?.action?.stop || 'Остановить'}
+                        <StopCircle className="mr-1 h-4 w-4" /> {t('layout.pages.tasks.action.stop', 'Остановить')}
                       </Button>
                     ) : (
                       '—'
@@ -205,9 +182,8 @@ const Tasks = () => {
 }
 
 const TasksLayout = ({ children }: { children: React.ReactNode }) => {
-  const { props } = usePage<{ layoutMessages?: LayoutMessages }>()
-  const lm = (props.layoutMessages || {}) as LayoutMessages
-  return <RootLayout title={lm.pages?.tasks?.title || 'Задания'}>{children}</RootLayout>
+  const { t } = useI18n()
+  return <RootLayout title={t('layout.pages.tasks.title', 'Задания')}>{children}</RootLayout>
 }
 
 Tasks.layout = (page: React.ReactNode) => {

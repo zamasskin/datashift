@@ -3,7 +3,6 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '~/comp
 import { Input } from '~/components/ui/input'
 import { schemaInsert } from './config'
 import * as z from 'zod'
-import { usePage } from '@inertiajs/react'
 import { useI18n } from '~/hooks/useI18nLocal'
 
 export function SqlDataSourceFormConfig({
@@ -11,7 +10,6 @@ export function SqlDataSourceFormConfig({
 }: {
   form: UseFormReturn<z.infer<typeof schemaInsert>>
 }) {
-  const { props } = usePage<{ sourcesMessages?: any }>()
   const { t } = useI18n()
   const selectedType = form.watch('type')
   const port = selectedType == 'mysql' ? 3306 : 5432
@@ -108,7 +106,6 @@ export function SqliteDataSourceFormConfig({
 }: {
   form: UseFormReturn<z.infer<typeof schemaInsert>>
 }) {
-  const { props } = usePage<{ sourcesMessages?: any }>()
   const { t } = useI18n()
   return (
     <>
