@@ -9,26 +9,19 @@ import {
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
 import { Button } from '~/components/ui/button'
-import { useEffect, useState } from 'react'
-import { usePage } from '@inertiajs/react'
+import { usePage, router } from '@inertiajs/react'
 
 export function SiteHeader({ title }: { title: string }) {
   const page = usePage<{ locale: string }>()
-  const [locale, setLocale] = useState<string | null>(null)
-  console.log(page.props.locale)
-
-  useEffect(() => {
-    const m = document.cookie.match(/(?:^|; )locale=([^;]+)/)
-    setLocale(m ? decodeURIComponent(m[1]) : null)
-  }, [])
 
   function changeLocale(next: string) {
-    const oneYear = 60 * 60 * 24 * 365
-    document.cookie = `locale=${encodeURIComponent(next)}; path=/; max-age=${oneYear}`
-    window.location.reload()
+    const form = new FormData()
+    form.append('code', next)
+    router.post('/settings/locale', form, {
+      preserveScroll: true,
+    })
   }
 
-  const currentLocale = locale && (locale === 'ru' || locale === 'en') ? locale : 'ru'
   return (
     <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
       <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
@@ -40,7 +33,7 @@ export function SiteHeader({ title }: { title: string }) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm">
-                {currentLocale.toUpperCase()}
+                {String(page.props.locale).toUpperCase()}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">

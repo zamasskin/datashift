@@ -21,6 +21,7 @@ const UsersController = () => import('#controllers/users_controller')
 const SearchController = () => import('#controllers/search_controller')
 const MetricsController = () => import('#controllers/metrics_controller')
 const EventsController = () => import('#controllers/events_controller')
+const SettingsController = () => import('#controllers/settings_controller')
 
 // Login routes
 router.get('/login', [LoginController, 'create']).middleware(middleware.guest())
@@ -76,6 +77,7 @@ router
 
     // Settings & users management (without /admin prefix)
     router.get('/settings', [UsersController, 'settings'])
+    router.post('/settings/locale', [SettingsController, 'changeLocale'])
     router.post('/users', [UsersController, 'store'])
     router.put('/users/:id', [UsersController, 'update'])
     router.delete('/users', [UsersController, 'destroy'])

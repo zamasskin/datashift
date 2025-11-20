@@ -1,0 +1,10 @@
+{
+  "columns": {
+    "id": "ID",
+    "name": "Name",
+    "type": "Type",
+    "createdBy": "Created by",
+    "createdAtFormatted": "Created",
+    "updatedAtFormatted": "Updated"
+  }
+}
