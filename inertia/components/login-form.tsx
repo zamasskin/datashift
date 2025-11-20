@@ -3,7 +3,7 @@ import { Card, CardContent } from './ui/card'
 import { Field, FieldDescription, FieldGroup, FieldLabel } from './ui/field'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
-import { useForm, usePage } from '@inertiajs/react'
+import { Link, useForm, usePage } from '@inertiajs/react'
 
 interface LoginFormProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string
@@ -111,9 +111,9 @@ export function LoginForm({
       </Card>
       <FieldDescription className="px-6 text-center">
         {messages.termsText1 || 'By clicking “Continue”, you agree to our '}
-        <a href="/terms">{messages.termsService || 'Terms of Service'}</a>
+        <Link href="/terms">{messages.termsService || 'Terms of Service'}</Link>
         {messages.termsText2 || ' and '}
-        <a href="/privacy">{messages.privacyPolicy || 'Privacy Policy.'}</a>
+        <Link href="/privacy">{messages.privacyPolicy || 'Privacy Policy.'}</Link>
       </FieldDescription>
     </div>
   )
