@@ -83,11 +83,24 @@ export function DashboardAreaChart({
     return defaultData
   })()
 
+  // Theme-aware colors: ensure higher contrast on light theme
   const chartConfig = {
-    runs: { label: 'Запуски', color: 'var(--color-chart-1)' },
-    success: { label: 'Успешные', color: 'var(--color-chart-2)' },
-    canceled: { label: 'Отменённые', color: 'var(--color-chart-4)' },
-    errors: { label: 'Ошибки', color: 'var(--color-chart-5)' },
+    runs: {
+      label: 'Запуски',
+      theme: { light: '#2563eb', dark: '#60a5fa' }, // blue
+    },
+    success: {
+      label: 'Успешные',
+      theme: { light: '#16a34a', dark: '#22c55e' }, // green
+    },
+    canceled: {
+      label: 'Отменённые',
+      theme: { light: '#d97706', dark: '#f59e0b' }, // amber
+    },
+    errors: {
+      label: 'Ошибки',
+      theme: { light: '#dc2626', dark: '#ef4444' }, // red
+    },
   }
 
   return (
