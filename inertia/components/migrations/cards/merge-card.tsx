@@ -19,6 +19,18 @@ export function MergeCard({ config, isLoading, suggestions, onRemove, onSave }: 
     }
   }
 
+  const formatMergeOn = (
+    on?: { tableColumn: string; aliasColumn: string; operator: string; cond?: 'and' | 'or' }[]
+  ) => {
+    if (!on || on.length === 0) return ''
+    return on
+      .map((o, i) => {
+        const cond = i > 0 && o.cond ? ` ${o.cond.toUpperCase()} ` : i > 0 ? ' AND ' : ''
+        return `${cond}${o.tableColumn} ${o.operator} ${o.aliasColumn}`
+      })
+      .join('')
+  }
+
   return (
     <Item variant="outline">
       <ItemMedia>
@@ -36,6 +48,23 @@ export function MergeCard({ config, isLoading, suggestions, onRemove, onSave }: 
         </ItemTitle>
         <ItemDescription>
           Объединение Датасета {config?.params.datasetLeftId} с {config?.params.datasetRightId}
+        </ItemDescription>
+        <ItemDescription className="line-clamp-none">
+          <div className="text-xs text-muted-foreground space-y-0.5">
+            {config?.params?.datasetLeftId ? (
+              <div>
+                · Левый датасет: <span className="font-medium">{config?.params?.datasetLeftId}</span>
+              </div>
+            ) : null}
+            {config?.params?.datasetRightId ? (
+              <div>
+                · Правый датасет: <span className="font-medium">{config?.params?.datasetRightId}</span>
+              </div>
+            ) : null}
+            {config?.params?.on?.length ? (
+              <div>· ON: {formatMergeOn(config?.params?.on)}</div>
+            ) : null}
+          </div>
         </ItemDescription>
       </ItemContent>
       <ItemFooter>
