@@ -1,0 +1,57 @@
+{
+  "title": "Главная",
+  "h1": "Главная",
+  "stats": {
+    "migrationsTitle": "Миграции",
+    "migrationsHintActive": "Активных: {count}",
+    "sourcesTitle": "Подключения",
+    "sourcesHintTotal": "Всего подключений",
+    "errorsTitle": "Ошибки",
+    "errorsHintOpen": "Открытые ошибки",
+    "runningTitle": "Запущено",
+    "runningHintNow": "Сейчас выполняется",
+    "openLink": "Открыть"
+  },
+  "analytics": {
+    "title": "Аналитика",
+    "hint": "Запуски, успешные и отменённые, и ошибки",
+    "badge": "30 дн."
+  },
+  "migrations": {
+    "title": "Последние миграции",
+    "allLink": "Все миграции",
+    "table": {
+      "id": "ID",
+      "name": "Название",
+      "status": "Статус",
+      "actions": "Действия",
+      "statusActive": "активна",
+      "statusInactive": "выключена",
+      "run": "Запустить",
+      "open": "Открыть",
+      "noData": "Нет данных"
+    }
+  },
+  "errors": {
+    "title": "Последние ошибки",
+    "allLink": "Все ошибки",
+    "noMessage": "Без сообщения",
+    "noData": "Нет данных"
+  },
+  "quickActions": {
+    "title": "Быстрые действия",
+    "createMigration": "Создать миграцию",
+    "sources": "Подключения"
+  },
+  "chartLegend": {
+    "runs": "Запуски",
+    "success": "Успешные",
+    "canceled": "Отменённые",
+    "errors": "Ошибки"
+  },
+  "runningIndicators": {
+    "noNamePrefix": "Миграция #",
+    "flowLabel": "Поток {n}",
+    "stopAria": "Остановить запуск"
+  }
+}

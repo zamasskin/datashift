@@ -4,8 +4,11 @@ import { SidebarInset, SidebarProvider } from '~/components/ui/sidebar'
 import { GlobalSseProvider } from './provider/global-sse-provider'
 import { Toaster } from 'sonner'
 import GlobalSearch from '~/components/global-search'
+import { usePage } from '@inertiajs/react'
 
-export const RootLayout = ({ children, title }: { children: React.ReactNode; title: string }) => {
+export const RootLayout = ({ children, title }: { children: React.ReactNode; title?: string }) => {
+  const { props } = usePage<{ pageTitle?: string; messages?: { h1?: string; title?: string } }>()
+  const computedTitle = title ?? props.pageTitle ?? props.messages?.h1 ?? props.messages?.title ?? 'Datashift'
   return (
     <GlobalSseProvider>
       <GlobalSearch />
@@ -31,7 +34,7 @@ export const RootLayout = ({ children, title }: { children: React.ReactNode; tit
       >
         <AppSidebar variant="inset" />
         <SidebarInset>
-          <SiteHeader title={title} />
+          <SiteHeader title={computedTitle} />
 
           <div className="flex flex-1 flex-col">
             <div className="@container/main flex flex-1 flex-col gap-2">

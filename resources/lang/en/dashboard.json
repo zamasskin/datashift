@@ -1,0 +1,57 @@
+{
+  "title": "Dashboard",
+  "h1": "Dashboard",
+  "stats": {
+    "migrationsTitle": "Migrations",
+    "migrationsHintActive": "Active: {count}",
+    "sourcesTitle": "Sources",
+    "sourcesHintTotal": "Total sources",
+    "errorsTitle": "Errors",
+    "errorsHintOpen": "Open errors",
+    "runningTitle": "Running",
+    "runningHintNow": "Currently running",
+    "openLink": "Open"
+  },
+  "analytics": {
+    "title": "Analytics",
+    "hint": "Runs, successful and canceled, and errors",
+    "badge": "30 d."
+  },
+  "migrations": {
+    "title": "Latest migrations",
+    "allLink": "All migrations",
+    "table": {
+      "id": "ID",
+      "name": "Name",
+      "status": "Status",
+      "actions": "Actions",
+      "statusActive": "active",
+      "statusInactive": "disabled",
+      "run": "Run",
+      "open": "Open",
+      "noData": "No data"
+    }
+  },
+  "errors": {
+    "title": "Latest errors",
+    "allLink": "All errors",
+    "noMessage": "No message",
+    "noData": "No data"
+  },
+  "quickActions": {
+    "title": "Quick actions",
+    "createMigration": "Create migration",
+    "sources": "Sources"
+  },
+  "chartLegend": {
+    "runs": "Runs",
+    "success": "Successful",
+    "canceled": "Canceled",
+    "errors": "Errors"
+  },
+  "runningIndicators": {
+    "noNamePrefix": "Migration #",
+    "flowLabel": "Flow {n}",
+    "stopAria": "Stop run"
+  }
+}

@@ -29,6 +29,8 @@ type HomeProps = {
     occurredAt?: string | null
   }>
   csrfToken?: string
+  messages?: any
+  locale?: string
 }
 
 const Home = () => {
@@ -36,55 +38,54 @@ const Home = () => {
   const runningCount = useMemo(() => runnings.length, [runnings])
   const { props } = usePage<HomeProps>()
   const visibleErrorCount = props.latestErrors?.length ?? 0
+  const msg = props.messages || {}
+  const locale = String(props.locale || 'ru')
 
   return (
     <>
-      <Head title="Главная" />
+      <Head title={msg.title || 'Dashboard'} />
       {/* Статистика */}
       <div className="px-4 space-y-4">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           <StatCard
-            title="Миграции"
+            title={msg.stats?.migrationsTitle || 'Migrations'}
             value={props.counts?.migrations ?? '—'}
-            hint={`Активных: ${
-              typeof props.counts?.activeMigrations === 'number'
-                ? props.counts.activeMigrations
-                : '—'
-            }`}
-            link={{ href: '/migrations', text: 'Открыть' }}
+            hint={msg.stats?.migrationsHintActive || undefined}
+            link={{ href: '/migrations', text: msg.stats?.openLink || 'Open' }}
           />
 
           <StatCard
-            title="Подключения"
+            title={msg.stats?.sourcesTitle || 'Sources'}
             value={props.counts?.sources ?? '—'}
-            hint="Всего подключений"
-            link={{ href: '/sources', text: 'Открыть' }}
+            hint={msg.stats?.sourcesHintTotal || undefined}
+            link={{ href: '/sources', text: msg.stats?.openLink || 'Open' }}
           />
 
           <StatCard
-            title="Ошибки"
+            title={msg.stats?.errorsTitle || 'Errors'}
             value={props.counts?.openErrors ?? '—'}
-            hint="Открытые ошибки"
-            link={{ href: '/errors', text: 'Открыть' }}
+            hint={msg.stats?.errorsHintOpen || undefined}
+            link={{ href: '/errors', text: msg.stats?.openLink || 'Open' }}
           />
           <StatCard
-            title="Запущено"
+            title={msg.stats?.runningTitle || 'Running'}
             value={runningCount}
-            hint="Сейчас выполняется"
-            link={{ href: '/tasks', text: 'Открыть' }}
+            hint={msg.stats?.runningHintNow || undefined}
+            link={{ href: '/tasks', text: msg.stats?.openLink || 'Open' }}
           />
         </div>
 
         <Separator className="my-2" />
 
         {/* Аналитика */}
-        <SectionHeader title="Аналитика" />
+        <SectionHeader title={msg.analytics?.title || 'Analytics'} />
         {(() => {
           const metrics = useMetrics()
           return (
             <DashboardAreaChart
-              badge="30 дн."
-              hint="Запуски, успешные и отменённые, и ошибки"
+              title={msg.analytics?.title || undefined}
+              hint={msg.analytics?.hint || undefined}
+              badge={msg.analytics?.badge || undefined}
               dataRuns={metrics.runs}
               dataErrors={metrics.errors}
               dataSuccess={metrics.runsSuccess}
@@ -95,18 +96,18 @@ const Home = () => {
 
         {/* Последние миграции */}
         <SectionHeader
-          title="Последние миграции"
-          right={<Link href="/migrations">Все миграции</Link>}
+          title={msg.migrations?.title || 'Latest migrations'}
+          right={<Link href="/migrations">{msg.migrations?.allLink || 'All migrations'}</Link>}
         />
         <Card>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Название</TableHead>
-                  <TableHead>Статус</TableHead>
-                  <TableHead className="text-right">Действия</TableHead>
+                  <TableHead>{msg.migrations?.table?.id || 'ID'}</TableHead>
+                  <TableHead>{msg.migrations?.table?.name || 'Name'}</TableHead>
+                  <TableHead>{msg.migrations?.table?.status || 'Status'}</TableHead>
+                  <TableHead className="text-right">{msg.migrations?.table?.actions || 'Actions'}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -117,7 +118,7 @@ const Home = () => {
                       <TableCell className="font-medium">{m.name}</TableCell>
                       <TableCell>
                         <Badge variant={m.isActive ? 'secondary' : 'outline'}>
-                          {m.isActive ? 'активна' : 'выключена'}
+                          {m.isActive ? msg.migrations?.table?.statusActive || 'active' : msg.migrations?.table?.statusInactive || 'disabled'}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
@@ -127,10 +128,10 @@ const Home = () => {
                             size="sm"
                             onClick={() => handleRun(m.id, props.csrfToken)}
                           >
-                            Запустить
+                            {msg.migrations?.table?.run || 'Run'}
                           </Button>
                           <Button variant="outline" size="sm" asChild>
-                            <Link href={`/migrations/${m.id}`}>Открыть</Link>
+                            <Link href={`/migrations/${m.id}`}>{msg.migrations?.table?.open || 'Open'}</Link>
                           </Button>
                         </div>
                       </TableCell>
@@ -139,7 +140,7 @@ const Home = () => {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={4}>
-                      <div className="text-sm text-muted-foreground">Нет данных</div>
+                      <div className="text-sm text-muted-foreground">{msg.migrations?.table?.noData || 'No data'}</div>
                     </TableCell>
                   </TableRow>
                 )}
@@ -150,12 +151,12 @@ const Home = () => {
 
         {/* Последние ошибки */}
         <SectionHeader
-          title="Последние ошибки"
+          title={msg.errors?.title || 'Latest errors'}
           right={
             <div className="flex items-center gap-3">
               <Badge variant="secondary">{visibleErrorCount}</Badge>
               <Link href="/errors" className="text-sm">
-                Все ошибки
+                {msg.errors?.allLink || 'All errors'}
               </Link>
             </div>
           }
@@ -167,11 +168,11 @@ const Home = () => {
                 <div key={e.id} className="flex items-start justify-between gap-4">
                   <div className="flex-1 space-y-1">
                     <div className="text-sm font-medium text-foreground">
-                      <Link href={`/errors/${e.id}`}>{e.message || 'Без сообщения'}</Link>
+                      <Link href={`/errors/${e.id}`}>{e.message || msg.errors?.noMessage || 'No message'}</Link>
                     </div>
                     {e.occurredAt && (
                       <div className="text-xs text-muted-foreground">
-                        {formatUtcRu(e.occurredAt || undefined)}
+                        {formatUtc(e.occurredAt || undefined, locale)}
                       </div>
                     )}
                   </div>
@@ -181,19 +182,19 @@ const Home = () => {
                 </div>
               ))
             ) : (
-              <div className="text-sm text-muted-foreground">Нет данных</div>
+              <div className="text-sm text-muted-foreground">{msg.errors?.noData || 'No data'}</div>
             )}
           </CardContent>
         </Card>
 
         {/* Быстрые действия */}
-        <SectionHeader title="Быстрые действия" />
+        <SectionHeader title={msg.quickActions?.title || 'Quick actions'} />
         <div className="flex flex-wrap gap-2">
           <Button asChild>
-            <Link href="/migrations">Создать миграцию</Link>
+            <Link href="/migrations">{msg.quickActions?.createMigration || 'Create migration'}</Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link href="/sources">Подключения</Link>
+            <Link href="/sources">{msg.quickActions?.sources || 'Sources'}</Link>
           </Button>
         </div>
       </div>
@@ -202,7 +203,7 @@ const Home = () => {
 }
 
 Home.layout = (page: React.ReactNode) => {
-  return <RootLayout title="Dataship">{page}</RootLayout>
+  return <RootLayout>{page}</RootLayout>
 }
 
 export default Home
@@ -279,13 +280,27 @@ function StatCard({
   )
 }
 
-function formatUtcRu(input?: string): string {
+function formatUtc(input?: string, locale: string = 'ru-RU'): string {
   if (!input) return '—'
   const d = new Date(input)
-  const pad = (n: number) => n.toString().padStart(2, '0')
-  return `${pad(d.getUTCDate())}.${pad(d.getUTCMonth() + 1)}.${d.getUTCFullYear()}, ${pad(
-    d.getUTCHours()
-  )}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`
+  try {
+    const s = d.toLocaleString(locale || 'ru-RU', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+      timeZone: 'UTC',
+    })
+    return s
+  } catch {
+    const pad = (n: number) => n.toString().padStart(2, '0')
+    return `${pad(d.getUTCDate())}.${pad(d.getUTCMonth() + 1)}.${d.getUTCFullYear()}, ${pad(
+      d.getUTCHours()
+    )}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`
+  }
 }
 
 function SectionHeader({ title, right }: { title: string; right?: React.ReactNode }) {

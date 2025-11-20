@@ -8,6 +8,7 @@ import {
   ChartLegendContent,
 } from '~/components/ui/chart'
 import { AreaChart as ReAreaChart, Area, CartesianGrid, XAxis, YAxis } from 'recharts'
+import { usePage } from '@inertiajs/react'
 
 type Point = { date: string; value: number }
 type ChartPoint = {
@@ -37,6 +38,9 @@ export function DashboardAreaChart({
   dataSuccess?: Point[]
   dataCanceled?: Point[]
 }) {
+  const { props } = usePage<{ messages?: { chartLegend?: Record<string, string> }; locale?: string }>()
+  const legend = props.messages?.chartLegend || {}
+  const locale = String(props.locale || 'ru-RU')
   const defaultData: ChartPoint[] = [
     { date: 'Янв', runs: 12 },
     { date: 'Фев', runs: 18 },
@@ -86,19 +90,19 @@ export function DashboardAreaChart({
   // Theme-aware colors: ensure higher contrast on light theme
   const chartConfig = {
     runs: {
-      label: 'Запуски',
+      label: legend.runs || 'Runs',
       theme: { light: '#2563eb', dark: '#60a5fa' }, // blue
     },
     success: {
-      label: 'Успешные',
+      label: legend.success || 'Successful',
       theme: { light: '#16a34a', dark: '#22c55e' }, // green
     },
     canceled: {
-      label: 'Отменённые',
+      label: legend.canceled || 'Canceled',
       theme: { light: '#d97706', dark: '#f59e0b' }, // amber
     },
     errors: {
-      label: 'Ошибки',
+      label: legend.errors || 'Errors',
       theme: { light: '#dc2626', dark: '#ef4444' }, // red
     },
   }
@@ -135,7 +139,7 @@ export function DashboardAreaChart({
               minTickGap={32}
               tickFormatter={(value: string) => {
                 const d = new Date(value)
-                return d.toLocaleDateString('ru-RU', { month: 'short', day: 'numeric' })
+                return d.toLocaleDateString(locale, { month: 'short', day: 'numeric' })
               }}
             />
             <YAxis
@@ -150,7 +154,7 @@ export function DashboardAreaChart({
                 <ChartTooltipContent
                   indicator="dot"
                   labelFormatter={(value: string) =>
-                    new Date(value).toLocaleDateString('ru-RU', { month: 'short', day: 'numeric' })
+                    new Date(value).toLocaleDateString(locale, { month: 'short', day: 'numeric' })
                   }
                 />
               }
@@ -158,7 +162,7 @@ export function DashboardAreaChart({
             <Area
               type="monotone"
               dataKey="errors"
-              name="Ошибки"
+              name={legend.errors || 'Errors'}
               stroke="var(--color-errors)"
               strokeOpacity={0.7}
               fill="url(#areaErrors)"
@@ -168,7 +172,7 @@ export function DashboardAreaChart({
             <Area
               type="monotone"
               dataKey="canceled"
-              name="Отменённые"
+              name={legend.canceled || 'Canceled'}
               stroke="var(--color-canceled)"
               strokeOpacity={0.75}
               fill="none"
@@ -178,7 +182,7 @@ export function DashboardAreaChart({
             <Area
               type="monotone"
               dataKey="success"
-              name="Успешные"
+              name={legend.success || 'Successful'}
               stroke="var(--color-success)"
               strokeOpacity={0.75}
               fill="none"
@@ -188,7 +192,7 @@ export function DashboardAreaChart({
             <Area
               type="monotone"
               dataKey="runs"
-              name="Запуски"
+              name={legend.runs || 'Runs'}
               stroke="var(--color-runs)"
               strokeOpacity={0.7}
               fill="url(#areaRuns)"

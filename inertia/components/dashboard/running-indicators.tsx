@@ -14,8 +14,8 @@ export function DashboardRunningIndicators({ runnings }: Props) {
   if (runnings.length === 0) return null
 
   const {
-    props: { csrfToken },
-  } = usePage<{ csrfToken: string }>()
+    props: { csrfToken, messages },
+  } = usePage<{ csrfToken: string; messages?: any }>()
   const [stopping, setStopping] = useState<Record<number, boolean>>({})
 
   const stopRun = async (r: MigrationRun) => {
@@ -49,7 +49,9 @@ export function DashboardRunningIndicators({ runnings }: Props) {
                   <Link href={`/migrations/${r.migrationId}`} className="flex items-center gap-2">
                     <span className="inline-block size-2 rounded-full bg-emerald-500 animate-pulse" />
                     <span className="text-sm text-foreground">
-                      {name ? name : `Миграция #${r.migrationId}`}
+                      {name
+                        ? name
+                        : `${messages?.runningIndicators?.noNamePrefix || 'Migration #'}${r.migrationId}`}
                     </span>
                   </Link>
                   <span className="text-xs text-muted-foreground">{r.trigger}</span>
@@ -61,7 +63,11 @@ export function DashboardRunningIndicators({ runnings }: Props) {
                       <div key={idx} className="mb-2 last:mb-0">
                         <Progress value={percent} />
                         <div className="flex items-center justify-between">
-                          <span className="text-xs text-muted-foreground">{`Поток ${idx + 1}`}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {messages?.runningIndicators?.flowLabel
+                              ? String(messages.runningIndicators.flowLabel).replace('{n}', String(idx + 1))
+                              : `Flow ${idx + 1}`}
+                          </span>
                           <span className="text-xs text-foreground">{percent}%</span>
                         </div>
                       </div>
@@ -73,7 +79,7 @@ export function DashboardRunningIndicators({ runnings }: Props) {
                     size="icon-sm"
                     disabled={!!stopping[r.id]}
                     onClick={() => stopRun(r)}
-                    aria-label="Остановить запуск"
+                    aria-label={messages?.runningIndicators?.stopAria || 'Stop run'}
                   >
                     <StopCircle className="text-destructive" />
                   </Button>
