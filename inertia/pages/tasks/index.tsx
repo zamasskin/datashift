@@ -1,8 +1,16 @@
 import { Head, usePage, Link } from '@inertiajs/react'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '~/components/ui/table'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '~/components/ui/table'
 import { Badge } from '~/components/ui/badge'
 import { RootLayout } from '~/components/root-layout'
 import { Separator } from '~/components/ui/separator'
+import { Progress } from '~/components/ui/progress'
 import { Button } from '~/components/ui/button'
 type RunDto = {
   id: number
@@ -10,6 +18,7 @@ type RunDto = {
   trigger: 'manual' | 'cron' | 'api' | 'resume'
   createdAt: string | null
   pid: number | null
+  progress?: number[]
   migration: { id: number; name: string } | null
 }
 
@@ -25,7 +34,11 @@ const Tasks = () => {
       case 'failed':
         return <Badge variant="destructive">Ошибка</Badge>
       case 'success':
-        return <Badge variant="default" className="bg-emerald-600 text-white">Успех</Badge>
+        return (
+          <Badge variant="default" className="bg-emerald-600 text-white">
+            Успех
+          </Badge>
+        )
       case 'canceled':
         return <Badge variant="outline">Отменено</Badge>
       default:
@@ -52,6 +65,7 @@ const Tasks = () => {
                 <TableHead>ID</TableHead>
                 <TableHead>Миграция</TableHead>
                 <TableHead>Статус</TableHead>
+                <TableHead>Прогресс</TableHead>
                 <TableHead>Запуск</TableHead>
                 <TableHead>PID</TableHead>
                 <TableHead>Начато</TableHead>
@@ -71,9 +85,22 @@ const Tasks = () => {
                     )}
                   </TableCell>
                   <TableCell>{statusBadge(run.status)}</TableCell>
+                  <TableCell>
+                    {(() => {
+                      const value = run.progress && run.progress.length > 0 ? run.progress[0] : 0
+                      return (
+                        <div className="flex items-center gap-2 w-48">
+                          <Progress value={value} />
+                          <span className="text-xs text-muted-foreground">{value}%</span>
+                        </div>
+                      )
+                    })()}
+                  </TableCell>
                   <TableCell className="capitalize">{run.trigger}</TableCell>
                   <TableCell>{run.pid ?? '—'}</TableCell>
-                  <TableCell>{run.createdAt ? new Date(run.createdAt).toLocaleString() : '—'}</TableCell>
+                  <TableCell>
+                    {run.createdAt ? new Date(run.createdAt).toLocaleString() : '—'}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
