@@ -38,7 +38,8 @@ import { DashboardAreaChart } from '~/components/charts/area-chart'
 import { toast } from 'sonner'
 
 const MigrationEdit = ({ migration }: { migration: Migration }) => {
-  const { props } = usePage<{ csrfToken?: string }>()
+  const { props } = usePage<{ csrfToken?: string; messages?: any; pageTitle?: string }>()
+  const messages = props.messages?.edit
   const [name, setName] = useState(migration.name)
   const [cronExpression, setCronExpression] = useState(migration.cronExpression)
   const [fetchConfigs, setFetchConfigs] = useState<FetchConfig[]>(migration.fetchConfigs || [])
@@ -128,35 +129,36 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
           setSaveErrors(map)
           setSaveLoading(false)
           // Toast на ошибку сохранения
-          const firstMsg = Object.values(map)[0] || 'Не удалось сохранить миграцию'
+          const firstMsg = Object.values(map)[0] || messages?.toast?.saveFailed || 'Не удалось сохранить миграцию'
           toast.error(firstMsg)
         },
         onSuccess: () => {
           setSaveLoading(false)
           // Toast на успешное сохранение
-          toast.success('Миграция сохранена')
+          toast.success(messages?.toast?.saved || 'Миграция сохранена')
         },
       }
     )
   }
 
   const onDelete = () => {
-    if (!confirm(`Удалить миграцию #${migration.id}?`)) return
+  const confirmText = (messages?.confirmDelete || `Удалить миграцию #{id}?`).replace('{id}', String(migration.id))
+    if (!confirm(confirmText)) return
     let handled = false
     router.delete('/migrations', {
       data: { ids: [migration.id], redirectTo: '/migrations' },
       preserveScroll: true,
       onSuccess: () => {
         handled = true
-        toast.success('Миграция удалена')
+        toast.success(messages?.toast?.deleted || 'Миграция удалена')
       },
       onError: () => {
         handled = true
-        toast.error('Не удалось удалить миграцию')
+        toast.error(messages?.toast?.deleteFailed || 'Не удалось удалить миграцию')
       },
       // Сервер сделает редирект, но на случай JSON-ответа — подстрахуемся
       onFinish: () => {
-        if (!handled) toast.success('Миграция удалена')
+        if (!handled) toast.success(messages?.toast?.deleted || 'Миграция удалена')
         router.visit('/migrations')
       },
     })
@@ -221,15 +223,15 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
 
   return (
     <>
-      <Head title="Миграции" />
+      <Head title={messages?.title || 'Миграции'} />
       <div className="px-4 lg:px-6 space-y-6">
         {(() => {
           const metrics = useMigrationMetrics(migration.id)
           return (
             <DashboardAreaChart
-              title="Активность миграции"
-              hint="Запуски, успешные и отменённые, и ошибки"
-              badge="30 дн."
+              title={messages?.metrics?.title || 'Активность миграции'}
+              hint={messages?.metrics?.hint || 'Запуски, успешные и отменённые, и ошибки'}
+              badge={messages?.metrics?.badge || '30 дн.'}
               dataRuns={metrics.runs}
               dataErrors={metrics.errors}
               dataSuccess={metrics.runsSuccess}
@@ -269,19 +271,19 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
           <ItemContent>
             <div className="flex items-center space-x-2">
               <Switch id="airplane-mode" checked={isActive} onCheckedChange={setIsActive} />
-              <Label htmlFor="airplane-mode">Активно</Label>
+              <Label htmlFor="airplane-mode">{messages?.labels?.active || 'Активно'}</Label>
             </div>
           </ItemContent>
           <ItemContent>
             <div className="flex gap-2">
               <Button variant="outline" onClick={onDelete}>
                 <Trash />
-                Удалить
+                {messages?.buttons?.delete || 'Удалить'}
               </Button>
 
               <Button onClick={onSave} disabled={saveLoading}>
                 <Save />
-                {saveLoading ? 'Сохранение…' : 'Сохранить'}
+                {saveLoading ? (messages?.buttons?.saving || 'Сохранение…') : (messages?.buttons?.save || 'Сохранить')}
               </Button>
             </div>
           </ItemContent>
@@ -304,13 +306,13 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                     onClick={() => handleStop()}
                     disabled={fetchStopped}
                   >
-                    Остановить
+                    {messages?.buttons?.stop || 'Остановить'}
                     {fetchStopped && <Spinner className="h-4 w-4 animate-spin" />}
                   </Button>
                 ) : (
                   <Button variant="secondary" onClick={handleRun} disabled={fetchRunning}>
                     <Play />
-                    Запустить
+                    {messages?.buttons?.start || 'Запустить'}
                     {fetchRunning && <Spinner className="h-4 w-4 animate-spin" />}
                   </Button>
                 )}
@@ -323,12 +325,12 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
           <TabsList>
             <TabsTrigger value="migrations">
               <ArrowDownUp />
-              Миграции
+              {messages?.tabs?.migrations || 'Миграции'}
             </TabsTrigger>
 
             <TabsTrigger value="config">
               <Settings />
-              Настройки
+              {messages?.tabs?.settings || 'Настройки'}
             </TabsTrigger>
           </TabsList>
 
@@ -336,9 +338,9 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
             <div className="grid gap-4 lg:grid-cols-2 lg:auto-rows-fr">
               <Card className="h-full flex flex-col">
                 <CardHeader>
-                  <CardTitle>Датасеты</CardTitle>
+                  <CardTitle>{messages?.cards?.datasets?.title || 'Датасеты'}</CardTitle>
                   <CardDescription>
-                    Добавьте датасеты, которые будут использоваться в миграции.
+                    {messages?.cards?.datasets?.description || 'Добавьте датасеты, которые будут использоваться в миграции.'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="flex-1">
@@ -402,21 +404,21 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
                         <DropdownMenuTrigger asChild>
                           <Button variant="outline">
                             <Plus />
-                            Добавить датасет
+                            {messages?.datasetMenu?.add || 'Добавить датасет'}
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-56" align="start">
                           <DropdownMenuItem onClick={() => setNewDatasetOpen('sql')}>
-                            SQL запрос
+                            {messages?.datasetMenu?.sql || 'SQL запрос'}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setNewDatasetOpen('sql_builder')}>
-                            Редактор запроса
+                            {messages?.datasetMenu?.sqlBuilder || 'Редактор запроса'}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setNewDatasetOpen('merge')}>
-                            Объединение
+                            {messages?.datasetMenu?.merge || 'Объединение'}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setNewDatasetOpen('modification')}>
-                            Модификация
+                            {messages?.datasetMenu?.modification || 'Модификация'}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -457,9 +459,9 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
 
               <Card className="h-full flex flex-col">
                 <CardHeader>
-                  <CardTitle>Выгрузки</CardTitle>
+                  <CardTitle>{messages?.cards?.outputs?.title || 'Выгрузки'}</CardTitle>
                   <CardDescription>
-                    Укажите выгрузки, которые будут использоваться в миграции.
+                    {messages?.cards?.outputs?.description || 'Укажите выгрузки, которые будут использоваться в миграции.'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="flex-1">
@@ -483,7 +485,7 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
 
             <Card className="mt-6">
               <CardHeader>
-                <CardTitle>Результат</CardTitle>
+                <CardTitle>{messages?.cards?.result?.title || 'Результат'}</CardTitle>
                 <CardDescription></CardDescription>
               </CardHeader>
               <CardContent>
@@ -495,9 +497,9 @@ const MigrationEdit = ({ migration }: { migration: Migration }) => {
             <div className="grid gap-4 lg:grid-cols-2 lg:auto-rows-fr">
               <Card>
                 <CardHeader>
-                  <CardTitle>Параметры</CardTitle>
+                  <CardTitle>{messages?.cards?.params?.title || 'Параметры'}</CardTitle>
                   <CardDescription>
-                    Добавьте настройки, которые будут использоваться в миграции.
+                    {messages?.cards?.params?.description || 'Добавьте настройки, которые будут использоваться в миграции.'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -571,7 +573,8 @@ function useMigrationMetrics(migrationId: number) {
 }
 
 MigrationEdit.layout = (page: React.ReactNode) => {
-  return <RootLayout title="Миграции">{page}</RootLayout>
+  // Avoid hooks in layout: RootLayout reads page props itself to compute title
+  return <RootLayout>{page}</RootLayout>
 }
 
 export default MigrationEdit

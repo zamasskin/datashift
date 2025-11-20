@@ -1,0 +1,103 @@
+{
+  "home": {
+    "title": "Migrations",
+    "add": "Add migration",
+    "createTitle": "Create migration",
+    "createDescription": "Enter a migration name used to create a migration file in your project.",
+    "nameLabel": "Migration name",
+    "cancel": "Cancel",
+    "submit": "Add",
+    "table": {
+      "id": "ID",
+      "name": "Name",
+      "activity": "Activity",
+      "created": "Created",
+      "actions": "Actions",
+      "statusActive": "active",
+      "statusInactive": "inactive",
+      "run": "Run",
+      "open": "Open",
+      "delete": "Delete",
+      "noData": "No migrations"
+    },
+    "errors": {
+      "invalidName": "Please provide a valid name"
+    },
+    "toast": {
+      "deleted": "Migration deleted",
+      "deleteFailed": "Failed to delete migration",
+      "runStarted": "Migration #{id} run started",
+      "runFailed": "Failed to run migration #{id}"
+    },
+    "confirmDelete": "Delete migration #{id}?"
+  },
+  "edit": {
+    "title": "Migrations",
+    "metrics": {
+      "title": "Migration activity",
+      "hint": "Runs (success and canceled) and errors",
+      "badge": "30 days"
+    },
+    "labels": {
+      "active": "Active",
+      "name": "Name"
+    },
+    "tabs": {
+      "migrations": "Migrations",
+      "settings": "Settings"
+    },
+    "cards": {
+      "datasets": {
+        "title": "Datasets",
+        "description": "Add datasets that will be used in the migration."
+      },
+      "outputs": {
+        "title": "Outputs",
+        "description": "Specify outputs that will be used in the migration."
+      },
+      "params": {
+        "title": "Parameters",
+        "description": "Add settings that will be used in the migration."
+      },
+      "result": {
+        "title": "Result"
+      }
+    },
+    "datasetMenu": {
+      "add": "Add dataset",
+      "sql": "SQL query",
+      "sqlBuilder": "Query builder",
+      "merge": "Merge",
+      "modification": "Modification"
+    },
+    "buttons": {
+      "delete": "Delete",
+      "save": "Save",
+      "saving": "Saving…",
+      "stop": "Stop",
+      "start": "Run"
+    },
+    "toast": {
+      "saved": "Migration saved",
+      "saveFailed": "Failed to save migration",
+      "deleted": "Migration deleted",
+      "deleteFailed": "Failed to delete migration"
+    },
+    "confirmDelete": "Delete migration #{id}?"
+  },
+  "errors": {
+    "invalidName": "Invalid migration name",
+    "notFound": "Migration not found",
+    "idsNotExist": "Migrations with IDs {ids} do not exist",
+    "internal": "Internal server error",
+    "invalidId": "Invalid id",
+    "missingMigrationId": "Missing migrationId",
+    "notRunningWithTrigger": "Migration not running with trigger {trigger}"
+  },
+  "validation": {
+    "nameInvalid": "Please provide a valid name",
+    "isActiveInvalid": "Please provide a valid activity",
+    "cronInvalid": "Please provide a valid schedule",
+    "valueInvalid": "Please provide a valid value"
+  }
+}

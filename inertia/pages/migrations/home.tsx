@@ -54,7 +54,8 @@ const schemaCreate = z.object({
 type MigrationItem = { id: number; name: string; isActive: boolean; createdAt?: string }
 
 const Migrations = ({ migrations }: { migrations?: ModelPaginatorContract<Migration> }) => {
-  const { props, url } = usePage<{ csrfToken?: string; migrations?: MigrationItem[] }>()
+  const { props, url } = usePage<{ csrfToken?: string; migrations?: MigrationItem[]; messages?: any; pageTitle?: string }>()
+  const messages = props.messages?.home
 
   // Поддержка двух форматов: серверный пагинатор { meta, data } и простой массив
   const isServerPaginated =
@@ -84,7 +85,7 @@ const Migrations = ({ migrations }: { migrations?: ModelPaginatorContract<Migrat
       preserveScroll: true,
       onError: (errors: any) => {
         // Бэкенд может вернуть { error: 'Invalid migration name' }
-        const msg = errors?.name || errors?.error || 'Укажите корректное имя'
+        const msg = errors?.name || errors?.error || messages?.errors?.invalidName || 'Укажите корректное имя'
         form.setError('name', { type: 'server', message: msg })
       },
       // На успехе контроллер делает redirect на /migrations/:id/edit
@@ -96,20 +97,19 @@ const Migrations = ({ migrations }: { migrations?: ModelPaginatorContract<Migrat
 
   return (
     <>
-      <Head title="Миграции" />
+      <Head title={messages?.title || 'Миграции'} />
       <Form {...form}>
         <div className=" px-4 lg:px-6 space-y-4">
           <Dialog>
             {props.csrfToken && <input type="hidden" name="_csrf" value={props.csrfToken} />}
             <DialogTrigger asChild>
-              <Button variant="outline">Добавить миграцию</Button>
+              <Button variant="outline">{messages?.add || 'Добавить миграцию'}</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
-                <DialogTitle>Создание миграции</DialogTitle>
+                <DialogTitle>{messages?.createTitle || 'Создание миграции'}</DialogTitle>
                 <DialogDescription>
-                  Введите имя миграции, которое будет использоваться для создания файла миграции в
-                  вашем проекте.
+                  {messages?.createDescription || 'Введите имя миграции, которое будет использоваться для создания файла миграции в вашем проекте.'}
                 </DialogDescription>
               </DialogHeader>
 
@@ -119,7 +119,7 @@ const Migrations = ({ migrations }: { migrations?: ModelPaginatorContract<Migrat
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Имя миграции</FormLabel>
+                      <FormLabel>{messages?.nameLabel || 'Имя миграции'}</FormLabel>
                       <FormControl>
                         <Input placeholder="" {...field} />
                       </FormControl>
@@ -131,10 +131,10 @@ const Migrations = ({ migrations }: { migrations?: ModelPaginatorContract<Migrat
                 <DialogFooter>
                   <DialogClose asChild>
                     <Button variant="outline" onClick={() => form.reset()}>
-                      Отмена
+                      {messages?.cancel || 'Отмена'}
                     </Button>
                   </DialogClose>
-                  <Button type="submit">Добавить</Button>
+                  <Button type="submit">{messages?.submit || 'Добавить'}</Button>
                 </DialogFooter>
               </form>
             </DialogContent>
@@ -146,11 +146,11 @@ const Migrations = ({ migrations }: { migrations?: ModelPaginatorContract<Migrat
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Название</TableHead>
-                    <TableHead>Активность</TableHead>
-                    <TableHead>Создано</TableHead>
-                    <TableHead className="text-right">Действия</TableHead>
+                    <TableHead>{messages?.table?.id || 'ID'}</TableHead>
+                    <TableHead>{messages?.table?.name || 'Название'}</TableHead>
+                    <TableHead>{messages?.table?.activity || 'Активность'}</TableHead>
+                    <TableHead>{messages?.table?.created || 'Создано'}</TableHead>
+                    <TableHead className="text-right">{messages?.table?.actions || 'Действия'}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -161,7 +161,7 @@ const Migrations = ({ migrations }: { migrations?: ModelPaginatorContract<Migrat
                         <TableCell className="font-medium">{m.name}</TableCell>
                         <TableCell>
                           <Badge variant={m.isActive ? 'secondary' : 'outline'}>
-                            {m.isActive ? 'активна' : 'выключена'}
+                            {m.isActive ? messages?.table?.statusActive || 'активна' : messages?.table?.statusInactive || 'выключена'}
                           </Badge>
                         </TableCell>
                         <TableCell>{formatUtcRu(m.createdAt)}</TableCell>
@@ -170,19 +170,19 @@ const Migrations = ({ migrations }: { migrations?: ModelPaginatorContract<Migrat
                             <Button
                               variant="default"
                               size="sm"
-                              onClick={() => handleRun(m.id, props.csrfToken)}
+                              onClick={() => handleRun(m.id, props.csrfToken, messages)}
                             >
-                              Запустить
+                              {messages?.table?.run || 'Запустить'}
                             </Button>
                             <Button variant="outline" size="sm" asChild>
-                              <Link href={`/migrations/${m.id}`}>Открыть</Link>
+                              <Link href={`/migrations/${m.id}`}>{messages?.table?.open || 'Открыть'}</Link>
                             </Button>
                             <Button
                               variant="destructive"
                               size="sm"
-                              onClick={() => handleDelete(m.id)}
+                              onClick={() => handleDelete(m.id, messages)}
                             >
-                              Удалить
+                              {messages?.table?.delete || 'Удалить'}
                             </Button>
                           </div>
                         </TableCell>
@@ -191,7 +191,7 @@ const Migrations = ({ migrations }: { migrations?: ModelPaginatorContract<Migrat
                   ) : (
                     <TableRow>
                       <TableCell colSpan={5}>
-                        <div className="text-sm text-muted-foreground">Нет миграций</div>
+                        <div className="text-sm text-muted-foreground">{messages?.table?.noData || 'Нет миграций'}</div>
                       </TableCell>
                     </TableRow>
                   )}
@@ -240,7 +240,8 @@ const Migrations = ({ migrations }: { migrations?: ModelPaginatorContract<Migrat
 }
 
 Migrations.layout = (page: React.ReactNode) => {
-  return <RootLayout title="Миграции">{page}</RootLayout>
+  // Avoid hooks in layout: RootLayout reads page props itself to compute title
+  return <RootLayout>{page}</RootLayout>
 }
 
 export default Migrations
@@ -252,29 +253,30 @@ function formatUtcRu(input?: string): string {
   return `${pad(d.getUTCDate())}.${pad(d.getUTCMonth() + 1)}.${d.getUTCFullYear()}, ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`
 }
 
-function handleDelete(id: number) {
-  if (!confirm(`Удалить миграцию #${id}?`)) return
+function handleDelete(id: number, messages?: any) {
+  const confirmText = (messages?.confirmDelete || `Удалить миграцию #{id}?`).replace('{id}', String(id))
+  if (!confirm(confirmText)) return
   let handled = false
   router.delete('/migrations', {
     data: { ids: [id], redirectTo: '/migrations' },
     preserveScroll: true,
     onSuccess: () => {
       handled = true
-      toast.success('Миграция удалена')
+      toast.success(messages?.toast?.deleted || 'Миграция удалена')
     },
     onError: () => {
       handled = true
-      toast.error('Не удалось удалить миграцию')
+      toast.error(messages?.toast?.deleteFailed || 'Не удалось удалить миграцию')
     },
     // Сервер теперь возвращает редирект; на всякий случай — fallback
     onFinish: () => {
-      if (!handled) toast.success('Миграция удалена')
+      if (!handled) toast.success(messages?.toast?.deleted || 'Миграция удалена')
       router.visit('/migrations')
     },
   })
 }
 
-async function handleRun(id: number, csrfToken?: string) {
+async function handleRun(id: number, csrfToken?: string, messages?: any) {
   try {
     const res = await fetch('/migrations/run-by-id', {
       method: 'POST',
@@ -286,9 +288,9 @@ async function handleRun(id: number, csrfToken?: string) {
       body: JSON.stringify({ id }),
     })
     if (!res.ok) throw new Error('Failed')
-    toast.success(`Запуск миграции #${id} начат`)
+      toast.success((messages?.toast?.runStarted || 'Запуск миграции #{id} начат').replace('{id}', String(id)))
   } catch (e) {
-    toast.error(`Не удалось запустить миграцию #${id}`)
+      toast.error((messages?.toast?.runFailed || 'Не удалось запустить миграцию #{id}').replace('{id}', String(id)))
   }
 }
 

@@ -15,7 +15,7 @@ import MigrationRunnerService, { RunPayload } from '#services/migration_runner_s
 import logger from '@adonisjs/core/services/logger'
 
 export default class MigrationsController {
-  async index({ inertia, request }: HttpContext) {
+  async index({ inertia, request, i18n }: HttpContext) {
     const page = Number(request.input('page') || 1)
     const perPage = Number(request.input('perPage') || 10)
     const migrations = await Migration.query()
@@ -23,18 +23,116 @@ export default class MigrationsController {
       .orderBy('id', 'desc')
       .paginate(page, perPage)
 
+    const messages = {
+      home: {
+        title: i18n.t('migrations.home.title'),
+        add: i18n.t('migrations.home.add'),
+        createTitle: i18n.t('migrations.home.createTitle'),
+        createDescription: i18n.t('migrations.home.createDescription'),
+        nameLabel: i18n.t('migrations.home.nameLabel'),
+        cancel: i18n.t('migrations.home.cancel'),
+        submit: i18n.t('migrations.home.submit'),
+        table: {
+          id: i18n.t('migrations.home.table.id'),
+          name: i18n.t('migrations.home.table.name'),
+          activity: i18n.t('migrations.home.table.activity'),
+          created: i18n.t('migrations.home.table.created'),
+          actions: i18n.t('migrations.home.table.actions'),
+          statusActive: i18n.t('migrations.home.table.statusActive'),
+          statusInactive: i18n.t('migrations.home.table.statusInactive'),
+          run: i18n.t('migrations.home.table.run'),
+          open: i18n.t('migrations.home.table.open'),
+          delete: i18n.t('migrations.home.table.delete'),
+          noData: i18n.t('migrations.home.table.noData'),
+        },
+        errors: {
+          invalidName: i18n.t('migrations.home.errors.invalidName'),
+        },
+        toast: {
+          deleted: i18n.t('migrations.home.toast.deleted'),
+          deleteFailed: i18n.t('migrations.home.toast.deleteFailed'),
+          runStarted: i18n.t('migrations.home.toast.runStarted', { id: '{id}' }),
+          runFailed: i18n.t('migrations.home.toast.runFailed', { id: '{id}' }),
+        },
+        confirmDelete: i18n.t('migrations.home.confirmDelete', { id: '{id}' }),
+      },
+    }
+
     return inertia.render('migrations/home', {
       migrations,
+      messages,
+      pageTitle: messages.home.title,
     })
   }
 
-  async edit({ inertia, params }: HttpContext) {
+  async edit({ inertia, params, i18n }: HttpContext) {
     const dataSources = await DataSource.query().preload('user')
     const migration = await Migration.findOrFail(params.id)
-    return inertia.render('migrations/edit', { migration, dataSources })
+    const messages = {
+      edit: {
+        title: i18n.t('migrations.edit.title'),
+        metrics: {
+          title: i18n.t('migrations.edit.metrics.title'),
+          hint: i18n.t('migrations.edit.metrics.hint'),
+          badge: i18n.t('migrations.edit.metrics.badge'),
+        },
+        labels: {
+          active: i18n.t('migrations.edit.labels.active'),
+          name: i18n.t('migrations.edit.labels.name'),
+        },
+        tabs: {
+          migrations: i18n.t('migrations.edit.tabs.migrations'),
+          settings: i18n.t('migrations.edit.tabs.settings'),
+        },
+        cards: {
+          datasets: {
+            title: i18n.t('migrations.edit.cards.datasets.title'),
+            description: i18n.t('migrations.edit.cards.datasets.description'),
+          },
+          outputs: {
+            title: i18n.t('migrations.edit.cards.outputs.title'),
+            description: i18n.t('migrations.edit.cards.outputs.description'),
+          },
+          params: {
+            title: i18n.t('migrations.edit.cards.params.title'),
+            description: i18n.t('migrations.edit.cards.params.description'),
+          },
+          result: {
+            title: i18n.t('migrations.edit.cards.result.title'),
+          },
+        },
+        datasetMenu: {
+          add: i18n.t('migrations.edit.datasetMenu.add'),
+          sql: i18n.t('migrations.edit.datasetMenu.sql'),
+          sqlBuilder: i18n.t('migrations.edit.datasetMenu.sqlBuilder'),
+          merge: i18n.t('migrations.edit.datasetMenu.merge'),
+          modification: i18n.t('migrations.edit.datasetMenu.modification'),
+        },
+        buttons: {
+          delete: i18n.t('migrations.edit.buttons.delete'),
+          save: i18n.t('migrations.edit.buttons.save'),
+          saving: i18n.t('migrations.edit.buttons.saving'),
+          stop: i18n.t('migrations.edit.buttons.stop'),
+          start: i18n.t('migrations.edit.buttons.start'),
+        },
+        toast: {
+          saved: i18n.t('migrations.edit.toast.saved'),
+          saveFailed: i18n.t('migrations.edit.toast.saveFailed'),
+          deleted: i18n.t('migrations.edit.toast.deleted'),
+          deleteFailed: i18n.t('migrations.edit.toast.deleteFailed'),
+        },
+        confirmDelete: i18n.t('migrations.edit.confirmDelete', { id: '{id}' }),
+      },
+    }
+    return inertia.render('migrations/edit', {
+      migration,
+      dataSources,
+      messages,
+      pageTitle: messages.edit.title,
+    })
   }
 
-  async store({ request, response, auth }: HttpContext) {
+  async store({ request, response, auth, i18n }: HttpContext) {
     const name = request.input('name') as string
     if (name && typeof name === 'string') {
       const migration = await Migration.create({
@@ -48,14 +146,14 @@ export default class MigrationsController {
 
       response.redirect(`/migrations/${migration.id}`)
     } else {
-      return response.status(422).send({ error: 'Invalid migration name' })
+      return response.status(422).send({ error: i18n.t('migrations.errors.invalidName') })
     }
   }
 
-  async update({ params, request, response, inertia }: HttpContext) {
+  async update({ params, request, response, inertia, i18n }: HttpContext) {
     const id = Number(params.id)
     if (!Number.isFinite(id)) {
-      return response.status(404).send({ error: 'Migration not found' })
+      return response.status(404).send({ error: i18n.t('migrations.errors.notFound') })
     }
 
     // --- cronExpression validation ---
@@ -112,7 +210,7 @@ export default class MigrationsController {
 
     const migration = await Migration.find(id)
     if (!migration) {
-      return response.status(404).send({ error: 'Migration not found' })
+      return response.status(404).send({ error: i18n.t('migrations.errors.notFound') })
     }
 
     try {
@@ -143,12 +241,12 @@ export default class MigrationsController {
       return response.redirect(`/migrations/${migration.id}`)
     } catch (error: any) {
       console.log(error)
-      const fieldErrors = this.mapVineErrors(error)
+      const fieldErrors = this.mapVineErrors(error, i18n)
       return inertia.render('migrations/edit', { migration, errors: fieldErrors }, { status: 422 })
     }
   }
 
-  async destroy({ request, response }: HttpContext) {
+  async destroy({ request, response, i18n }: HttpContext) {
     try {
       // Опциональный редирект после удаления (для Inertia-визитов из страниц редактирования)
       const redirectTo = String(request.input('redirectTo') || '')
@@ -162,9 +260,9 @@ export default class MigrationsController {
       const nonExistingIds = uniqueIds.filter((id) => !existingIds.includes(id))
 
       if (nonExistingIds.length > 0) {
-        return response
-          .status(422)
-          .send({ error: `Migrations with IDs ${nonExistingIds.join(', ')} do not exist` })
+        return response.status(422).send({
+          error: i18n.t('migrations.errors.idsNotExist', { ids: nonExistingIds.join(', ') }),
+        })
       }
 
       await Migration.query().whereIn('id', uniqueIds).delete()
@@ -174,7 +272,7 @@ export default class MigrationsController {
       // По умолчанию — редиректим на список миграций, чтобы избежать показа JSON-ответа в браузере
       return response.redirect('/migrations')
     } catch (error) {
-      return response.status(500).send({ error: 'Internal server error' })
+      return response.status(500).send({ error: i18n.t('migrations.errors.internal') })
     }
   }
 
@@ -259,11 +357,11 @@ export default class MigrationsController {
    * Запуск миграции по её ID, используя сохранённые конфиги
    * Удобно для быстрого запуска из списка без передачи всей конфигурации
    */
-  async runById({ request, response }: HttpContext) {
+  async runById({ request, response, i18n }: HttpContext) {
     const rawId = request.input('id')
     const id = Number(rawId)
     if (!Number.isFinite(id) || id <= 0) {
-      return response.status(422).send({ error: 'Invalid id' })
+      return response.status(422).send({ error: i18n.t('migrations.errors.invalidId') })
     }
 
     void (async () => {
@@ -280,12 +378,12 @@ export default class MigrationsController {
     return response.ok({ started: true, id })
   }
 
-  async stop({ request, response }: HttpContext) {
+  async stop({ request, response, i18n }: HttpContext) {
     const migrationId = String(request.input('migrationId') || '')
     const trigger = String(request.input('trigger') || 'manual')
     if (!migrationId) {
       response.status(400)
-      return response.send({ error: 'Missing migrationId' })
+      return response.send({ error: i18n.t('migrations.errors.missingMigrationId') })
     }
 
     const lastRun = await MigrationRun.query()
@@ -296,9 +394,10 @@ export default class MigrationsController {
       .first()
 
     if (!lastRun) {
-      return response
-        .status(404)
-        .send({ error: `Migration not running with trigger ${trigger}`, migrationId })
+      return response.status(404).send({
+        error: i18n.t('migrations.errors.notRunningWithTrigger', { trigger }),
+        migrationId,
+      })
     }
 
     await lastRun.merge({ status: 'canceled' })
@@ -311,7 +410,7 @@ export default class MigrationsController {
    * Преобразует ошибки Vine в { field: message }.
    * Добавляет префикс "config." для вложенных полей конфигурации.
    */
-  private mapVineErrors(error: any): Record<string, string> {
+  private mapVineErrors(error: any, i18n: HttpContext['i18n']): Record<string, string> {
     const fieldErrors: Record<string, string> = {}
     if (error?.messages && Array.isArray(error.messages)) {
       for (const e of error.messages) {
@@ -319,16 +418,16 @@ export default class MigrationsController {
         const fieldName = String(e.field)
         switch (fieldName) {
           case 'name':
-            fieldErrors[fieldName] = 'Укажите корректное имя'
+            fieldErrors[fieldName] = i18n.t('migrations.validation.nameInvalid')
             break
           case 'isActive':
-            fieldErrors[fieldName] = 'Укажите корректную активность'
+            fieldErrors[fieldName] = i18n.t('migrations.validation.isActiveInvalid')
             break
           case 'cronExpression':
-            fieldErrors[fieldName] = 'Укажите корректное расписание'
+            fieldErrors[fieldName] = i18n.t('migrations.validation.cronInvalid')
             break
           default:
-            fieldErrors[fieldName] = 'Укажите корректное значение'
+            fieldErrors[fieldName] = i18n.t('migrations.validation.valueInvalid')
             break
         }
       }
