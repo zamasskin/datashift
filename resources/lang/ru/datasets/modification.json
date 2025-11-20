@@ -2,6 +2,7 @@
   "name": "Модификация",
   "closeBtnName": "Закрыть",
   "saveBtnName": "Сохранить",
+  "noOptions": "Нет вариантов",
   "card": {
     "titlePrefix": "Модификация -",
     "datasetPrefix": "Датасет №",
@@ -19,11 +20,33 @@
   "datasetErrorRequired": "Укажите идентификатор датасета",
   "tabs": {
     "add": "Добавить",
+    "new": "Добавить",
     "rename": "Переименовать",
     "drop": "Удалить"
   },
   "addTitle": "Добавленные колонки",
   "renameTitle": "Переименованные колонки",
   "deletedTitle": "Удаленные колонки",
-  "deleteItemTitle": "Удалить"
+  "deleteItemTitle": "Удалить",
+  "hideBtnName": "Скрыть",
+  "editBtnName": "Редактировать",
+  "deleteColumnTitle": "Удалить колонку",
+  "addColumnBtnName": "Добавить колонку",
+  "renameColumnsLabel": "Переименовать колонки",
+  "oldColumnLabel": "Старая колонка",
+  "noColumns": "Нет колонок",
+  "deleteTitle": "Удалить",
+  "addRenameBtnName": "Добавить переименование",
+  "dropColumnsLabel": "Удалить колонки",
+  "selectAllBtnName": "Выделить все",
+  "addSelectedBtnName": "Добавить выбранные",
+  "clearListBtnName": "Очистить список",
+  "valueTypePlaceholder": "Тип значения",
+  "reference": "ссылка",
+  "literal": "литерал",
+  "template": "шаблон",
+  "expression": "выражение",
+  "function": "функция (скоро)",
+  "soon": "Скоро",
+  "functionsSoon": "Поддержка функций появится скоро."
 }

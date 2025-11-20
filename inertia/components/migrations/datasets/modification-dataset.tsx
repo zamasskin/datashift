@@ -218,7 +218,7 @@ export function ModificationDataset(props: ModificationDatasetProps) {
       <DialogContent className="w-[95vw] sm:max-w-xl md:max-w-2xl lg:max-w-3xl xl:max-w-4xl max-h-[85vh] overflow-hidden p-4">
         <DialogHeader>
           <DialogTitle>
-            {String(t('datasets.modification.dialogTitle', 'Модификация датасета'))}
+            {String(t('datasets.modification.name', 'Модификация'))}
           </DialogTitle>
         </DialogHeader>
 
@@ -253,7 +253,7 @@ export function ModificationDataset(props: ModificationDatasetProps) {
             {!datasetId.trim() && (
               <FieldError>
                 {String(
-                  t('datasets.modification.fieldErrorDatasetId', 'Укажите идентификатор датасета')
+                  t('datasets.modification.datasetErrorRequired', 'Укажите идентификатор датасета')
                 )}
               </FieldError>
             )}

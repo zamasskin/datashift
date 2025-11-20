@@ -2,6 +2,7 @@
   "name": "Modification",
   "closeBtnName": "Close",
   "saveBtnName": "Save",
+  "noOptions": "No options",
   "card": {
     "titlePrefix": "Modification -",
     "datasetPrefix": "Dataset #",
@@ -19,11 +20,33 @@
   "datasetErrorRequired": "Provide dataset identifier",
   "tabs": {
     "add": "Add",
+    "new": "Add",
     "rename": "Rename",
     "drop": "Drop"
   },
   "addTitle": "Added columns",
   "renameTitle": "Renamed columns",
   "deletedTitle": "Deleted columns",
-  "deleteItemTitle": "Delete"
+  "deleteItemTitle": "Delete",
+  "hideBtnName": "Hide",
+  "editBtnName": "Edit",
+  "deleteColumnTitle": "Delete column",
+  "addColumnBtnName": "Add column",
+  "renameColumnsLabel": "Rename columns",
+  "oldColumnLabel": "Old column",
+  "noColumns": "No columns",
+  "deleteTitle": "Delete",
+  "addRenameBtnName": "Add rename",
+  "dropColumnsLabel": "Drop columns",
+  "selectAllBtnName": "Select all",
+  "addSelectedBtnName": "Add selected",
+  "clearListBtnName": "Clear list",
+  "valueTypePlaceholder": "Value type",
+  "reference": "reference",
+  "literal": "literal",
+  "template": "template",
+  "expression": "expression",
+  "function": "function (soon)",
+  "soon": "Soon",
+  "functionsSoon": "Function support will be available soon."
 }
