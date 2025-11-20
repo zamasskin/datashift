@@ -51,6 +51,13 @@ export function SqlCard({
               Источник данных № {config?.params?.sourceId}
             </span>
           </ItemDescription>
+          {config?.params?.query && (
+            <ItemDescription>
+              <code className="block w-full overflow-hidden whitespace-pre-wrap break-words rounded bg-muted px-2 py-1 text-xs font-mono text-muted-foreground line-clamp-2">
+                {config.params.query}
+              </code>
+            </ItemDescription>
+          )}
         </ItemContent>
         
         <ItemFooter>

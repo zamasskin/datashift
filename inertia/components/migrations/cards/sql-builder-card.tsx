@@ -53,6 +53,23 @@ export function SqlBuilderCard({
               Источник данных № {config?.params?.sourceId}
             </span>
           </ItemDescription>
+          <ItemDescription>
+            <span className="text-xs text-muted-foreground">
+              Таблица: <span className="font-medium">{config?.params?.table}</span>
+              {config?.params?.selects && config.params.selects.length > 0 && (
+                <> · Поля: {config.params.selects.length}</>
+              )}
+              {config?.params?.joins && config.params.joins.length > 0 && (
+                <> · Join: {config.params.joins.length}</>
+              )}
+              {config?.params?.orders && config.params.orders.length > 0 && (
+                <> · Сортировок: {config.params.orders.length}</>
+              )}
+              {config?.params?.group && config.params.group.length > 0 && (
+                <> · Группировок: {config.params.group.length}</>
+              )}
+            </span>
+          </ItemDescription>
         </ItemContent>
         <ItemFooter>
           <div className="flex items-center gap-2">
