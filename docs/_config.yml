@@ -1,0 +1,20 @@
+title: DataShift
+description: "Документация по продукту DataShift"
+theme: minima
+markdown: kramdown
+plugins:
+  - jekyll-seo-tag
+
+# Укажите базовый путь, если сайт публикуется как /<repo>/
+# Например, если ваш репозиторий называется datashift:
+# baseurl: "/datashift"
+url: "https://<username>.github.io"
+
+# Локализация
+lang: ru
+
+exclude:
+  - node_modules
+  - vendor
+  - tests
+  - test-results
