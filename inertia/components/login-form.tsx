@@ -31,7 +31,6 @@ export function LoginForm({
   messages = {},
   ...props
 }: LoginFormProps) {
-  console.log('LoginForm', messages)
   const { props: pageProps } = usePage<{ csrfToken?: string; errors?: Record<string, string> }>()
   const csrfToken = pageProps?.csrfToken
   const errors = pageProps?.errors

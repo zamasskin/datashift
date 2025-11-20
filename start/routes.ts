@@ -36,6 +36,7 @@ router.post('/logout', async ({ auth, response }) => {
 // Public pages (no auth)
 router.on('/terms').renderInertia('public/terms')
 router.on('/privacy').renderInertia('public/privacy')
+router.post('/settings/locale', [SettingsController, 'changeLocale'])
 
 router
   .group(() => {
@@ -77,7 +78,6 @@ router
 
     // Settings & users management (without /admin prefix)
     router.get('/settings', [UsersController, 'settings'])
-    router.post('/settings/locale', [SettingsController, 'changeLocale'])
     router.post('/users', [UsersController, 'store'])
     router.put('/users/:id', [UsersController, 'update'])
     router.delete('/users', [UsersController, 'destroy'])
