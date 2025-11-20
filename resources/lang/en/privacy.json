@@ -1,0 +1,17 @@
+{
+  "title": "Privacy Policy",
+  "h1": "Privacy Policy",
+  "intro": "This policy describes what data the DataShift service (the “Service”) collects and how it is used. By using the Service, you agree to data processing in accordance with this policy.",
+  "section1Title": "1. What Data We Collect",
+  "section1Body": "We may collect: account information (email, name), technical metadata about interface actions, error and event logs, and data you upload to work with migrations and datasets.",
+  "section2Title": "2. How We Use Data",
+  "section2Body": "Data is used to provide access to functionality, improve the quality of the Service, diagnose issues, ensure security, and comply with legal requirements.",
+  "section3Title": "3. Storage and Protection",
+  "section3Body": "We take reasonable organizational and technical measures to protect data from unauthorized access, alteration, or destruction. However, no method of transmission and storage can guarantee absolute security.",
+  "section4Title": "4. Your Rights",
+  "section4Body": "You may request access to your data, have it corrected or deleted, and restrict processing. To exercise your rights, contact us using the details below.",
+  "section5Title": "5. Changes to the Policy",
+  "section5Body": "We may update the privacy policy from time to time. The current version is always available on this page.",
+  "contactText": "Privacy inquiries:",
+  "contactEmail": "privacy@datashift.local"
+}

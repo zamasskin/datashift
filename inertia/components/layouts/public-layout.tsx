@@ -3,9 +3,13 @@ import { Link, usePage } from '@inertiajs/react'
 import { ThemeToggle } from '~/components/theme-toggle'
 import { LanguageToggle } from '~/components/language-toggle'
 
-export const PublicLayout = ({ children, title }: { children: React.ReactNode; title: string }) => {
-  const { props } = usePage<{ layoutMessages?: { brand?: string; loginLink?: string; footerCopyright?: string } }>()
+export const PublicLayout = ({ children, title }: { children: React.ReactNode; title?: string }) => {
+  const { props } = usePage<{
+    layoutMessages?: { brand?: string; loginLink?: string; footerCopyright?: string }
+    messages?: { h1?: string; title?: string }
+  }>()
   const layout = props.layoutMessages || {}
+  const pageTitle = title ?? props.messages?.h1 ?? props.messages?.title ?? 'Datashift'
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b">
@@ -13,7 +17,7 @@ export const PublicLayout = ({ children, title }: { children: React.ReactNode; t
           <Link href="/login" className="text-sm font-semibold tracking-tight hover:underline">
             {layout.brand || 'Datashift'}
           </Link>
-          <h1 className="text-sm font-medium">{title}</h1>
+          <h1 className="text-sm font-medium">{pageTitle}</h1>
           <div className="flex items-center gap-2">
             <LanguageToggle />
             <ThemeToggle />

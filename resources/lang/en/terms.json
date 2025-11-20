@@ -1,0 +1,19 @@
+{
+  "title": "Terms of Service",
+  "h1": "Terms of Service",
+  "intro": "This document describes the terms of using the DataShift service (the “Service”). By using the Service, you acknowledge and agree to these terms. If you do not agree, please stop using the Service.",
+  "section1Title": "1. General Provisions",
+  "section1Body": "The Service is provided “as is”. We strive to ensure stable operation, however we do not guarantee the absence of errors or interruptions.",
+  "section2Title": "2. Account and Access",
+  "section2Body": "Access to certain sections may require an account. You are responsible for keeping your credentials secure and for actions performed under your account.",
+  "section3Title": "3. Acceptable Use",
+  "section3Body": "It is prohibited to use the Service for unlawful activities, infringing on the rights and interests of third parties, or attempting unauthorized access to data.",
+  "section4Title": "4. Data and Content",
+  "section4Body": "You retain rights to your content and data. By providing data to the Service, you confirm that you have the necessary rights and permissions to use them.",
+  "section5Title": "5. Limitation of Liability",
+  "section5Body": "We are not liable for indirect damages, lost profits, loss of data, or consequences of using the Service, except where expressly provided by law.",
+  "section6Title": "6. Changes to the Terms",
+  "section6Body": "We may update the terms of service. The current version is published on this page. By continuing to use the Service after changes, you accept the updated terms.",
+  "contactText": "Contacts for terms questions:",
+  "contactEmail": "support@datashift.local"
+}

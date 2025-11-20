@@ -14,6 +14,7 @@ const ErrorsController = () => import('#controllers/errors_controller')
 const StreamsController = () => import('#controllers/streams_controller')
 const MigrationsController = () => import('#controllers/migrations_controller')
 const LoginController = () => import('#controllers/login_controller')
+const PublicController = () => import('#controllers/public_controller')
 const DataSourcesController = () => import('#controllers/data_sources_controller')
 const DatasetsController = () => import('#controllers/datasets_controller')
 const SqlController = () => import('#controllers/sql_controller')
@@ -34,8 +35,8 @@ router.post('/logout', async ({ auth, response }) => {
 })
 
 // Public pages (no auth)
-router.on('/terms').renderInertia('public/terms')
-router.on('/privacy').renderInertia('public/privacy')
+router.get('/terms', [PublicController, 'terms'])
+router.get('/privacy', [PublicController, 'privacy'])
 router.post('/settings/locale', [SettingsController, 'changeLocale'])
 
 router
