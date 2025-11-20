@@ -15,6 +15,14 @@ import { Button } from '~/components/ui/button'
 import { useMigrationRuns } from '~/store/migrations'
 import { useState } from 'react'
 import { StopCircle } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuItem,
+} from '~/components/ui/dropdown-menu'
 
 const Tasks = () => {
   const { runnings } = useMigrationRuns()
@@ -100,10 +108,37 @@ const Tasks = () => {
                       const value =
                         Array.isArray(run.progress) && run.progress.length > 0 ? run.progress[0] : 0
                       return (
-                        <div className="flex items-center gap-2 w-48">
-                          <Progress value={value} />
-                          <span className="text-xs text-muted-foreground">{value}%</span>
-                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button
+                              type="button"
+                              className="flex items-center gap-2 w-48 cursor-pointer hover:opacity-90"
+                              title="Показать все прогрессы"
+                            >
+                              <Progress value={value} />
+                              <span className="text-xs text-muted-foreground">{value}%</span>
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="w-64">
+                            <DropdownMenuLabel>
+                              {run?.migrationName ?? run?.migration?.name ?? `Миграция #${run.migrationId}`}
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            {Array.isArray(run.progress) && run.progress.length > 0 ? (
+                              run.progress.map((v: number, i: number) => (
+                                <DropdownMenuItem key={i} className="gap-2">
+                                  <span className="w-10 shrink-0 text-xs text-muted-foreground">#{i + 1}</span>
+                                  <div className="flex items-center gap-2 w-full">
+                                    <Progress value={v} />
+                                    <span className="text-xs text-muted-foreground">{v}%</span>
+                                  </div>
+                                </DropdownMenuItem>
+                              ))
+                            ) : (
+                              <DropdownMenuItem disabled>Нет данных о прогрессе</DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       )
                     })()}
                   </TableCell>
@@ -133,6 +168,8 @@ const Tasks = () => {
             </TableBody>
           </Table>
         )}
+
+        {null}
       </div>
     </>
   )
