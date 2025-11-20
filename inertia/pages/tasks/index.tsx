@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react'
+import { Head, Link, usePage } from '@inertiajs/react'
 import {
   Table,
   TableBody,
@@ -13,9 +13,31 @@ import { Separator } from '~/components/ui/separator'
 import { Progress } from '~/components/ui/progress'
 import { Button } from '~/components/ui/button'
 import { useMigrationRuns } from '~/store/migrations'
+import { useState } from 'react'
+import { StopCircle } from 'lucide-react'
 
 const Tasks = () => {
   const { runnings } = useMigrationRuns()
+  const { props } = usePage<{ csrfToken?: string }>()
+  const csrfToken = props.csrfToken
+  const [stopping, setStopping] = useState<Record<number, boolean>>({})
+
+  const stopRun = async (run: any) => {
+    setStopping((prev) => ({ ...prev, [run.id]: true }))
+    try {
+      await fetch('/migrations/stop', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}),
+        },
+        body: JSON.stringify({ migrationId: run.migrationId, trigger: run.trigger }),
+        credentials: 'same-origin',
+      })
+    } finally {
+      setStopping((prev) => ({ ...prev, [run.id]: false }))
+    }
+  }
   const statusBadge = (s: any) => {
     switch (s) {
       case 'running':
@@ -60,6 +82,7 @@ const Tasks = () => {
                 <TableHead>Запуск</TableHead>
                 <TableHead>PID</TableHead>
                 <TableHead>Начато</TableHead>
+                <TableHead>Действия</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -90,6 +113,20 @@ const Tasks = () => {
                     {typeof run.createdAt === 'string'
                       ? new Date(run.createdAt).toLocaleString()
                       : '—'}
+                  </TableCell>
+                  <TableCell>
+                    {run.status === 'running' ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => stopRun(run)}
+                        disabled={!!stopping[run.id]}
+                      >
+                        <StopCircle className="mr-1 h-4 w-4" /> Остановить
+                      </Button>
+                    ) : (
+                      '—'
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
