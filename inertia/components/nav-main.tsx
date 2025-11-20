@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react'
-import { type Icon } from '@tabler/icons-react'
+
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -13,7 +13,7 @@ export function NavMain({
   items: {
     title: string
     url: string
-    icon?: Icon
+    icon?: React.ReactNode
   }[]
 }) {
   return (
@@ -24,7 +24,7 @@ export function NavMain({
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton tooltip={item.title} asChild>
                 <Link href={item.url}>
-                  {item.icon && <item.icon />}
+                  {item.icon}
                   <span>{item.title}</span>
                 </Link>
               </SidebarMenuButton>

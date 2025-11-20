@@ -1,11 +1,5 @@
 import * as React from 'react'
-import {
-  IconBrandCodepen,
-  IconArrowUpToArc,
-  IconSettings,
-  IconHelp,
-  IconSearch,
-} from '@tabler/icons-react'
+import { IconSettings, IconHelp, IconSearch } from '@tabler/icons-react'
 
 import {
   Sidebar,
@@ -24,18 +18,19 @@ import { BrandMark } from '~/components/ui/brand-logo'
 import { useMigrationRuns } from '~/store/migrations'
 import { RunningIndicators } from './running-indicators'
 import User from '#models/user'
+import { CloudFog, Plug } from 'lucide-react'
 
 const nawMain = [
   {
-    title: 'Подключения',
-    url: '/sources',
-    icon: IconBrandCodepen,
+    title: 'Миграции',
+    url: '/migrations',
+    icon: <CloudFog />,
   },
 
   {
-    title: 'Миграции',
-    url: '/migrations',
-    icon: IconArrowUpToArc,
+    title: 'Подключения',
+    url: '/sources',
+    icon: <Plug />,
   },
 ]
 
