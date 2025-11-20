@@ -23,6 +23,7 @@ export function NavUser() {
   const user = pageProps?.user
   const avatarUrl = (pageProps?.userAvatarUrl || '') as string
   const csrfToken = (pageProps?.csrfToken || '') as string
+  const layoutMessages = (pageProps as any)?.layoutMessages as any
   const fullName = user?.fullName || ''
   const email = user?.email || ''
   const fnSmall = fullName
@@ -44,7 +45,9 @@ export function NavUser() {
                 <AvatarFallback className="rounded-lg">{fnSmall}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{fullName || 'Гость'}</span>
+                <span className="truncate font-medium">
+                  {fullName || layoutMessages?.root?.user?.guest || 'Гость'}
+                </span>
                 <span className="text-muted-foreground truncate text-xs">{email}</span>
               </div>
               <IconDotsVertical className="ml-auto size-4" />
@@ -63,7 +66,9 @@ export function NavUser() {
                   <AvatarFallback className="rounded-lg">{fnSmall}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{fullName || 'Гость'}</span>
+                  <span className="truncate font-medium">
+                    {fullName || layoutMessages?.root?.user?.guest || 'Гость'}
+                  </span>
                   <span className="text-muted-foreground truncate text-xs">{email}</span>
                 </div>
               </div>
@@ -73,7 +78,7 @@ export function NavUser() {
               <DropdownMenuItem asChild>
                 <Link href="/profile">
                   <IconUserCircle />
-                  Профиль
+                  {layoutMessages?.root?.settingsMenu?.profile || 'Профиль'}
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
@@ -84,7 +89,7 @@ export function NavUser() {
               }}
             >
               <IconLogout />
-              Выход
+              {layoutMessages?.root?.settingsMenu?.logout || 'Выход'}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

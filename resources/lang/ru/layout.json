@@ -17,6 +17,9 @@
       "migration": "Миграцию",
       "task": "Задание"
     },
+    "user": {
+      "guest": "Гость"
+    },
     "settingsMenu": {
       "trigger": "Настройки",
       "security": "Безопасность",

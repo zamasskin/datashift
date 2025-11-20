@@ -17,6 +17,9 @@
       "migration": "Migration",
       "task": "Task"
     },
+    "user": {
+      "guest": "Guest"
+    },
     "settingsMenu": {
       "trigger": "Settings",
       "security": "Security",

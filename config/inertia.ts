@@ -66,6 +66,9 @@ const inertiaConfig = defineConfig({
             migration: ctx.i18n.t('layout.root.createMenu.migration'),
             task: ctx.i18n.t('layout.root.createMenu.task'),
           },
+          user: {
+            guest: ctx.i18n.t('layout.root.user.guest'),
+          },
           settingsMenu: {
             trigger: ctx.i18n.t('layout.root.settingsMenu.trigger'),
             security: ctx.i18n.t('layout.root.settingsMenu.security'),
