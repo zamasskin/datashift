@@ -14,8 +14,6 @@ type SqlEditorProps = {
 export function SqlEditor(props: SqlEditorProps) {
   const { t } = useI18n()
 
-  console.log(t('migrations.sqlEditor.param', 'Параметр'))
-
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
 
