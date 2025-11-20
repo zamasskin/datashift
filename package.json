@@ -9,6 +9,8 @@
     "build": "node ace build",
     "dev": "node ace serve --hmr",
     "test": "node ace test",
+    "e2e": "playwright test",
+    "e2e:headed": "playwright test --headed",
     "lint": "eslint .",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit"
@@ -40,6 +42,7 @@
     "@japa/assert": "^4.0.1",
     "@japa/plugin-adonisjs": "^4.0.0",
     "@japa/runner": "^4.2.0",
+    "@playwright/test": "^1.56.1",
     "@swc/core": "1.11.24",
     "@types/luxon": "^3.7.1",
     "@types/moment": "^2.11.29",
