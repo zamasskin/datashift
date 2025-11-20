@@ -21,7 +21,6 @@ const UsersController = () => import('#controllers/users_controller')
 const SearchController = () => import('#controllers/search_controller')
 const MetricsController = () => import('#controllers/metrics_controller')
 const EventsController = () => import('#controllers/events_controller')
-const TasksController = () => import('#controllers/tasks_controller')
 
 // Login routes
 router.get('/login', [LoginController, 'create']).middleware(middleware.guest())
@@ -73,7 +72,7 @@ router
     router.post('/sql/tables', [SqlController, 'listTables'])
     router.post('/sql/columns', [SqlController, 'listColumns'])
 
-    router.get('/tasks', [TasksController, 'index'])
+    router.on('/tasks').renderInertia('tasks/index')
 
     // Settings & users management (without /admin prefix)
     router.get('/settings', [UsersController, 'settings'])

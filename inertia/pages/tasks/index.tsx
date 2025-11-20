@@ -1,4 +1,4 @@
-import { Head, usePage, Link } from '@inertiajs/react'
+import { Head, Link } from '@inertiajs/react'
 import {
   Table,
   TableBody,
@@ -12,20 +12,11 @@ import { RootLayout } from '~/components/root-layout'
 import { Separator } from '~/components/ui/separator'
 import { Progress } from '~/components/ui/progress'
 import { Button } from '~/components/ui/button'
-type RunDto = {
-  id: number
-  status: 'pending' | 'running' | 'success' | 'failed' | 'canceled'
-  trigger: 'manual' | 'cron' | 'api' | 'resume'
-  createdAt: string | null
-  pid: number | null
-  progress?: number[]
-  migration: { id: number; name: string } | null
-}
+import { useMigrationRuns } from '~/store/migrations'
 
 const Tasks = () => {
-  const { props } = usePage<{ runs: RunDto[] }>()
-  const runs = props.runs || []
-  const statusBadge = (s: RunDto['status']) => {
+  const { runnings } = useMigrationRuns()
+  const statusBadge = (s: any) => {
     switch (s) {
       case 'running':
         return <Badge variant="default">Выполняется</Badge>
@@ -56,7 +47,7 @@ const Tasks = () => {
           </Button>
         </div>
         <Separator />
-        {runs.length === 0 ? (
+        {runnings.length === 0 ? (
           <div className="text-muted-foreground">Сейчас нет запущенных заданий.</div>
         ) : (
           <Table>
@@ -72,22 +63,19 @@ const Tasks = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {runs.map((run) => (
+              {runnings.map((run: any) => (
                 <TableRow key={run.id}>
                   <TableCell>{run.id}</TableCell>
                   <TableCell>
-                    {run.migration ? (
-                      <Link href={`/migrations/${run.migration.id}`} className="hover:underline">
-                        {run.migration.name}
-                      </Link>
-                    ) : (
-                      '—'
-                    )}
+                    <Link href={`/migrations/${run.migrationId}`} className="hover:underline">
+                      {run?.migrationName ?? run?.migration?.name ?? `Миграция #${run.migrationId}`}
+                    </Link>
                   </TableCell>
                   <TableCell>{statusBadge(run.status)}</TableCell>
                   <TableCell>
                     {(() => {
-                      const value = run.progress && run.progress.length > 0 ? run.progress[0] : 0
+                      const value =
+                        Array.isArray(run.progress) && run.progress.length > 0 ? run.progress[0] : 0
                       return (
                         <div className="flex items-center gap-2 w-48">
                           <Progress value={value} />
@@ -97,9 +85,11 @@ const Tasks = () => {
                     })()}
                   </TableCell>
                   <TableCell className="capitalize">{run.trigger}</TableCell>
-                  <TableCell>{run.pid ?? '—'}</TableCell>
+                  <TableCell>{typeof run.pid === 'number' ? run.pid : '—'}</TableCell>
                   <TableCell>
-                    {run.createdAt ? new Date(run.createdAt).toLocaleString() : '—'}
+                    {typeof run.createdAt === 'string'
+                      ? new Date(run.createdAt).toLocaleString()
+                      : '—'}
                   </TableCell>
                 </TableRow>
               ))}
