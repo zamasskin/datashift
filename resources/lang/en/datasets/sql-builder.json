@@ -1,0 +1,31 @@
+{
+  "name": "Query Builder",
+  "closeBtnName": "Close",
+  "saveBtnName": "Add",
+  "card": {
+    "titlePrefix": "Query Builder -",
+    "connectionPrefix": "Source # ",
+    "descriptionSelect": "Select configuration",
+    "descriptionOrder": "Order configuration",
+    "descriptionJoins": "Join configuration",
+    "descriptionWhere": "Filter configuration",
+    "descriptionGroup": "Group configuration",
+    "descriptionHaving": "Group conditions configuration",
+    "deleteBtnName": "Delete",
+    "settingsBtnName": "Settings",
+    "prevBtnName": "Back",
+    "nextBtnName": "Next",
+    "pagePrefix": "Pg."
+  },
+  "tableLabel": "Table",
+  "aliasLabel": "Alias",
+  "noTablesFound": "No tables found for selected source(s).",
+  "tabs": {
+    "selects": "select",
+    "order": "order",
+    "joins": "joins",
+    "where": "where",
+    "group": "group",
+    "hawing": "hawing"
+  }
+}

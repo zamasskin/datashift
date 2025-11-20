@@ -1,0 +1,29 @@
+{
+  "name": "Модификация",
+  "closeBtnName": "Закрыть",
+  "saveBtnName": "Сохранить",
+  "card": {
+    "titlePrefix": "Модификация -",
+    "datasetPrefix": "Датасет №",
+    "newColumnsLabel": "Новые колонки",
+    "dropColumnsLabel": "Удалить колонки",
+    "renameLabel": "Переименования",
+    "deleteBtnName": "Удалить",
+    "settingsBtnName": "Настройки",
+    "prevBtnName": "Назад",
+    "nextBtnName": "Вперед",
+    "pagePrefix": "Страница"
+  },
+  "datasetLabel": "Датасет",
+  "selectPlaceholder": "Выберите датасет",
+  "datasetErrorRequired": "Укажите идентификатор датасета",
+  "tabs": {
+    "add": "Добавить",
+    "rename": "Переименовать",
+    "drop": "Удалить"
+  },
+  "addTitle": "Добавленные колонки",
+  "renameTitle": "Переименованные колонки",
+  "deletedTitle": "Удаленные колонки",
+  "deleteItemTitle": "Удалить"
+}

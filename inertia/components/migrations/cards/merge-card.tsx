@@ -1,9 +1,17 @@
-import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle, ItemFooter } from '~/components/ui/item'
+import {
+  Item,
+  ItemContent,
+  ItemDescription,
+  ItemMedia,
+  ItemTitle,
+  ItemFooter,
+} from '~/components/ui/item'
 import { MergeDataset } from '../datasets/merge-dataset'
 import { Button } from '~/components/ui/button'
 import { Settings, Trash } from 'lucide-react'
 import { MergeConfig } from '#interfaces/merge_config'
 import { FetchConfigMeta } from '#interfaces/fetchсonfigs'
+import { useI18n } from '~/hooks/useI18nLocal'
 
 export type MergeCardProps = {
   config?: MergeConfig
@@ -13,6 +21,7 @@ export type MergeCardProps = {
   onSave?: (config: MergeConfig) => void
 }
 export function MergeCard({ config, isLoading, suggestions, onRemove, onSave }: MergeCardProps) {
+  const { t } = useI18n()
   const handleRemove = () => {
     if (onRemove) {
       onRemove(config?.id || '')
@@ -44,42 +53,60 @@ export function MergeCard({ config, isLoading, suggestions, onRemove, onSave }: 
       </ItemMedia>
       <ItemContent>
         <ItemTitle className="line-clamp-1">
-          Объединение - <span className="text-muted-foreground">{config?.id}</span>
+          {String(t('datasets.merge.card.titlePrefix', 'Объединение -'))}{' '}
+          <span className="text-muted-foreground">{config?.id}</span>
         </ItemTitle>
         <ItemDescription>
-          Объединение Датасета {config?.params.datasetLeftId} с {config?.params.datasetRightId}
+          {String(t('datasets.merge.card.leftDatasetLabel', 'Левый датасет'))}:{' '}
+          {config?.params.datasetLeftId}{' '}
+          {String(t('datasets.merge.card.rightDatasetLabel', 'Правый датасет'))}:{' '}
+          {config?.params.datasetRightId}
         </ItemDescription>
         <ItemDescription className="line-clamp-none">
           <div className="text-xs text-muted-foreground space-y-0.5">
             {config?.params?.datasetLeftId ? (
               <div>
-                · Левый датасет: <span className="font-medium">{config?.params?.datasetLeftId}</span>
+                · {String(t('datasets.merge.card.leftDatasetLabel', 'Левый датасет'))}:{' '}
+                <span className="font-medium">{config?.params?.datasetLeftId}</span>
               </div>
             ) : null}
             {config?.params?.datasetRightId ? (
               <div>
-                · Правый датасет: <span className="font-medium">{config?.params?.datasetRightId}</span>
+                · {String(t('datasets.merge.card.rightDatasetLabel', 'Правый датасет'))}:{' '}
+                <span className="font-medium">{config?.params?.datasetRightId}</span>
               </div>
             ) : null}
             {config?.params?.on?.length ? (
-              <div>· ON: {formatMergeOn(config?.params?.on)}</div>
+              <div>
+                · {String(t('datasets.merge.card.onLabel', 'Правила объединения'))}:{' '}
+                {formatMergeOn(config?.params?.on)}
+              </div>
             ) : null}
           </div>
         </ItemDescription>
       </ItemContent>
       <ItemFooter>
         <div className="flex items-center gap-2 ml-auto">
-          <Button size="icon" variant="outline" onClick={handleRemove}>
+          <Button
+            size="icon"
+            variant="outline"
+            onClick={handleRemove}
+            aria-label={String(t('datasets.merge.card.deleteBtnName', 'Удалить'))}
+          >
             <Trash />
           </Button>
           <MergeDataset
-            saveBtnName="Сохранить"
+            saveBtnName={String(t('datasets.merge.saveBtnName', 'Сохранить'))}
             config={config}
             suggestions={suggestions}
             isLoading={isLoading}
             onSave={onSave}
           >
-            <Button size="icon" variant="outline" aria-label="Редактировать">
+            <Button
+              size="icon"
+              variant="outline"
+              aria-label={String(t('datasets.merge.card.settingsBtnName', 'Настройки'))}
+            >
               <Settings />
             </Button>
           </MergeDataset>

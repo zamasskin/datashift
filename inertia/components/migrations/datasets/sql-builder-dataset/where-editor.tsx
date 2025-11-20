@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '~/components/ui/select'
+import { useI18n } from '~/hooks/useI18nLocal'
 
 const whereOperators = ['=', '!=', '<>', '>', '>=', '<', '<=', 'in', 'nin'] as const
 
@@ -44,6 +45,7 @@ export function WhereEditor({
   suggestionValues,
   onChange,
 }: WhereEditorProps) {
+  const { t } = useI18n()
   const handleAddCondition = (newField: WhereField) => {
     if (onChange) {
       const fields = data?.fields || []
@@ -112,7 +114,11 @@ export function WhereEditor({
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Badge className="px-4">AND</Badge>
-                <div className="text-xs text-muted-foreground">Все условия должны выполниться</div>
+                <div className="text-xs text-muted-foreground">
+                  {String(
+                    t('datasets.sql-builder.where.andHint', 'Все условия должны выполниться')
+                  )}
+                </div>
               </div>
               <div className="rounded-md bg-muted/40 p-2 border border-border">
                 <WhereEditor
@@ -137,7 +143,11 @@ export function WhereEditor({
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Badge className="px-4">OR</Badge>
-                <div className="text-xs text-muted-foreground">Должно выполниться хотя бы одно</div>
+                <div className="text-xs text-muted-foreground">
+                  {String(
+                    t('datasets.sql-builder.where.orHint', 'Должно выполниться хотя бы одно')
+                  )}
+                </div>
               </div>
               <div className="rounded-md bg-muted/40 p-2 border border-border">
                 <WhereEditor
@@ -174,6 +184,7 @@ export function FieldWhere({
   onDelete,
   onChange,
 }: FieldProps) {
+  const { t } = useI18n()
   const opValue = field.op || '='
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -186,7 +197,9 @@ export function FieldWhere({
               onChange({ ...field, key: value })
             }
           }}
-          placeholder="поле (таблица.колонка)"
+          placeholder={String(
+            t('datasets.sql-builder.where.fieldPlaceholder', 'поле (таблица.колонка)')
+          )}
         />
       </div>
 
@@ -198,7 +211,10 @@ export function FieldWhere({
           }
         }}
       >
-        <SelectTrigger className="h-8 min-w-20" title="Оператор">
+        <SelectTrigger
+          className="h-8 min-w-20"
+          title={String(t('datasets.sql-builder.where.operatorTitle', 'Оператор'))}
+        >
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -226,7 +242,7 @@ export function FieldWhere({
                   }
                 }}
                 className="h-8 min-w-[180px]"
-                placeholder="значение"
+                placeholder={String(t('datasets.sql-builder.where.valuePlaceholder', 'значение'))}
               />
               {field?.values && field?.values.length > 1 && (
                 <Button
@@ -254,7 +270,8 @@ export function FieldWhere({
               }
             }}
           >
-            <PlusIcon className="size-4" /> Добавить
+            <PlusIcon className="size-4" />{' '}
+            {String(t('datasets.sql-builder.addBtnName', 'Добавить'))}
           </Button>
         </div>
       ) : (
@@ -267,13 +284,14 @@ export function FieldWhere({
                 onChange({ ...field, value })
               }
             }}
-            placeholder="значение"
+            placeholder={String(t('datasets.sql-builder.where.valuePlaceholder', 'значение'))}
           />
         </div>
       )}
 
       <Button variant="secondary" size="sm" className="h-8" onClick={onDelete}>
-        <TrashIcon className="size-4" /> Удалить
+        <TrashIcon className="size-4" />{' '}
+        {String(t('datasets.sql-builder.deleteBtnName', 'Удалить'))}
       </Button>
     </div>
   )
@@ -298,6 +316,7 @@ export function ActionsWhere({
   onChangeOpenedAnd,
   onChangeOpenedOr,
 }: ActionsWhereProps) {
+  const { t } = useI18n()
   const [newCondOpen, changeNewCondOpen] = useState(false)
   const [newCondKey, seNewtCondKey] = useState('')
   const [newCondOp, setNewCondOp] = useState<Operators>('=')
@@ -334,13 +353,15 @@ export function ActionsWhere({
         <PopoverTrigger asChild>
           <Button size="sm">
             <PlusIcon />
-            Условие
+            {String(t('datasets.sql-builder.where.conditionBtnName', 'Условие'))}
           </Button>
         </PopoverTrigger>
         <PopoverContent align="start" className="rounded-xl text-sm">
           <div className="space-y-4">
             <Field>
-              <FieldLabel htmlFor="input-id">Поле</FieldLabel>
+              <FieldLabel htmlFor="input-id">
+                {String(t('datasets.sql-builder.where.fieldLabel', 'Поле'))}
+              </FieldLabel>
               <Autocomplete
                 suggestions={suggestionKeys}
                 value={newCondKey}
@@ -349,10 +370,14 @@ export function ActionsWhere({
               />
             </Field>
             <Field>
-              <Label htmlFor="op">Условие</Label>
+              <Label htmlFor="op">
+                {String(t('datasets.sql-builder.where.conditionLabel', 'Условие'))}
+              </Label>
               <Select value={newCondOp} onValueChange={(value: Operators) => setNewCondOp(value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="=" />
+                  <SelectValue
+                    placeholder={String(t('datasets.sql-builder.where.operatorPlaceholder', '='))}
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   {whereOperators.map((op) => (
@@ -364,7 +389,9 @@ export function ActionsWhere({
               </Select>
             </Field>
             <Field>
-              <Label htmlFor="value">Значение</Label>
+              <Label htmlFor="value">
+                {String(t('datasets.sql-builder.where.valueLabel', 'Значение'))}
+              </Label>
               {newCondOp == 'in' || newCondOp == 'nin' ? (
                 <div className="flex flex-col gap-2 justify-end">
                   {newCondValues.map((v, idx) => (
@@ -396,7 +423,8 @@ export function ActionsWhere({
                   ))}
 
                   <Button onClick={() => setNewCondValues((old) => [...old, ''])}>
-                    <PlusIcon className="size-4" /> Добавить
+                    <PlusIcon className="size-4" />{' '}
+                    {String(t('datasets.sql-builder.addBtnName', 'Добавить'))}
                   </Button>
                 </div>
               ) : (
@@ -413,9 +441,11 @@ export function ActionsWhere({
 
             <div className="flex gap-2 justify-end">
               <Button variant="secondary" onClick={() => changeNewCondOpen(false)}>
-                Закрыть
+                {String(t('datasets.sql-builder.closeBtnName', 'Закрыть'))}
               </Button>
-              <Button onClick={handleAdd}>Добавить</Button>
+              <Button onClick={handleAdd}>
+                {String(t('datasets.sql-builder.addBtnName', 'Добавить'))}
+              </Button>
             </div>
           </div>
         </PopoverContent>

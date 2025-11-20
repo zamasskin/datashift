@@ -2,6 +2,7 @@ import { Trash } from 'lucide-react'
 import { Autocomplete } from '~/components/ui/autocomplete'
 import { Button } from '~/components/ui/button'
 import { Item, ItemContent } from '~/components/ui/item'
+import { useI18n } from '~/hooks/useI18nLocal'
 
 export type GroupEditorProps = {
   suggestions?: string[]
@@ -10,6 +11,7 @@ export type GroupEditorProps = {
 }
 
 export function GroupEditor({ suggestions, value, onChange }: GroupEditorProps) {
+  const { t } = useI18n()
   const groups = Array.isArray(value) ? value : []
 
   return (
@@ -29,7 +31,9 @@ export function GroupEditor({ suggestions, value, onChange }: GroupEditorProps) 
                       onChange(next)
                     }
                   }}
-                  placeholder="таблица.колонка"
+                  placeholder={String(
+                    t('datasets.sql-builder.fieldPlaceholder', 'таблица.колонка')
+                  )}
                 />
               </div>
               <Button
@@ -42,7 +46,8 @@ export function GroupEditor({ suggestions, value, onChange }: GroupEditorProps) 
                   }
                 }}
               >
-                <Trash className="size-4" /> Удалить
+                <Trash className="size-4" />{' '}
+                {String(t('datasets.sql-builder.deleteBtnName', 'Удалить'))}
               </Button>
             </div>
           </ItemContent>
@@ -57,7 +62,9 @@ export function GroupEditor({ suggestions, value, onChange }: GroupEditorProps) 
             }
           }}
         >
-          Добавить поле группировки
+          {String(
+            t('datasets.sql-builder.groupEditor.addFieldBtnName', 'Добавить поле группировки')
+          )}
         </Button>
       </div>
     </div>

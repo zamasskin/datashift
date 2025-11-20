@@ -3,6 +3,7 @@ import { Autocomplete } from '~/components/ui/autocomplete'
 import { Button } from '~/components/ui/button'
 import { Item, ItemContent } from '~/components/ui/item'
 import { ScrollArea } from '~/components/ui/scroll-area'
+import { useI18n } from '~/hooks/useI18nLocal'
 
 export type SelectsEditorProps = {
   suggestions?: string[]
@@ -11,6 +12,7 @@ export type SelectsEditorProps = {
 }
 
 export function SelectsEditor({ suggestions, value, onChange }: SelectsEditorProps) {
+  const { t } = useI18n()
   const selects = Array.isArray(value) ? value : []
 
   return (
@@ -32,7 +34,9 @@ export function SelectsEditor({ suggestions, value, onChange }: SelectsEditorPro
                           onChange(next)
                         }
                       }}
-                      placeholder="таблица.колонка"
+                      placeholder={String(
+                        t('datasets.sql-builder.fieldPlaceholder', 'таблица.колонка')
+                      )}
                     />
                   </div>
                   <Button
@@ -45,7 +49,8 @@ export function SelectsEditor({ suggestions, value, onChange }: SelectsEditorPro
                       }
                     }}
                   >
-                    <Trash className="size-4" /> Удалить
+                    <Trash className="size-4" />{' '}
+                    {String(t('datasets.sql-builder.deleteBtnName', 'Удалить'))}
                   </Button>
                 </div>
               </ItemContent>
@@ -62,7 +67,7 @@ export function SelectsEditor({ suggestions, value, onChange }: SelectsEditorPro
             }
           }}
         >
-          Добавить поле
+          {String(t('datasets.sql-builder.selectEditor.addFieldBtnName', 'Добавить поле'))}
         </Button>
       </div>
     </div>

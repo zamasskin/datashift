@@ -26,6 +26,7 @@ import { SelectsEditor } from '~/components/migrations/datasets/sql-builder-data
 import { OrdersEditor } from '~/components/migrations/datasets/sql-builder-dataset/order-editor'
 import { GroupEditor } from '~/components/migrations/datasets/sql-builder-dataset/group-editor'
 import { SqlBuilderConfig } from '#interfaces/sql_builder_config'
+import { useI18n } from '~/hooks/useI18nLocal'
 
 export type SqlBuilderProps = {
   children?: React.ReactNode
@@ -39,6 +40,7 @@ export type SqlBuilderProps = {
 }
 
 export function SqlBuilderDataset({ config, ...props }: SqlBuilderProps) {
+  const { t } = useI18n()
   const [loading, setLoading] = useState(false)
   const { csrfToken, dataSources } = usePage().props as any
   const [open, setOpen] = useState(false)
@@ -196,43 +198,68 @@ export function SqlBuilderDataset({ config, ...props }: SqlBuilderProps) {
       <DialogTrigger asChild>{props.children}</DialogTrigger>
       <DialogContent className="w-[95vw] sm:max-w-xl md:max-w-2xl lg:max-w-3xl xl:max-w-4xl max-h-[85vh] overflow-hidden p-4">
         <DialogHeader>
-          <DialogTitle>Редактор запроса</DialogTitle>
+          <DialogTitle>{String(t('datasets.sql-builder.name', 'Редактор запроса'))}</DialogTitle>
           <DialogDescription></DialogDescription>
         </DialogHeader>
         <DataSourceSelect value={sourceId} onChange={setSourceId} />
         {tables.length > 0 && (
           <div className="grid md:grid-cols-2 gap-2">
             <Field>
-              <FieldLabel>Таблица</FieldLabel>
+              <FieldLabel>{String(t('datasets.sql-builder.tableLabel', 'Таблица'))}</FieldLabel>
               <FieldContent className="w-full">
                 <TableSelect tables={tables} selectedTable={table} onSelectTable={setTable} />
               </FieldContent>
             </Field>
 
             <Field>
-              <FieldLabel>Алиас</FieldLabel>
+              <FieldLabel>{String(t('datasets.sql-builder.aliasLabel', 'Алиас'))}</FieldLabel>
               <Input value={alias} onChange={(ev) => setAlias(ev.target.value)} />
             </Field>
           </div>
         )}
 
-        {tables.length == 0 && <div>Для выбранных подключений таблицы не найдены.</div>}
+        {tables.length == 0 && (
+          <div>
+            {String(
+              t(
+                'datasets.sql-builder.noTablesFound',
+                'Для выбранных подключений таблицы не найдены.'
+              )
+            )}
+          </div>
+        )}
 
         <div className="mt-4 max-h-[68vh] overflow-y-auto pr-1">
           <Tabs defaultValue="selects">
             <TabsList>
-              <TabsTrigger value="selects">select</TabsTrigger>
-              <TabsTrigger value="order">order</TabsTrigger>
-              <TabsTrigger value="joins">joins</TabsTrigger>
-              <TabsTrigger value="where">where</TabsTrigger>
-              <TabsTrigger value="group">group</TabsTrigger>
-              <TabsTrigger value="hawing">hawing</TabsTrigger>
+              <TabsTrigger value="selects">
+                {String(t('datasets.sql-builder.tabs.select', 'select'))}
+              </TabsTrigger>
+              <TabsTrigger value="order">
+                {String(t('datasets.sql-builder.tabs.order', 'order'))}
+              </TabsTrigger>
+              <TabsTrigger value="joins">
+                {String(t('datasets.sql-builder.tabs.joins', 'joins'))}
+              </TabsTrigger>
+              <TabsTrigger value="where">
+                {String(t('datasets.sql-builder.tabs.where', 'where'))}
+              </TabsTrigger>
+              <TabsTrigger value="group">
+                {String(t('datasets.sql-builder.tabs.group', 'group'))}
+              </TabsTrigger>
+              <TabsTrigger value="hawing">
+                {String(t('datasets.sql-builder.tabs.hawing', 'hawing'))}
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="selects">
               <Card>
                 <CardHeader>
-                  <CardTitle>Select</CardTitle>
-                  <CardDescription>Настройка выборки</CardDescription>
+                  <CardTitle>
+                    {String(t('datasets.sql-builder.card.select.title', 'Select'))}
+                  </CardTitle>
+                  <CardDescription>
+                    {String(t('datasets.sql-builder.card.select.description', 'Настройка выборки'))}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <SelectsEditor
@@ -246,8 +273,14 @@ export function SqlBuilderDataset({ config, ...props }: SqlBuilderProps) {
             <TabsContent value="order">
               <Card>
                 <CardHeader>
-                  <CardTitle>Ордер</CardTitle>
-                  <CardDescription>Настройка сортировки</CardDescription>
+                  <CardTitle>
+                    {String(t('datasets.sql-builder.card.order.title', 'Order'))}
+                  </CardTitle>
+                  <CardDescription>
+                    {String(
+                      t('datasets.sql-builder.card.order.description', 'Настройка сортировки')
+                    )}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <OrdersEditor suggestions={suggestionKeys} value={orders} onChange={setOrders} />
@@ -257,8 +290,14 @@ export function SqlBuilderDataset({ config, ...props }: SqlBuilderProps) {
             <TabsContent value="joins">
               <Card>
                 <CardHeader>
-                  <CardTitle>Joins</CardTitle>
-                  <CardDescription>Настройка связанных таблиц</CardDescription>
+                  <CardTitle>
+                    {String(t('datasets.sql-builder.card.joins.title', 'Joins'))}
+                  </CardTitle>
+                  <CardDescription>
+                    {String(
+                      t('datasets.sql-builder.card.joins.description', 'Настройка связанных таблиц')
+                    )}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <JoinEditor
@@ -275,8 +314,12 @@ export function SqlBuilderDataset({ config, ...props }: SqlBuilderProps) {
             <TabsContent value="where">
               <Card>
                 <CardHeader>
-                  <CardTitle>Where</CardTitle>
-                  <CardDescription>Настройка фильтров</CardDescription>
+                  <CardTitle>
+                    {String(t('datasets.sql-builder.card.where.title', 'Where'))}
+                  </CardTitle>
+                  <CardDescription>
+                    {String(t('datasets.sql-builder.card.where.description', 'Настройка фильтров'))}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="max-h-72 max-w-full overflow-scroll">
@@ -296,8 +339,14 @@ export function SqlBuilderDataset({ config, ...props }: SqlBuilderProps) {
             <TabsContent value="group">
               <Card>
                 <CardHeader>
-                  <CardTitle>Group</CardTitle>
-                  <CardDescription>Настройка группировки</CardDescription>
+                  <CardTitle>
+                    {String(t('datasets.sql-builder.card.group.title', 'Group'))}
+                  </CardTitle>
+                  <CardDescription>
+                    {String(
+                      t('datasets.sql-builder.card.group.description', 'Настройка группировки')
+                    )}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <GroupEditor suggestions={suggestionKeys} value={group} onChange={setGroup} />
@@ -307,8 +356,17 @@ export function SqlBuilderDataset({ config, ...props }: SqlBuilderProps) {
             <TabsContent value="hawing">
               <Card>
                 <CardHeader>
-                  <CardTitle>Hawing</CardTitle>
-                  <CardDescription>Настройка условий группировок</CardDescription>
+                  <CardTitle>
+                    {String(t('datasets.sql-builder.card.hawing.title', 'Hawing'))}
+                  </CardTitle>
+                  <CardDescription>
+                    {String(
+                      t(
+                        'datasets.sql-builder.card.hawing.description',
+                        'Настройка условий группировок'
+                      )
+                    )}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="max-h-72 max-w-full overflow-scroll">
@@ -328,10 +386,12 @@ export function SqlBuilderDataset({ config, ...props }: SqlBuilderProps) {
         <DialogFooter className="items-center">
           {isLoading && <Spinner />}
           <DialogClose asChild>
-            <Button variant="outline">Закрыть</Button>
+            <Button variant="outline">
+              {String(t('datasets.sql-builder.closeBtnName', 'Закрыть'))}
+            </Button>
           </DialogClose>
           <Button type="submit" onClick={handleSave}>
-            {props.saveBtnName || 'Добавить'}
+            {props.saveBtnName || String(t('datasets.sql-builder.addBtnName', 'Добавить'))}
           </Button>
         </DialogFooter>
       </DialogContent>

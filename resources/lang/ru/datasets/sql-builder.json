@@ -1,0 +1,31 @@
+{
+  "name": "Редактор запроса",
+  "closeBtnName": "Закрыть",
+  "saveBtnName": "Добавить",
+  "card": {
+    "titlePrefix": "Редактор запроса -",
+    "connectionPrefix": "Подключение № ",
+    "descriptionSelect": "Настройка выборки",
+    "descriptionOrder": "Настройка сортировки",
+    "descriptionJoins": "Настройка связанных таблиц",
+    "descriptionWhere": "Настройка фильтров",
+    "descriptionGroup": "Настройка группировки",
+    "descriptionHaving": "Настройка условий группировок",
+    "deleteBtnName": "Удалить",
+    "settingsBtnName": "Настройки",
+    "prevBtnName": "Назад",
+    "nextBtnName": "Вперед",
+    "pagePrefix": "Стр."
+  },
+  "tableLabel": "Таблица",
+  "aliasLabel": "Алиас",
+  "noTablesFound": "Для выбранных подключений таблицы не найдены.",
+  "tabs": {
+    "selects": "select",
+    "order": "order",
+    "joins": "joins",
+    "where": "where",
+    "group": "group",
+    "hawing": "hawing"
+  }
+}

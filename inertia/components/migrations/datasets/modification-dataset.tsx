@@ -33,6 +33,7 @@ import {
   ModificationConfig,
 } from '#interfaces/modification_config'
 import { ScrollArea } from '~/components/ui/scroll-area'
+import { useI18n } from '~/hooks/useI18nLocal'
 
 export type ModificationDatasetProps = {
   children?: React.ReactNode
@@ -46,6 +47,7 @@ export type ModificationDatasetProps = {
 }
 
 export function ModificationDataset(props: ModificationDatasetProps) {
+  const { t } = useI18n()
   const initial = props.config
 
   const [open, setOpen] = useState(false)
@@ -215,15 +217,24 @@ export function ModificationDataset(props: ModificationDatasetProps) {
       <DialogTrigger asChild>{props.children}</DialogTrigger>
       <DialogContent className="w-[95vw] sm:max-w-xl md:max-w-2xl lg:max-w-3xl xl:max-w-4xl max-h-[85vh] overflow-hidden p-4">
         <DialogHeader>
-          <DialogTitle>Модификация датасета</DialogTitle>
+          <DialogTitle>
+            {String(t('datasets.modification.dialogTitle', 'Модификация датасета'))}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
           <Field>
-            <FieldLabel>Датасет</FieldLabel>
+            <FieldLabel>{String(t('datasets.modification.datasetLabel', 'Датасет'))}</FieldLabel>
             <Select value={datasetId} onValueChange={setDatasetId}>
-              <SelectTrigger className="min-w-40 h-8" title="Датасет">
-                <SelectValue placeholder="Выберите датасет" />
+              <SelectTrigger
+                className="min-w-40 h-8"
+                title={String(t('datasets.modification.datasetLabel', 'Датасет'))}
+              >
+                <SelectValue
+                  placeholder={String(
+                    t('datasets.modification.selectPlaceholder', 'Выберите датасет')
+                  )}
+                />
               </SelectTrigger>
               <SelectContent>
                 {datasets.length > 0 ? (
@@ -234,24 +245,38 @@ export function ModificationDataset(props: ModificationDatasetProps) {
                   ))
                 ) : (
                   <SelectItem value="__no_datasets__" disabled>
-                    Нет вариантов
+                    {String(t('datasets.modification.noOptions', 'Нет вариантов'))}
                   </SelectItem>
                 )}
               </SelectContent>
             </Select>
-            {!datasetId.trim() && <FieldError>Укажите идентификатор датасета</FieldError>}
+            {!datasetId.trim() && (
+              <FieldError>
+                {String(
+                  t('datasets.modification.fieldErrorDatasetId', 'Укажите идентификатор датасета')
+                )}
+              </FieldError>
+            )}
           </Field>
 
           <Tabs defaultValue="new" className="w-full">
             <TabsList>
-              <TabsTrigger value="new">Добавить</TabsTrigger>
-              <TabsTrigger value="rename">Переименовать</TabsTrigger>
-              <TabsTrigger value="drop">Удалить</TabsTrigger>
+              <TabsTrigger value="new">
+                {String(t('datasets.modification.tabs.new', 'Добавить'))}
+              </TabsTrigger>
+              <TabsTrigger value="rename">
+                {String(t('datasets.modification.tabs.rename', 'Переименовать'))}
+              </TabsTrigger>
+              <TabsTrigger value="drop">
+                {String(t('datasets.modification.tabs.drop', 'Удалить'))}
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="new" className="mt-3">
               <Field>
-                <FieldLabel>Новые колонки</FieldLabel>
+                <FieldLabel>
+                  {String(t('datasets.modification.newColumnsLabel', 'Новые колонки'))}
+                </FieldLabel>
                 <div className="space-y-2 py-2">
                   {newColumns.map((col, idx) => (
                     <div key={idx} className="space-y-2">
@@ -269,7 +294,7 @@ export function ModificationDataset(props: ModificationDatasetProps) {
                             size="sm"
                             onClick={() => setActiveNewIdx(null)}
                           >
-                            Скрыть
+                            {String(t('datasets.modification.hideBtnName', 'Скрыть'))}
                           </Button>
                         ) : (
                           <Button
@@ -278,14 +303,16 @@ export function ModificationDataset(props: ModificationDatasetProps) {
                             size="sm"
                             onClick={() => setActiveNewIdx(idx)}
                           >
-                            Редактировать
+                            {String(t('datasets.modification.editBtnName', 'Редактировать'))}
                           </Button>
                         )}
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon"
-                          title="Удалить колонку"
+                          title={String(
+                            t('datasets.modification.deleteColumnTitle', 'Удалить колонку')
+                          )}
                           onClick={() => removeNewColumn(idx)}
                           className="h-7 w-7"
                         >
@@ -307,14 +334,17 @@ export function ModificationDataset(props: ModificationDatasetProps) {
                 </div>
 
                 <Button type="button" variant="outline" onClick={addNewColumn}>
-                  <PlusIcon className="mr-1" /> Добавить колонку
+                  <PlusIcon className="mr-1" />{' '}
+                  {String(t('datasets.modification.addColumnBtnName', 'Добавить колонку'))}
                 </Button>
               </Field>
             </TabsContent>
 
             <TabsContent value="rename" className="mt-3">
               <Field>
-                <FieldLabel>Переименовать колонки</FieldLabel>
+                <FieldLabel>
+                  {String(t('datasets.modification.renameColumnsLabel', 'Переименовать колонки'))}
+                </FieldLabel>
                 <div className="max-h-72 max-w-full overflow-scroll">
                   <ScrollArea>
                     <div className="space-y-2 py-2">
@@ -324,8 +354,17 @@ export function ModificationDataset(props: ModificationDatasetProps) {
                             value={p.from}
                             onValueChange={(v) => patchRenamePair(idx, { from: v })}
                           >
-                            <SelectTrigger className="min-w-40 h-8" title="Старая колонка">
-                              <SelectValue placeholder="old_name" />
+                            <SelectTrigger
+                              className="min-w-40 h-8"
+                              title={String(
+                                t('datasets.modification.oldColumnLabel', 'Старая колонка')
+                              )}
+                            >
+                              <SelectValue
+                                placeholder={String(
+                                  t('datasets.modification.oldNamePlaceholder', 'old_name')
+                                )}
+                              />
                             </SelectTrigger>
                             <SelectContent>
                               {availableColumns.length > 0 ? (
@@ -336,13 +375,15 @@ export function ModificationDataset(props: ModificationDatasetProps) {
                                 ))
                               ) : (
                                 <SelectItem value="__no_columns__" disabled>
-                                  Нет колонок
+                                  {String(t('datasets.modification.noColumns', 'Нет колонок'))}
                                 </SelectItem>
                               )}
                             </SelectContent>
                           </Select>
                           <Input
-                            placeholder="new_name"
+                            placeholder={String(
+                              t('datasets.modification.newNamePlaceholder', 'new_name')
+                            )}
                             value={p.to}
                             onChange={(e) => patchRenamePair(idx, { to: e.target.value })}
                             className="h-8"
@@ -352,7 +393,7 @@ export function ModificationDataset(props: ModificationDatasetProps) {
                             variant="ghost"
                             size="icon"
                             onClick={() => removeRenamePair(idx)}
-                            title="Удалить"
+                            title={String(t('datasets.modification.deleteTitle', 'Удалить'))}
                             className="h-7 w-7"
                           >
                             <TrashIcon className="h-4 w-4" />
@@ -364,14 +405,17 @@ export function ModificationDataset(props: ModificationDatasetProps) {
                 </div>
 
                 <Button type="button" variant="outline" onClick={addRenamePair}>
-                  <PlusIcon className="mr-1" /> Добавить переименование
+                  <PlusIcon className="mr-1" />{' '}
+                  {String(t('datasets.modification.addRenameBtnName', 'Добавить переименование'))}
                 </Button>
               </Field>
             </TabsContent>
 
             <TabsContent value="drop" className="mt-3">
               <Field>
-                <FieldLabel>Удалить колонки</FieldLabel>
+                <FieldLabel>
+                  {String(t('datasets.modification.dropColumnsLabel', 'Удалить колонки'))}
+                </FieldLabel>
                 <div className="max-h-48 max-w-full overflow-scroll border rounded-md p-2">
                   <ScrollArea>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 py-1">
@@ -394,7 +438,9 @@ export function ModificationDataset(props: ModificationDatasetProps) {
                           </label>
                         ))
                       ) : (
-                        <div className="text-sm text-muted-foreground">Нет колонок</div>
+                        <div className="text-sm text-muted-foreground">
+                          {String(t('datasets.modification.noColumns', 'Нет колонок'))}
+                        </div>
                       )}
                     </div>
                   </ScrollArea>
@@ -406,7 +452,7 @@ export function ModificationDataset(props: ModificationDatasetProps) {
                     onClick={() => setBulkDropSelection(dropOptions)}
                     disabled={dropOptions.length === 0}
                   >
-                    Выделить все
+                    {String(t('datasets.modification.selectAllBtnName', 'Выделить все'))}
                   </Button>
                   <Button
                     type="button"
@@ -420,7 +466,7 @@ export function ModificationDataset(props: ModificationDatasetProps) {
                     }}
                     disabled={bulkDropSelection.length === 0}
                   >
-                    Добавить выбранные
+                    {String(t('datasets.modification.addSelectedBtnName', 'Добавить выбранные'))}
                   </Button>
                   <Button
                     type="button"
@@ -428,7 +474,7 @@ export function ModificationDataset(props: ModificationDatasetProps) {
                     onClick={() => setDropColumns([])}
                     disabled={dropColumns.length === 0}
                   >
-                    Очистить список
+                    {String(t('datasets.modification.clearListBtnName', 'Очистить список'))}
                   </Button>
                 </div>
                 <div className="max-h-72 max-w-full overflow-scroll">
@@ -445,7 +491,7 @@ export function ModificationDataset(props: ModificationDatasetProps) {
                             variant="ghost"
                             size="icon"
                             onClick={() => removeDropColumn(idx)}
-                            title="Удалить"
+                            title={String(t('datasets.modification.deleteTitle', 'Удалить'))}
                             className="h-7 w-7"
                           >
                             <TrashIcon className="h-4 w-4" />
@@ -462,10 +508,12 @@ export function ModificationDataset(props: ModificationDatasetProps) {
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="secondary">Закрыть</Button>
+            <Button variant="secondary">
+              {String(t('datasets.modification.closeBtnName', 'Закрыть'))}
+            </Button>
           </DialogClose>
           <Button onClick={handleSave} disabled={props.isLoading || !datasetId.trim()}>
-            {props.saveBtnName || 'Сохранить'}
+            {props.saveBtnName || String(t('datasets.modification.saveBtnName', 'Сохранить'))}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -486,6 +534,7 @@ function ColumnValueEditor({
   columns?: string[]
   params?: string[]
 }) {
+  const { t } = useI18n()
   const type = value.type
 
   const setType = (t: ColumnValue['type']) => {
@@ -529,15 +578,31 @@ function ColumnValueEditor({
         <div className="flex justify-between">
           <Select value={type} onValueChange={(t) => setType(t as ColumnValue['type'])}>
             <SelectTrigger className="min-w-40 h-8">
-              <SelectValue placeholder="Тип значения" />
+              <SelectValue
+                placeholder={String(
+                  t('datasets.modification.valueTypePlaceholder', 'Тип значения')
+                )}
+              />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="reference">ссылка</SelectItem>
-              <SelectItem value="literal">литерал</SelectItem>
-              <SelectItem value="template">шаблон</SelectItem>
-              <SelectItem value="expression">выражение</SelectItem>
-              <SelectItem value="function" disabled title="Скоро">
-                функция (скоро)
+              <SelectItem value="reference">
+                {String(t('datasets.modification.reference', 'ссылка'))}
+              </SelectItem>
+              <SelectItem value="literal">
+                {String(t('datasets.modification.literal', 'литерал'))}
+              </SelectItem>
+              <SelectItem value="template">
+                {String(t('datasets.modification.template', 'шаблон'))}
+              </SelectItem>
+              <SelectItem value="expression">
+                {String(t('datasets.modification.expression', 'выражение'))}
+              </SelectItem>
+              <SelectItem
+                value="function"
+                disabled
+                title={String(t('datasets.modification.soon', 'Скоро'))}
+              >
+                {String(t('datasets.modification.function', 'функция (скоро)'))}
               </SelectItem>
             </SelectContent>
           </Select>
@@ -546,7 +611,7 @@ function ColumnValueEditor({
             type="button"
             variant="ghost"
             size="icon"
-            title="Удалить"
+            title={String(t('datasets.modification.deleteTitle', 'Удалить'))}
             onClick={onRemove}
             className="h-7 w-7"
           >
@@ -560,8 +625,15 @@ function ColumnValueEditor({
               value={(value as ColumnReference).value as string}
               onValueChange={(v) => setReferenceValue(v)}
             >
-              <SelectTrigger className="min-w-40 h-8" title="column name">
-                <SelectValue placeholder="column name" />
+              <SelectTrigger
+                className="min-w-40 h-8"
+                title={String(t('datasets.modification.columnNameTitle', 'column name'))}
+              >
+                <SelectValue
+                  placeholder={String(
+                    t('datasets.modification.columnNamePlaceholder', 'column name')
+                  )}
+                />
               </SelectTrigger>
               <SelectContent>
                 {columns.map((c) => (
@@ -573,7 +645,7 @@ function ColumnValueEditor({
             </Select>
           ) : (
             <Input
-              placeholder="column name"
+              placeholder={String(t('datasets.modification.columnNamePlaceholder', 'column name'))}
               value={(value as ColumnReference).value as string}
               onChange={(e) => setReferenceValue(e.target.value)}
               className="h-8"
@@ -582,7 +654,9 @@ function ColumnValueEditor({
 
         {type === 'literal' && (
           <Input
-            placeholder="string | number | boolean"
+            placeholder={String(
+              t('datasets.modification.literalPlaceholder', 'string | number | boolean')
+            )}
             value={String((value as ColumnLiteral).value ?? '')}
             onChange={(e) => setLiteralValue(e.target.value)}
             className="h-8"
@@ -608,7 +682,11 @@ function ColumnValueEditor({
 
         {type === 'function' && (
           <div className="flex flex-col gap-2 w-full">
-            <div className="text-sm text-muted-foreground">Поддержка функций появится скоро.</div>
+            <div className="text-sm text-muted-foreground">
+              {String(
+                t('datasets.modification.functionsSoon', 'Поддержка функций появится скоро.')
+              )}
+            </div>
           </div>
         )}
       </ItemContent>

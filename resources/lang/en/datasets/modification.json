@@ -1,0 +1,29 @@
+{
+  "name": "Modification",
+  "closeBtnName": "Close",
+  "saveBtnName": "Save",
+  "card": {
+    "titlePrefix": "Modification -",
+    "datasetPrefix": "Dataset #",
+    "newColumnsLabel": "New columns",
+    "dropColumnsLabel": "Drop columns",
+    "renameLabel": "Renames",
+    "deleteBtnName": "Delete",
+    "settingsBtnName": "Settings",
+    "prevBtnName": "Back",
+    "nextBtnName": "Next",
+    "pagePrefix": "Page"
+  },
+  "datasetLabel": "Dataset",
+  "selectPlaceholder": "Select dataset",
+  "datasetErrorRequired": "Provide dataset identifier",
+  "tabs": {
+    "add": "Add",
+    "rename": "Rename",
+    "drop": "Drop"
+  },
+  "addTitle": "Added columns",
+  "renameTitle": "Renamed columns",
+  "deletedTitle": "Deleted columns",
+  "deleteItemTitle": "Delete"
+}

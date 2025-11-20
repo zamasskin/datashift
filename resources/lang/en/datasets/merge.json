@@ -1,0 +1,26 @@
+{
+  "name": "Merge",
+  "closeBtnName": "Close",
+  "saveBtnName": "Save",
+  "description": "Left dataset is joined with right by rules",
+  "card": {
+    "titlePrefix": "Merge -",
+    "leftDatasetLabel": "Left dataset",
+    "rightDatasetLabel": "Right dataset",
+    "onLabel": "Join rules",
+    "deleteBtnName": "Delete",
+    "settingsBtnName": "Settings",
+    "prevBtnName": "Back",
+    "nextBtnName": "Next",
+    "pagePrefix": "Page"
+  },
+  "selectPlaceholder": "Select dataset",
+  "noOptions": "No options",
+  "leftFieldPlaceholder": "left field (e.g. data.id)",
+  "rightFieldPlaceholder": "right field (e.g. people.id)",
+  "operatorLabel": "Operator",
+  "operatorPlaceholder": "operator",
+  "condLabel": "Condition",
+  "addRuleBtnName": "Add rule",
+  "deleteRuleTitle": "Delete rule"
+}

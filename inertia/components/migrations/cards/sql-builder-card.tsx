@@ -10,6 +10,7 @@ import { SqlBuilderDataset } from '../datasets/sql-builder-dataset'
 import { Button } from '~/components/ui/button'
 import { ChevronLeft, ChevronRight, Settings, Trash } from 'lucide-react'
 import { SqlBuilderConfig } from '#interfaces/sql_builder_config'
+import { useI18n } from '~/hooks/useI18nLocal'
 
 export interface SqlBuilderCardProps {
   config?: SqlBuilderConfig
@@ -30,6 +31,7 @@ export function SqlBuilderCard({
   page = 1,
   onChangePage,
 }: SqlBuilderCardProps) {
+  const { t } = useI18n()
   const formatJoinOn = (
     on?: { tableColumn: string; aliasColumn: string; operator: string; cond?: 'and' | 'or' }[]
   ) => {
@@ -164,17 +166,20 @@ export function SqlBuilderCard({
         </ItemMedia>
         <ItemContent>
           <ItemTitle className="line-clamp-1">
-            Редактор запроса - <span className="text-muted-foreground">{config?.id}</span>
+            {String(t('datasets.sql-builder.card.titlePrefix', 'Редактор запроса -'))}{' '}
+            <span className="text-muted-foreground">{config?.id}</span>
           </ItemTitle>
           <ItemDescription>
             <span className="inline-flex items-center rounded border px-2 py-0.5 text-xs text-muted-foreground">
-          Подключение № {config?.params?.sourceId}
+              {String(t('datasets.sql-builder.card.connectionPrefix', 'Подключение № '))}
+              {config?.params?.sourceId}
             </span>
           </ItemDescription>
           <ItemDescription className="line-clamp-none">
             <div className="text-xs text-muted-foreground space-y-0.5">
               <div>
-                Таблица: <span className="font-medium">{config?.params?.table}</span>{' '}
+                {String(t('datasets.sql-builder.tableLabel', 'Таблица'))}:{' '}
+                <span className="font-medium">{config?.params?.table}</span>{' '}
                 {config?.params?.alias && (
                   <>
                     AS <span className="font-medium">{config?.params?.alias}</span>
@@ -182,10 +187,19 @@ export function SqlBuilderCard({
                 )}
               </div>
               {config?.params?.selects?.length ? (
-                <div>· Поля: {renderSelectsSummary(config?.params?.selects)}</div>
+                <div>
+                  · {String(t('datasets.sql-builder.card.descriptionSelect', 'Настройка выборки'))}:{' '}
+                  {renderSelectsSummary(config?.params?.selects)}
+                </div>
               ) : null}
               {config?.params?.joins?.length ? (
-                <div>· Join: {renderJoinsSummary(config?.params?.joins, 9999)}</div>
+                <div>
+                  ·{' '}
+                  {String(
+                    t('datasets.sql-builder.card.descriptionJoins', 'Настройка связанных таблиц')
+                  )}
+                  : {renderJoinsSummary(config?.params?.joins, 9999)}
+                </div>
               ) : null}
               {hasWhereContent(config?.params?.where) ? (
                 <div>· WHERE: {renderWhereSummaryFull(config?.params?.where)}</div>
@@ -194,10 +208,18 @@ export function SqlBuilderCard({
                 <div>· HAVING: {renderWhereSummaryFull(config?.params?.hawing)}</div>
               ) : null}
               {config?.params?.orders?.length ? (
-                <div>· Сортировки: {renderOrdersSummary(config?.params?.orders)}</div>
+                <div>
+                  ·{' '}
+                  {String(t('datasets.sql-builder.card.descriptionOrder', 'Настройка сортировки'))}:{' '}
+                  {renderOrdersSummary(config?.params?.orders)}
+                </div>
               ) : null}
               {config?.params?.group?.length ? (
-                <div>· Группировок: {renderGroupSummary(config?.params?.group)}</div>
+                <div>
+                  ·{' '}
+                  {String(t('datasets.sql-builder.card.descriptionGroup', 'Настройка группировки'))}
+                  : {renderGroupSummary(config?.params?.group)}
+                </div>
               ) : null}
             </div>
           </ItemDescription>
@@ -205,7 +227,7 @@ export function SqlBuilderCard({
         <ItemFooter>
           <div className="flex items-center gap-2">
             <Button
-              aria-label="Предыдущая страница"
+              aria-label={String(t('datasets.sql-builder.card.prevBtnName', 'Назад'))}
               size="icon"
               variant="ghost"
               disabled={isLoading || (page || 1) <= 1}
@@ -213,9 +235,11 @@ export function SqlBuilderCard({
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <span className="text-xs text-muted-foreground">Стр. {page || 1}</span>
+            <span className="text-xs text-muted-foreground">
+              {String(t('datasets.sql-builder.card.pagePrefix', 'Стр.'))} {page || 1}
+            </span>
             <Button
-              aria-label="Следующая страница"
+              aria-label={String(t('datasets.sql-builder.card.nextBtnName', 'Вперед'))}
               size="icon"
               variant="ghost"
               disabled={isLoading}
@@ -225,17 +249,26 @@ export function SqlBuilderCard({
             </Button>
           </div>
           <div className="flex items-center gap-2">
-            <Button aria-label="Удалить" size="icon" variant="outline" onClick={handleRemove}>
+            <Button
+              aria-label={String(t('datasets.sql-builder.card.deleteBtnName', 'Удалить'))}
+              size="icon"
+              variant="outline"
+              onClick={handleRemove}
+            >
               <Trash className="h-4 w-4" />
             </Button>
             <SqlBuilderDataset
               isLoading={isLoading}
               suggestions={suggestions}
               onSave={onSave}
-              saveBtnName="Сохранить"
+              saveBtnName={String(t('datasets.sql-builder.saveBtnName', 'Сохранить'))}
               config={config}
             >
-              <Button aria-label="Настройки" size="icon" variant="outline">
+              <Button
+                aria-label={String(t('datasets.sql-builder.card.settingsBtnName', 'Настройки'))}
+                size="icon"
+                variant="outline"
+              >
                 <Settings className="h-4 w-4" />
               </Button>
             </SqlBuilderDataset>

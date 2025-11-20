@@ -24,6 +24,7 @@ import {
 import { MergeConfig, MergeOn } from '#interfaces/merge_config'
 import { FetchConfigMeta } from '#interfaces/fetchсonfigs'
 import _ from 'lodash'
+import { useI18n } from '~/hooks/useI18nLocal'
 
 export type MergeDatasetProps = {
   children?: React.ReactNode
@@ -37,6 +38,7 @@ export type MergeDatasetProps = {
 }
 
 export function MergeDataset(props: MergeDatasetProps) {
+  const { t } = useI18n()
   const operators = ['=', '!=', '<', '<=', '>', '>='] as const
   const conds = ['and', 'or'] as const
 
@@ -117,9 +119,14 @@ export function MergeDataset(props: MergeDatasetProps) {
       <DialogTrigger asChild>{props.children}</DialogTrigger>
       <DialogContent className="w-[95vw] sm:max-w-xl md:max-w-2xl lg:max-w-3xl xl:max-w-4xl max-h-[85vh] overflow-hidden p-4">
         <DialogHeader>
-          <DialogTitle>Объединение</DialogTitle>
+          <DialogTitle>{String(t('datasets.merge.name', 'Объединение'))}</DialogTitle>
           <DialogDescription>
-            Укажите датасеты, которые нужно объединить по заданным правилам соответствия полей.
+            {String(
+              t(
+                'datasets.merge.description',
+                'Укажите датасеты, которые нужно объединить по заданным правилам соответствия полей.'
+              )
+            )}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
@@ -128,10 +135,19 @@ export function MergeDataset(props: MergeDatasetProps) {
             <ItemContent>
               <div className="grid md:grid-cols-2 gap-2">
                 <Field>
-                  <FieldLabel>Левый датасет</FieldLabel>
+                  <FieldLabel>
+                    {String(t('datasets.merge.card.leftDatasetLabel', 'Левый датасет'))}
+                  </FieldLabel>
                   <Select value={datasetLeftId} onValueChange={setDatasetLeftId}>
-                    <SelectTrigger className="min-w-40 h-8" title="Левый датасет">
-                      <SelectValue placeholder="Выберите датасет" />
+                    <SelectTrigger
+                      className="min-w-40 h-8"
+                      title={String(t('datasets.merge.card.leftDatasetLabel', 'Левый датасет'))}
+                    >
+                      <SelectValue
+                        placeholder={String(
+                          t('datasets.merge.selectPlaceholder', 'Выберите датасет')
+                        )}
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       {datasets.length > 0 ? (
@@ -142,7 +158,7 @@ export function MergeDataset(props: MergeDatasetProps) {
                         ))
                       ) : (
                         <SelectItem value="" disabled>
-                          Нет вариантов
+                          {String(t('datasets.merge.noOptions', 'Нет вариантов'))}
                         </SelectItem>
                       )}
                     </SelectContent>
@@ -150,10 +166,19 @@ export function MergeDataset(props: MergeDatasetProps) {
                 </Field>
 
                 <Field>
-                  <FieldLabel>Правый датасет</FieldLabel>
+                  <FieldLabel>
+                    {String(t('datasets.merge.card.rightDatasetLabel', 'Правый датасет'))}
+                  </FieldLabel>
                   <Select value={datasetRightId} onValueChange={setDatasetRightId}>
-                    <SelectTrigger className="min-w-40 h-8" title="Правый датасет">
-                      <SelectValue placeholder="Выберите датасет" />
+                    <SelectTrigger
+                      className="min-w-40 h-8"
+                      title={String(t('datasets.merge.card.rightDatasetLabel', 'Правый датасет'))}
+                    >
+                      <SelectValue
+                        placeholder={String(
+                          t('datasets.merge.selectPlaceholder', 'Выберите датасет')
+                        )}
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       {datasets.length > 0 ? (
@@ -164,7 +189,7 @@ export function MergeDataset(props: MergeDatasetProps) {
                         ))
                       ) : (
                         <SelectItem value="" disabled>
-                          Нет вариантов
+                          {String(t('datasets.merge.noOptions', 'Нет вариантов'))}
                         </SelectItem>
                       )}
                     </SelectContent>
@@ -190,7 +215,12 @@ export function MergeDataset(props: MergeDatasetProps) {
                             next[idx] = { ...next[idx], tableColumn: value }
                             setRules(next)
                           }}
-                          placeholder="поле слева (например: users.id)"
+                          placeholder={String(
+                            t(
+                              'datasets.merge.leftFieldPlaceholder',
+                              'поле слева (например: users.id)'
+                            )
+                          )}
                         />
 
                         <Select
@@ -204,8 +234,15 @@ export function MergeDataset(props: MergeDatasetProps) {
                             setRules(next)
                           }}
                         >
-                          <SelectTrigger className="min-w-24 h-8" title="Оператор">
-                            <SelectValue placeholder="оператор" />
+                          <SelectTrigger
+                            className="min-w-24 h-8"
+                            title={String(t('datasets.merge.operatorLabel', 'Оператор'))}
+                          >
+                            <SelectValue
+                              placeholder={String(
+                                t('datasets.merge.operatorPlaceholder', 'оператор')
+                              )}
+                            />
                           </SelectTrigger>
                           <SelectContent>
                             {operators.map((op) => (
@@ -224,7 +261,12 @@ export function MergeDataset(props: MergeDatasetProps) {
                             next[idx] = { ...next[idx], aliasColumn: value }
                             setRules(next)
                           }}
-                          placeholder="поле справа (например: orders.user_id)"
+                          placeholder={String(
+                            t(
+                              'datasets.merge.rightFieldPlaceholder',
+                              'поле справа (например: orders.user_id)'
+                            )
+                          )}
                         />
 
                         <div className="flex items-center gap-2">
@@ -239,7 +281,10 @@ export function MergeDataset(props: MergeDatasetProps) {
                               setRules(next)
                             }}
                           >
-                            <SelectTrigger className="min-w-24 h-8" title="Связка">
+                            <SelectTrigger
+                              className="min-w-24 h-8"
+                              title={String(t('datasets.merge.condLabel', 'Условие'))}
+                            >
                               <SelectValue placeholder="and/or" />
                             </SelectTrigger>
                             <SelectContent>
@@ -251,7 +296,7 @@ export function MergeDataset(props: MergeDatasetProps) {
                           <Button
                             variant="ghost"
                             size="icon"
-                            title="Удалить правило"
+                            title={String(t('datasets.merge.deleteRuleTitle', 'Удалить правило'))}
                             onClick={() => {
                               const next = rules.filter((_, i) => i !== idx)
                               setRules(next)
@@ -276,16 +321,20 @@ export function MergeDataset(props: MergeDatasetProps) {
                 setRules([...rules, { tableColumn: '', aliasColumn: '', operator: '=' }])
               }}
             >
-              <PlusIcon /> Добавить правило
+              <PlusIcon /> {String(t('datasets.merge.addRuleBtnName', 'Добавить правило'))}
             </Button>
           </div>
 
           {/* Действия */}
           <div className="flex gap-2">
             <DialogClose asChild>
-              <Button variant="outline">Закрыть</Button>
+              <Button variant="outline">
+                {String(t('datasets.merge.closeBtnName', 'Закрыть'))}
+              </Button>
             </DialogClose>
-            <Button onClick={handleSave}>{props.saveBtnName || 'Сохранить'}</Button>
+            <Button onClick={handleSave}>
+              {props.saveBtnName || String(t('datasets.merge.saveBtnName', 'Сохранить'))}
+            </Button>
           </div>
         </div>
       </DialogContent>

@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '~/components/ui/select'
+import { useI18n } from '~/hooks/useI18nLocal'
 
 export type OrderItemRecord = Record<string, 'asc' | 'desc'>
 
@@ -20,6 +21,7 @@ export type OrdersEditorProps = {
 }
 
 export function OrdersEditor({ suggestions, value, onChange }: OrdersEditorProps) {
+  const { t } = useI18n()
   const orders = Array.isArray(value) ? value : []
 
   const handleKeyChange = (idx: number, key: string) => {
@@ -56,7 +58,9 @@ export function OrdersEditor({ suggestions, value, onChange }: OrdersEditorProps
                         suggestions={suggestions}
                         value={key}
                         onValueChange={(v) => handleKeyChange(idx, v)}
-                        placeholder="таблица.колонка"
+                        placeholder={String(
+                          t('datasets.sql-builder.fieldPlaceholder', 'таблица.колонка')
+                        )}
                       />
                     </div>
                     <div className="w-[160px]">
@@ -65,11 +69,24 @@ export function OrdersEditor({ suggestions, value, onChange }: OrdersEditorProps
                         onValueChange={(v) => handleDirChange(idx, v as 'asc' | 'desc')}
                       >
                         <SelectTrigger size="sm">
-                          <SelectValue placeholder="направление" />
+                          <SelectValue
+                            placeholder={String(
+                              t(
+                                'datasets.sql-builder.orderEditor.directionPlaceholder',
+                                'направление'
+                              )
+                            )}
+                          />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="asc">По возрастанию</SelectItem>
-                          <SelectItem value="desc">По убыванию</SelectItem>
+                          <SelectItem value="asc">
+                            {String(
+                              t('datasets.sql-builder.orderEditor.ascLabel', 'По возрастанию')
+                            )}
+                          </SelectItem>
+                          <SelectItem value="desc">
+                            {String(t('datasets.sql-builder.orderEditor.descLabel', 'По убыванию'))}
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -83,7 +100,8 @@ export function OrdersEditor({ suggestions, value, onChange }: OrdersEditorProps
                         }
                       }}
                     >
-                      <Trash className="size-4" /> Удалить
+                      <Trash className="size-4" />{' '}
+                      {String(t('datasets.sql-builder.deleteBtnName', 'Удалить'))}
                     </Button>
                   </div>
                 </ItemContent>
@@ -101,7 +119,7 @@ export function OrdersEditor({ suggestions, value, onChange }: OrdersEditorProps
             }
           }}
         >
-          Добавить сортировку
+          {String(t('datasets.sql-builder.orderEditor.addOrderBtnName', 'Добавить сортировку'))}
         </Button>
       </div>
     </div>

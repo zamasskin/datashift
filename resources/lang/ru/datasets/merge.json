@@ -1,0 +1,26 @@
+{
+  "name": "Объединение",
+  "closeBtnName": "Закрыть",
+  "saveBtnName": "Сохранить",
+  "description": "Левый датасет соединяется с правым по правилам",
+  "card": {
+    "titlePrefix": "Объединение -",
+    "leftDatasetLabel": "Левый датасет",
+    "rightDatasetLabel": "Правый датасет",
+    "onLabel": "Правила объединения",
+    "deleteBtnName": "Удалить",
+    "settingsBtnName": "Настройки",
+    "prevBtnName": "Назад",
+    "nextBtnName": "Вперед",
+    "pagePrefix": "Страница"
+  },
+  "selectPlaceholder": "Выберите датасет",
+  "noOptions": "Нет вариантов",
+  "leftFieldPlaceholder": "поле слева (например data.id)",
+  "rightFieldPlaceholder": "поле справа (например people.id)",
+  "operatorLabel": "Оператор",
+  "operatorPlaceholder": "оператор",
+  "condLabel": "Условие",
+  "addRuleBtnName": "Добавить правило",
+  "deleteRuleTitle": "Удалить правило"
+}
