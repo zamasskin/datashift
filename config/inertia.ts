@@ -46,6 +46,43 @@ const inertiaConfig = defineConfig({
       })
     },
     locale: (ctx) => ctx.inertia.always(() => ctx.i18n.locale),
+    layoutMessages: (ctx) =>
+      ctx.inertia.always(() => ({
+        brand: ctx.i18n.t('layout.brand'),
+        loginLink: ctx.i18n.t('layout.loginLink'),
+        footerCopyright: ctx.i18n.t('layout.footer.copyright', {
+          year: new Date().getFullYear(),
+        }),
+        root: {
+          nav: {
+            sources: ctx.i18n.t('layout.root.nav.sources'),
+            datasets: ctx.i18n.t('layout.root.nav.datasets'),
+            migrations: ctx.i18n.t('layout.root.nav.migrations'),
+            tasks: ctx.i18n.t('layout.root.nav.tasks'),
+          },
+          createMenu: {
+            source: ctx.i18n.t('layout.root.createMenu.source'),
+            dataset: ctx.i18n.t('layout.root.createMenu.dataset'),
+            migration: ctx.i18n.t('layout.root.createMenu.migration'),
+            task: ctx.i18n.t('layout.root.createMenu.task'),
+          },
+          settingsMenu: {
+            trigger: ctx.i18n.t('layout.root.settingsMenu.trigger'),
+            security: ctx.i18n.t('layout.root.settingsMenu.security'),
+            users: ctx.i18n.t('layout.root.settingsMenu.users'),
+            user: ctx.i18n.t('layout.root.settingsMenu.user'),
+            profile: ctx.i18n.t('layout.root.settingsMenu.profile'),
+            logout: ctx.i18n.t('layout.root.settingsMenu.logout'),
+          },
+          secondary: {
+            help: ctx.i18n.t('layout.root.secondary.help'),
+            search: ctx.i18n.t('layout.root.secondary.search'),
+          },
+          running: {
+            showAll: ctx.i18n.t('layout.root.running.showAll'),
+          },
+        },
+      })),
   },
 
   /**

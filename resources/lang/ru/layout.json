@@ -1,0 +1,36 @@
+{
+  "brand": "Datashift",
+  "loginLink": "Войти",
+  "footer": {
+    "copyright": "© {year} Datashift"
+  },
+  "root": {
+    "nav": {
+      "sources": "Подключения",
+      "datasets": "Датасеты",
+      "migrations": "Миграции",
+      "tasks": "Задания"
+    },
+    "createMenu": {
+      "source": "Подключение",
+      "dataset": "Датасет",
+      "migration": "Миграцию",
+      "task": "Задание"
+    },
+    "settingsMenu": {
+      "trigger": "Настройки",
+      "security": "Безопасность",
+      "users": "Пользователи",
+      "user": "Пользователь",
+      "profile": "Профиль",
+      "logout": "Выйти"
+    },
+    "secondary": {
+      "help": "Помощь",
+      "search": "Поиск"
+    },
+    "running": {
+      "showAll": "Показать все"
+    }
+  }
+}

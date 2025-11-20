@@ -22,45 +22,63 @@ import { RunningIndicators } from './running-indicators'
 import User from '#models/user'
 import { ChevronRight, CloudFog, Plug } from 'lucide-react'
 
-const nawMain = [
-  {
-    title: 'Миграции',
-    url: '/migrations',
-    icon: <CloudFog />,
-  },
-
-  {
-    title: 'Подключения',
-    url: '/sources',
-    icon: <Plug />,
-  },
-]
-
-const navSecondary = [
-  {
-    title: 'Помощь',
-    url: '/help',
-    icon: IconHelp,
-  },
-  {
-    title: 'Поиск',
-    url: '#',
-    icon: IconSearch,
-  },
-]
-
-const navSecondaryAdmin = [
-  {
-    title: 'Настройки',
-    url: '/settings',
-    icon: IconSettings,
-  },
-  ...navSecondary,
-]
+type LayoutMessages = {
+  brand?: string
+  root?: {
+    nav?: { sources?: string; datasets?: string; migrations?: string; tasks?: string }
+    createMenu?: { source?: string; dataset?: string; migration?: string; task?: string }
+    settingsMenu?: {
+      trigger?: string
+      security?: string
+      users?: string
+      user?: string
+      profile?: string
+      logout?: string
+    }
+    secondary?: { help?: string; search?: string }
+    running?: { showAll?: string }
+  }
+}
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const page = usePage<{ user: User }>()
+  const page = usePage<{ user: User; layoutMessages: LayoutMessages }>()
   const isAdmin = page.props?.user?.role === 'admin'
+  const lm = page.props?.layoutMessages || {}
+  const navMain = [
+    {
+      title: lm.root?.nav?.migrations || 'Миграции',
+      url: '/migrations',
+      icon: <CloudFog />,
+    },
+
+    {
+      title: lm.root?.nav?.sources || 'Подключения',
+      url: '/sources',
+      icon: <Plug />,
+    },
+  ]
+
+  const navSecondary = [
+    {
+      title: lm.root?.secondary?.help || 'Помощь',
+      url: '/help',
+      icon: IconHelp,
+    },
+    {
+      title: lm.root?.secondary?.search || 'Поиск',
+      url: '#',
+      icon: IconSearch,
+    },
+  ]
+
+  const navSecondaryAdmin = [
+    {
+      title: lm.root?.settingsMenu?.trigger || 'Настройки',
+      url: '/settings',
+      icon: IconSettings,
+    },
+    ...navSecondary,
+  ]
 
   const { runnings } = useMigrationRuns()
   return (
@@ -74,7 +92,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <BrandMark className="size-5 text-foreground/80" />
                 </div>
                 <span className="text-foreground text-xl font-semibold tracking-tight">
-                  Datashift
+                  {lm.brand || 'Datashift'}
                 </span>
               </Link>
             </SidebarMenuButton>
@@ -82,7 +100,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={nawMain} />
+        <NavMain items={navMain} />
 
         {/* Индикаторы запущенных процессов */}
         {runnings.length > 0 && (
@@ -90,17 +108,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarGroupContent className="space-y-2">
               <RunningIndicators runnings={runnings.slice(0, 3)} />
               <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Показать все" asChild>
+                <SidebarMenuButton tooltip={lm.root?.running?.showAll || 'Показать все'} asChild>
                   <Link href="/tasks" className="flex items-center gap-2">
                     <ChevronRight />
-                    <span>Показать все</span>
+                    <span>{lm.root?.running?.showAll || 'Показать все'}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarGroupContent>
           </SidebarGroup>
         )}
-
         <NavSecondary items={isAdmin ? navSecondaryAdmin : navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

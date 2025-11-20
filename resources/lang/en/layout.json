@@ -1,0 +1,36 @@
+{
+  "brand": "Datashift",
+  "loginLink": "Login",
+  "footer": {
+    "copyright": "© {year} Datashift"
+  },
+  "root": {
+    "nav": {
+      "sources": "Sources",
+      "datasets": "Datasets",
+      "migrations": "Migrations",
+      "tasks": "Tasks"
+    },
+    "createMenu": {
+      "source": "Source",
+      "dataset": "Dataset",
+      "migration": "Migration",
+      "task": "Task"
+    },
+    "settingsMenu": {
+      "trigger": "Settings",
+      "security": "Security",
+      "users": "Users",
+      "user": "User",
+      "profile": "Profile",
+      "logout": "Logout"
+    },
+    "secondary": {
+      "help": "Help",
+      "search": "Search"
+    },
+    "running": {
+      "showAll": "Show all"
+    }
+  }
+}
