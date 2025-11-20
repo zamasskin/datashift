@@ -1,24 +1,23 @@
-import { Head, usePage } from '@inertiajs/react'
+import { Head } from '@inertiajs/react'
 import { DataTable } from '~/pages/sources/data-table'
 import { RootLayout } from '~/components/root-layout'
 
 import React from 'react'
+import { useI18n } from '~/hooks/useI18nLocal'
 
 const SourcesPage = () => {
-  const { props } = usePage<{ sourcesMessages?: any }>()
-  const m = props.sourcesMessages || {}
+  const { t } = useI18n()
   return (
     <>
-      <Head title={m.title || 'Подключения'} />
+      <Head title={t('sources.title', 'Подключения')} />
       <DataTable />
     </>
   )
 }
 
 function SourcesLayout({ children }: { children: React.ReactNode }) {
-  const { props } = usePage<{ sourcesMessages?: any }>()
-  const m = props.sourcesMessages || {}
-  return <RootLayout title={m.title || 'Подключения'}>{children}</RootLayout>
+  const { t } = useI18n()
+  return <RootLayout title={t('sources.title', 'Подключения')}>{children}</RootLayout>
 }
 
 SourcesPage.layout = (page: React.ReactNode) => {

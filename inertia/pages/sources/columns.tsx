@@ -15,24 +15,7 @@ import { typesIcon } from './config'
 import { Avatar, AvatarImage } from '~/components/ui/avatar'
 import { SourcesDelete } from './functions'
 
-type SourcesMessages = {
-  table?: {
-    name?: string
-    type?: string
-    createdBy?: string
-    createdAt?: string
-    updatedAt?: string
-    ariaSelectAll?: string
-    ariaSelectRow?: string
-  }
-  actions?: {
-    menuAria?: string
-    label?: string
-    edit?: string
-    delete?: string
-    confirmDelete?: string
-  }
-}
+type TFunc = (key: string, fallback?: string) => string
 
 export type Sources = {
   id: number
@@ -44,10 +27,10 @@ export type Sources = {
 
 export const makeColumns = ({
   onEdit,
-  messages,
+  t,
 }: {
   onEdit: (source: DataSource) => void
-  messages: SourcesMessages
+  t: TFunc
 }): ColumnDef<DataSource>[] => [
   {
     id: 'select',
@@ -57,14 +40,14 @@ export const makeColumns = ({
           table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label={messages.table?.ariaSelectAll || 'Select all'}
+        aria-label={t('sources.table.ariaSelectAll', 'Select all')}
       />
     ),
     cell: ({ row }) => (
       <Checkbox
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label={messages.table?.ariaSelectRow || 'Select row'}
+        aria-label={t('sources.table.ariaSelectRow', 'Select row')}
       />
     ),
     enableSorting: false,
@@ -77,14 +60,14 @@ export const makeColumns = ({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">{messages.actions?.menuAria || 'Open menu'}</span>
+              <span className="sr-only">{t('sources.actions.menuAria', 'Open menu')}</span>
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>{messages.actions?.label || 'Actions'}</DropdownMenuLabel>
+            <DropdownMenuLabel>{t('sources.actions.label', 'Actions')}</DropdownMenuLabel>
             <DropdownMenuItem onClick={() => onEdit(row.original)}>
-              <Pencil /> {messages.actions?.edit || 'Изменить'}
+              <Pencil /> {t('sources.actions.edit', 'Изменить')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -92,11 +75,11 @@ export const makeColumns = ({
               onClick={() =>
                 SourcesDelete(
                   [row.original.id],
-                  messages.actions?.confirmDelete || 'Вы точно уверены?'
+                  t('sources.actions.confirmDelete', 'Вы точно уверены?')
                 )
               }
             >
-              <Trash /> {messages.actions?.delete || 'Удалить'}
+              <Trash /> {t('sources.actions.delete', 'Удалить')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -105,11 +88,11 @@ export const makeColumns = ({
   },
   {
     accessorKey: 'name',
-    header: messages.table?.name || 'Имя',
+    header: t('sources.table.name', 'Имя'),
   },
   {
     accessorKey: 'type',
-    header: messages.table?.type || 'Тип',
+    header: t('sources.table.type', 'Тип'),
     cell: ({ row }) => {
       const type = row.original.type
       const icon = typesIcon[type] || ''
@@ -127,17 +110,17 @@ export const makeColumns = ({
   },
   {
     accessorKey: 'createdBy',
-    header: messages.table?.createdBy || 'Создано пользователем',
+    header: t('sources.table.createdBy', 'Создано пользователем'),
     cell: ({ row }) => {
       return row.original.user.fullName
     },
   },
   {
     accessorKey: 'createdAtFormatted',
-    header: messages.table?.createdAt || 'Дата создания',
+    header: t('sources.table.createdAt', 'Дата создания'),
   },
   {
     accessorKey: 'updatedAtFormatted',
-    header: messages.table?.updatedAt || 'Дата обновления',
+    header: t('sources.table.updatedAt', 'Дата обновления'),
   },
 ]

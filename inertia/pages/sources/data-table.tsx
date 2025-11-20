@@ -23,6 +23,7 @@ import { makeColumns } from './columns'
 import { CreateSource } from './new-source'
 import { EditSource } from './edit-source'
 import { SourcesDelete } from './functions'
+import { useI18n } from '~/hooks/useI18nLocal'
 
 export function DataTable() {
   const { props: pageProps } = usePage<{
@@ -30,13 +31,16 @@ export function DataTable() {
     csrfToken: string
     sourcesMessages?: any
   }>()
-  const m = pageProps.sourcesMessages || {}
+  const { t } = useI18n()
 
   const [findTimeout, setFindTimeout] = React.useState<NodeJS.Timeout | null>(null)
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [data, setData] = React.useState<DataSource[]>(pageProps.dataSources)
   const [editOpen, setEditOpen] = React.useState(false)
-  const [editing, setEditing] = React.useState<Pick<DataSource, 'id' | 'name' | 'type' | 'config'> | null>(null)
+  const [editing, setEditing] = React.useState<Pick<
+    DataSource,
+    'id' | 'name' | 'type' | 'config'
+  > | null>(null)
 
   // Синхронизируем состояние таблицы при обновлении props
   React.useEffect(() => {
@@ -50,9 +54,9 @@ export function DataTable() {
           setEditing(src)
           setEditOpen(true)
         },
-        messages: m,
+        t,
       }),
-    [m]
+    [t]
   )
 
   const table = useReactTable({
@@ -68,12 +72,12 @@ export function DataTable() {
   const onSelectedDelete = () => {
     const selectedRows = table.getFilteredSelectedRowModel().rows
     if (selectedRows.length === 0) {
-      alert(m.selection?.noneSelectedAlert || 'Выберите записи для удаления.')
+      alert(t('sources.selection.noneSelectedAlert', 'Выберите записи для удаления.'))
       return
     }
 
     const selectedIds = selectedRows.map((row) => row.original.id)
-    SourcesDelete(selectedIds, m.actions?.confirmDelete || 'Вы точно уверены?')
+    SourcesDelete(selectedIds, t('sources.actions.confirmDelete', 'Вы точно уверены?'))
   }
 
   const onFindChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -96,7 +100,7 @@ export function DataTable() {
           <div>
             <div className="flex items-center">
               <Input
-                placeholder={m.filter?.searchPlaceholder || 'Поиск...'}
+                placeholder={t('sources.filter.searchPlaceholder', 'Поиск...')}
                 onChange={onFindChange}
                 className="max-w-sm"
               />
@@ -108,9 +112,9 @@ export function DataTable() {
                 <Button variant="outline" size="sm">
                   <IconLayoutColumns />
                   <span className="hidden lg:inline">
-                    {m.filter?.columnsConfigure || 'Настроить столбцы'}
+                    {t('sources.filter.columnsConfigure', 'Настроить столбцы')}
                   </span>
-                  <span className="lg:hidden">{m.filter?.columnsShort || 'Столбцы'}</span>
+                  <span className="lg:hidden">{t('sources.filter.columnsShort', 'Столбцы')}</span>
                   <IconChevronDown />
                 </Button>
               </DropdownMenuTrigger>
@@ -170,7 +174,7 @@ export function DataTable() {
               ) : (
                 <TableRow>
                   <TableCell colSpan={columns.length} className="h-24 text-center">
-                    {m.table?.empty || 'Нет ни одного результата.'}
+                    {t('sources.table.empty', 'Нет ни одного результата.')}
                   </TableCell>
                 </TableRow>
               )}
@@ -180,12 +184,13 @@ export function DataTable() {
         <EditSource open={editOpen} onOpenChange={setEditOpen} source={editing} />
         <div className="flex items-center justify-end space-x-2 py-4">
           <div className="text-muted-foreground flex-1 text-sm">
-            {table.getFilteredSelectedRowModel().rows.length} {m.selection?.of || 'из'}{' '}
-            {table.getFilteredRowModel().rows.length} {m.selection?.suffix || 'записи(ей) выбрано.'}
+            {table.getFilteredSelectedRowModel().rows.length} {t('sources.selection.of', 'из')}{' '}
+            {table.getFilteredRowModel().rows.length}{' '}
+            {t('sources.selection.suffix', 'записи(ей) выбрано.')}
           </div>
           <div className="space-x-2">
             <Button variant="destructive" size="sm" onClick={onSelectedDelete}>
-              {m.actions?.bulkDelete || 'Удалить'}
+              {t('sources.actions.bulkDelete', 'Удалить')}
             </Button>
           </div>
         </div>
