@@ -45,12 +45,6 @@ const Home = () => {
       <div className="px-4 space-y-4">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           <StatCard
-            title="Подключения"
-            value={props.counts?.sources ?? '—'}
-            hint="Всего подключений"
-            link={{ href: '/sources', text: 'Открыть' }}
-          />
-          <StatCard
             title="Миграции"
             value={props.counts?.migrations ?? '—'}
             hint={`Активных: ${
@@ -59,6 +53,13 @@ const Home = () => {
                 : '—'
             }`}
             link={{ href: '/migrations', text: 'Открыть' }}
+          />
+
+          <StatCard
+            title="Подключения"
+            value={props.counts?.sources ?? '—'}
+            hint="Всего подключений"
+            link={{ href: '/sources', text: 'Открыть' }}
           />
 
           <StatCard
