@@ -21,6 +21,6 @@ exclude:
 
 # Just the Docs settings
 search_enabled: true
-color_scheme: 'auto'
+color_scheme: 'dark'
 aux_links:
   'GitHub': 'https://github.com/zamasskin/datashift'
