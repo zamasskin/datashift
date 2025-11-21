@@ -1,5 +1,5 @@
 title: DataShift
-description: "Документация по продукту DataShift"
+description: 'Документация по продукту DataShift'
 theme: minima
 markdown: kramdown
 plugins:
@@ -7,8 +7,8 @@ plugins:
 
 # Укажите базовый путь, если сайт публикуется как /<repo>/
 # Например, если ваш репозиторий называется datashift:
-# baseurl: "/datashift"
-url: "https://<username>.github.io"
+baseurl: '/datashift'
+url: 'https://zamasskin.github.io'
 
 # Локализация
 lang: ru
