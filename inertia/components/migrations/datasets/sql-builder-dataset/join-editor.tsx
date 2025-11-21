@@ -75,7 +75,7 @@ export function JoinEditor({
                   <div className="grid md:grid-cols-2 gap-2">
                     <Field>
                       <FieldLabel>
-                        {String(t('datasets.sql-builder.tableLabel', 'Таблица'))}
+                        {`${t('datasets.sql-builder.tableLabel', 'Таблица')}`}
                       </FieldLabel>
                       <FieldContent className="w-full">
                         <TableSelect
@@ -94,7 +94,7 @@ export function JoinEditor({
 
                     <Field>
                       <FieldLabel>
-                        {String(t('datasets.sql-builder.aliasLabel', 'Алиас'))}
+                        {`${t('datasets.sql-builder.aliasLabel', 'Алиас')}`}
                       </FieldLabel>
                       <Input
                         value={item.alias}
@@ -112,7 +112,7 @@ export function JoinEditor({
                   <Field>
                     <FieldContent>
                       <FieldLabel htmlFor="name">
-                        {String(t('datasets.sql-builder.join.typeLabel', 'Тип соединения'))}
+                        {`${t('datasets.sql-builder.join.typeLabel', 'Тип соединения')}`}
                       </FieldLabel>
                     </FieldContent>
                     <Select
@@ -127,28 +127,24 @@ export function JoinEditor({
                     >
                       <SelectTrigger
                         className="min-w-40 h-8"
-                        title={String(t('datasets.sql-builder.join.typeLabel', 'Тип соединения'))}
+                        title={`${t('datasets.sql-builder.join.typeLabel', 'Тип соединения')}`}
                       >
                         <SelectValue
-                          placeholder={String(
-                            t('datasets.sql-builder.join.typePlaceholder', 'тип')
-                          )}
+                          placeholder={`${t('datasets.sql-builder.join.typePlaceholder', 'тип')}`}
                         />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="inner">
-                          {String(
-                            t('datasets.sql-builder.join.innerLabel', 'Внутреннее соединение')
-                          )}
+                          {`${t('datasets.sql-builder.join.innerLabel', 'Внутреннее соединение')}`}
                         </SelectItem>
                         <SelectItem value="left">
-                          {String(t('datasets.sql-builder.join.leftLabel', 'Левое соединение'))}
+                          {`${t('datasets.sql-builder.join.leftLabel', 'Левое соединение')}`}
                         </SelectItem>
                         <SelectItem value="right">
-                          {String(t('datasets.sql-builder.join.rightLabel', 'Правое соединение'))}
+                          {`${t('datasets.sql-builder.join.rightLabel', 'Правое соединение')}`}
                         </SelectItem>
                         <SelectItem value="full">
-                          {String(t('datasets.sql-builder.join.fullLabel', 'Полное соединение'))}
+                          {`${t('datasets.sql-builder.join.fullLabel', 'Полное соединение')}`}
                         </SelectItem>
                       </SelectContent>
                     </Select>
@@ -202,9 +198,7 @@ export function JoinEditor({
                                   onChange([...updated])
                                 }
                               }}
-                              placeholder={String(
-                                t('datasets.sql-builder.fieldPlaceholder', 'таблица.колонка')
-                              )}
+                              placeholder={`${t('datasets.sql-builder.fieldPlaceholder', 'таблица.колонка')}`}
                             />
                           </div>
 
@@ -224,7 +218,7 @@ export function JoinEditor({
                           >
                             <SelectTrigger
                               className="h-8 min-w-20"
-                              title={String(t('datasets.sql-builder.operatorTitle', 'Оператор'))}
+                              title={`${t('datasets.sql-builder.operatorTitle', 'Оператор')}`}
                             >
                               <SelectValue />
                             </SelectTrigger>
@@ -254,9 +248,7 @@ export function JoinEditor({
                                   onChange([...updated])
                                 }
                               }}
-                              placeholder={String(
-                                t('datasets.sql-builder.aliasFieldPlaceholder', 'алиас.колонка')
-                              )}
+                              placeholder={`${t('datasets.sql-builder.aliasFieldPlaceholder', 'алиас.колонка')}`}
                             />
                           </div>
 
@@ -272,7 +264,7 @@ export function JoinEditor({
                             }}
                           >
                             <TrashIcon className="size-4" />
-                            {String(t('datasets.sql-builder.deleteBtnName', 'Удалить'))}
+                            {`${t('datasets.sql-builder.deleteBtnName', 'Удалить')}`}
                           </Button>
                         </div>
                       </Item>
@@ -296,8 +288,7 @@ export function JoinEditor({
                       }
                     }}
                   >
-                    <PlusIcon />{' '}
-                    {String(t('datasets.sql-builder.join.addCondBtnName', 'Добавить условие'))}
+                    <PlusIcon /> {`${t('datasets.sql-builder.join.addCondBtnName', 'Добавить условие')}`}
                   </Button>
                   <Button
                     variant="destructive"
@@ -308,8 +299,7 @@ export function JoinEditor({
                       }
                     }}
                   >
-                    <TrashIcon />{' '}
-                    {String(t('datasets.sql-builder.join.deleteJoinBtnName', 'Удалить связь'))}
+                    <TrashIcon /> {`${t('datasets.sql-builder.join.deleteJoinBtnName', 'Удалить связь')}`}
                   </Button>
                 </div>
               </ItemContent>
@@ -334,7 +324,7 @@ export function JoinEditor({
             }
           }}
         >
-          <PlusIcon /> {String(t('datasets.sql-builder.join.addJoinBtnName', 'Добавить связь'))}
+          <PlusIcon /> {`${t('datasets.sql-builder.join.addJoinBtnName', 'Добавить связь')}`}
         </Button>
       </div>
     </div>

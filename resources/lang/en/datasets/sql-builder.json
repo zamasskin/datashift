@@ -2,6 +2,8 @@
   "name": "Query Builder",
   "closeBtnName": "Close",
   "saveBtnName": "Add",
+  "addBtnName": "Add",
+  "deleteBtnName": "Delete",
   "card": {
     "titlePrefix": "Query Builder -",
     "connectionPrefix": "Source # ",
@@ -19,7 +21,48 @@
   },
   "tableLabel": "Table",
   "aliasLabel": "Alias",
+  "fieldPlaceholder": "table.column",
+  "aliasFieldPlaceholder": "alias.column",
+  "operatorTitle": "Operator",
   "noTablesFound": "No tables found for selected source(s).",
+  "tableSelect": {
+    "placeholder": "Select table...",
+    "searchPlaceholder": "Search table...",
+    "noTablesFound": "No tables found."
+  },
+  "where": {
+    "fieldPlaceholder": "field (table.column)",
+    "operatorTitle": "Operator",
+    "valuePlaceholder": "value",
+    "conditionBtnName": "Condition",
+    "fieldLabel": "Field",
+    "conditionLabel": "Condition",
+    "operatorPlaceholder": "=",
+    "valueLabel": "Value"
+  },
+  "join": {
+    "typeLabel": "Join type",
+    "typePlaceholder": "type",
+    "innerLabel": "Inner join",
+    "leftLabel": "Left join",
+    "rightLabel": "Right join",
+    "fullLabel": "Full join",
+    "addCondBtnName": "Add condition",
+    "deleteJoinBtnName": "Delete join",
+    "addJoinBtnName": "Add join"
+  },
+  "orderEditor": {
+    "directionPlaceholder": "direction",
+    "ascLabel": "Ascending",
+    "descLabel": "Descending",
+    "addOrderBtnName": "Add order"
+  },
+  "selectEditor": {
+    "addFieldBtnName": "Add field"
+  },
+  "groupEditor": {
+    "addFieldBtnName": "Add group field"
+  },
   "tabs": {
     "selects": "select",
     "order": "order",

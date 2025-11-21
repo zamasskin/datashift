@@ -166,19 +166,19 @@ export function SqlBuilderCard({
         </ItemMedia>
         <ItemContent>
           <ItemTitle className="line-clamp-1">
-            {String(t('datasets.sql-builder.card.titlePrefix', 'Редактор запроса -'))}{' '}
+            {`${t('datasets.sql-builder.card.titlePrefix', 'Редактор запроса -')}`}{' '}
             <span className="text-muted-foreground">{config?.id}</span>
           </ItemTitle>
           <ItemDescription>
             <span className="inline-flex items-center rounded border px-2 py-0.5 text-xs text-muted-foreground">
-              {String(t('datasets.sql-builder.card.connectionPrefix', 'Подключение № '))}
+              {`${t('datasets.sql-builder.card.connectionPrefix', 'Подключение № ')}`}
               {config?.params?.sourceId}
             </span>
           </ItemDescription>
           <ItemDescription className="line-clamp-none">
             <div className="text-xs text-muted-foreground space-y-0.5">
               <div>
-                {String(t('datasets.sql-builder.tableLabel', 'Таблица'))}:{' '}
+                {`${t('datasets.sql-builder.tableLabel', 'Таблица')}`}:{' '}
                 <span className="font-medium">{config?.params?.table}</span>{' '}
                 {config?.params?.alias && (
                   <>
@@ -188,17 +188,14 @@ export function SqlBuilderCard({
               </div>
               {config?.params?.selects?.length ? (
                 <div>
-                  · {String(t('datasets.sql-builder.card.descriptionSelect', 'Настройка выборки'))}:{' '}
+                  · {`${t('datasets.sql-builder.card.descriptionSelect', 'Настройка выборки')}`}:{' '}
                   {renderSelectsSummary(config?.params?.selects)}
                 </div>
               ) : null}
               {config?.params?.joins?.length ? (
                 <div>
-                  ·{' '}
-                  {String(
-                    t('datasets.sql-builder.card.descriptionJoins', 'Настройка связанных таблиц')
-                  )}
-                  : {renderJoinsSummary(config?.params?.joins, 9999)}
+                  · {`${t('datasets.sql-builder.card.descriptionJoins', 'Настройка связанных таблиц')}`}:
+                  {renderJoinsSummary(config?.params?.joins, 9999)}
                 </div>
               ) : null}
               {hasWhereContent(config?.params?.where) ? (
@@ -209,16 +206,14 @@ export function SqlBuilderCard({
               ) : null}
               {config?.params?.orders?.length ? (
                 <div>
-                  ·{' '}
-                  {String(t('datasets.sql-builder.card.descriptionOrder', 'Настройка сортировки'))}:{' '}
+                  · {`${t('datasets.sql-builder.card.descriptionOrder', 'Настройка сортировки')}`}:{' '}
                   {renderOrdersSummary(config?.params?.orders)}
                 </div>
               ) : null}
               {config?.params?.group?.length ? (
                 <div>
-                  ·{' '}
-                  {String(t('datasets.sql-builder.card.descriptionGroup', 'Настройка группировки'))}
-                  : {renderGroupSummary(config?.params?.group)}
+                  · {`${t('datasets.sql-builder.card.descriptionGroup', 'Настройка группировки')}`}:
+                  {renderGroupSummary(config?.params?.group)}
                 </div>
               ) : null}
             </div>
@@ -227,7 +222,7 @@ export function SqlBuilderCard({
         <ItemFooter>
           <div className="flex items-center gap-2">
             <Button
-              aria-label={String(t('datasets.sql-builder.card.prevBtnName', 'Назад'))}
+              aria-label={`${t('datasets.sql-builder.card.prevBtnName', 'Назад')}`}
               size="icon"
               variant="ghost"
               disabled={isLoading || (page || 1) <= 1}
@@ -236,10 +231,10 @@ export function SqlBuilderCard({
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <span className="text-xs text-muted-foreground">
-              {String(t('datasets.sql-builder.card.pagePrefix', 'Стр.'))} {page || 1}
+              {`${t('datasets.sql-builder.card.pagePrefix', 'Стр.')}`} {page || 1}
             </span>
             <Button
-              aria-label={String(t('datasets.sql-builder.card.nextBtnName', 'Вперед'))}
+              aria-label={`${t('datasets.sql-builder.card.nextBtnName', 'Вперед')}`}
               size="icon"
               variant="ghost"
               disabled={isLoading}
@@ -250,7 +245,7 @@ export function SqlBuilderCard({
           </div>
           <div className="flex items-center gap-2">
             <Button
-              aria-label={String(t('datasets.sql-builder.card.deleteBtnName', 'Удалить'))}
+              aria-label={`${t('datasets.sql-builder.card.deleteBtnName', 'Удалить')}`}
               size="icon"
               variant="outline"
               onClick={handleRemove}
@@ -261,11 +256,11 @@ export function SqlBuilderCard({
               isLoading={isLoading}
               suggestions={suggestions}
               onSave={onSave}
-              saveBtnName={String(t('datasets.sql-builder.saveBtnName', 'Сохранить'))}
+              saveBtnName={`${t('datasets.sql-builder.saveBtnName', 'Сохранить')}`}
               config={config}
             >
               <Button
-                aria-label={String(t('datasets.sql-builder.card.settingsBtnName', 'Настройки'))}
+                aria-label={`${t('datasets.sql-builder.card.settingsBtnName', 'Настройки')}`}
                 size="icon"
                 variant="outline"
               >

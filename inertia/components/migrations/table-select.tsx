@@ -33,21 +33,19 @@ export function TableSelect({ tables = [], selectedTable, onSelectTable }: Table
         >
           {selectedTable
             ? tables.find((table) => table === selectedTable)
-            : String(t('datasets.sql-builder.tableSelect.placeholder', 'Выберите таблицу...'))}
+            : `${t('datasets.sql-builder.tableSelect.placeholder', 'Выберите таблицу...')}`}
           <ChevronsUpDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
         <Command>
           <CommandInput
-            placeholder={String(
-              t('datasets.sql-builder.tableSelect.searchPlaceholder', 'Поиск таблицы...')
-            )}
+            placeholder={`${t('datasets.sql-builder.tableSelect.searchPlaceholder', 'Поиск таблицы...')}`}
             className="h-9"
           />
           <CommandList>
             <CommandEmpty>
-              {String(t('datasets.sql-builder.tableSelect.noTablesFound', 'Таблицы не найдены.'))}
+              {`${t('datasets.sql-builder.tableSelect.noTablesFound', 'Таблицы не найдены.')}`}
             </CommandEmpty>
             <CommandGroup>
               {tables.map((table) => (

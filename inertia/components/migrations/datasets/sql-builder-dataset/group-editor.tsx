@@ -31,9 +31,7 @@ export function GroupEditor({ suggestions, value, onChange }: GroupEditorProps) 
                       onChange(next)
                     }
                   }}
-                  placeholder={String(
-                    t('datasets.sql-builder.fieldPlaceholder', 'таблица.колонка')
-                  )}
+                  placeholder={`${t('datasets.sql-builder.fieldPlaceholder', 'таблица.колонка')}`}
                 />
               </div>
               <Button
@@ -46,8 +44,7 @@ export function GroupEditor({ suggestions, value, onChange }: GroupEditorProps) 
                   }
                 }}
               >
-                <Trash className="size-4" />{' '}
-                {String(t('datasets.sql-builder.deleteBtnName', 'Удалить'))}
+                <Trash className="size-4" /> {`${t('datasets.sql-builder.deleteBtnName', 'Удалить')}`}
               </Button>
             </div>
           </ItemContent>
@@ -62,9 +59,7 @@ export function GroupEditor({ suggestions, value, onChange }: GroupEditorProps) 
             }
           }}
         >
-          {String(
-            t('datasets.sql-builder.groupEditor.addFieldBtnName', 'Добавить поле группировки')
-          )}
+          {`${t('datasets.sql-builder.groupEditor.addFieldBtnName', 'Добавить поле группировки')}`}
         </Button>
       </div>
     </div>

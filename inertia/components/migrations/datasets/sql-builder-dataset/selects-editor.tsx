@@ -34,9 +34,7 @@ export function SelectsEditor({ suggestions, value, onChange }: SelectsEditorPro
                           onChange(next)
                         }
                       }}
-                      placeholder={String(
-                        t('datasets.sql-builder.fieldPlaceholder', 'таблица.колонка')
-                      )}
+                      placeholder={`${t('datasets.sql-builder.fieldPlaceholder', 'таблица.колонка')}`}
                     />
                   </div>
                   <Button
@@ -49,8 +47,7 @@ export function SelectsEditor({ suggestions, value, onChange }: SelectsEditorPro
                       }
                     }}
                   >
-                    <Trash className="size-4" />{' '}
-                    {String(t('datasets.sql-builder.deleteBtnName', 'Удалить'))}
+                    <Trash className="size-4" /> {`${t('datasets.sql-builder.deleteBtnName', 'Удалить')}`}
                   </Button>
                 </div>
               </ItemContent>
@@ -67,7 +64,7 @@ export function SelectsEditor({ suggestions, value, onChange }: SelectsEditorPro
             }
           }}
         >
-          {String(t('datasets.sql-builder.selectEditor.addFieldBtnName', 'Добавить поле'))}
+          {`${t('datasets.sql-builder.selectEditor.addFieldBtnName', 'Добавить поле')}`}
         </Button>
       </div>
     </div>

@@ -2,6 +2,8 @@
   "name": "Редактор запроса",
   "closeBtnName": "Закрыть",
   "saveBtnName": "Добавить",
+  "addBtnName": "Добавить",
+  "deleteBtnName": "Удалить",
   "card": {
     "titlePrefix": "Редактор запроса -",
     "connectionPrefix": "Подключение № ",
@@ -19,7 +21,48 @@
   },
   "tableLabel": "Таблица",
   "aliasLabel": "Алиас",
+  "fieldPlaceholder": "таблица.колонка",
+  "aliasFieldPlaceholder": "алиас.колонка",
+  "operatorTitle": "Оператор",
   "noTablesFound": "Для выбранных подключений таблицы не найдены.",
+  "tableSelect": {
+    "placeholder": "Выберите таблицу...",
+    "searchPlaceholder": "Поиск таблицы...",
+    "noTablesFound": "Таблицы не найдены."
+  },
+  "where": {
+    "fieldPlaceholder": "поле (таблица.колонка)",
+    "operatorTitle": "Оператор",
+    "valuePlaceholder": "значение",
+    "conditionBtnName": "Условие",
+    "fieldLabel": "Поле",
+    "conditionLabel": "Условие",
+    "operatorPlaceholder": "=",
+    "valueLabel": "Значение"
+  },
+  "join": {
+    "typeLabel": "Тип соединения",
+    "typePlaceholder": "тип",
+    "innerLabel": "Внутреннее соединение",
+    "leftLabel": "Левое соединение",
+    "rightLabel": "Правое соединение",
+    "fullLabel": "Полное соединение",
+    "addCondBtnName": "Добавить условие",
+    "deleteJoinBtnName": "Удалить связь",
+    "addJoinBtnName": "Добавить связь"
+  },
+  "orderEditor": {
+    "directionPlaceholder": "направление",
+    "ascLabel": "По возрастанию",
+    "descLabel": "По убыванию",
+    "addOrderBtnName": "Добавить сортировку"
+  },
+  "selectEditor": {
+    "addFieldBtnName": "Добавить поле"
+  },
+  "groupEditor": {
+    "addFieldBtnName": "Добавить поле группировки"
+  },
   "tabs": {
     "selects": "select",
     "order": "order",

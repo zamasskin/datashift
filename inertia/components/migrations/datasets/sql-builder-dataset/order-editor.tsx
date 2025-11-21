@@ -58,9 +58,7 @@ export function OrdersEditor({ suggestions, value, onChange }: OrdersEditorProps
                         suggestions={suggestions}
                         value={key}
                         onValueChange={(v) => handleKeyChange(idx, v)}
-                        placeholder={String(
-                          t('datasets.sql-builder.fieldPlaceholder', 'таблица.колонка')
-                        )}
+                        placeholder={`${t('datasets.sql-builder.fieldPlaceholder', 'таблица.колонка')}`}
                       />
                     </div>
                     <div className="w-[160px]">
@@ -70,22 +68,15 @@ export function OrdersEditor({ suggestions, value, onChange }: OrdersEditorProps
                       >
                         <SelectTrigger size="sm">
                           <SelectValue
-                            placeholder={String(
-                              t(
-                                'datasets.sql-builder.orderEditor.directionPlaceholder',
-                                'направление'
-                              )
-                            )}
+                            placeholder={`${t('datasets.sql-builder.orderEditor.directionPlaceholder', 'направление')}`}
                           />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="asc">
-                            {String(
-                              t('datasets.sql-builder.orderEditor.ascLabel', 'По возрастанию')
-                            )}
+                            {`${t('datasets.sql-builder.orderEditor.ascLabel', 'По возрастанию')}`}
                           </SelectItem>
                           <SelectItem value="desc">
-                            {String(t('datasets.sql-builder.orderEditor.descLabel', 'По убыванию'))}
+                            {`${t('datasets.sql-builder.orderEditor.descLabel', 'По убыванию')}`}
                           </SelectItem>
                         </SelectContent>
                       </Select>
@@ -100,8 +91,7 @@ export function OrdersEditor({ suggestions, value, onChange }: OrdersEditorProps
                         }
                       }}
                     >
-                      <Trash className="size-4" />{' '}
-                      {String(t('datasets.sql-builder.deleteBtnName', 'Удалить'))}
+                      <Trash className="size-4" /> {`${t('datasets.sql-builder.deleteBtnName', 'Удалить')}`}
                     </Button>
                   </div>
                 </ItemContent>
@@ -119,7 +109,7 @@ export function OrdersEditor({ suggestions, value, onChange }: OrdersEditorProps
             }
           }}
         >
-          {String(t('datasets.sql-builder.orderEditor.addOrderBtnName', 'Добавить сортировку'))}
+          {`${t('datasets.sql-builder.orderEditor.addOrderBtnName', 'Добавить сортировку')}`}
         </Button>
       </div>
     </div>
