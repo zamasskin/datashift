@@ -41,8 +41,6 @@ export function GlobalSearch({ className }: { className?: string }) {
   const [loading, setLoading] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
 
-  console.log(locale)
-
   const navCommands: CommandLink[] = useMemo(
     () => [
       { label: t('globalSearch.nav.home', 'Главная'), href: '/', icon: IconSearch },
