@@ -1,0 +1,34 @@
+{
+  "input": {
+    "placeholder": "Введите команду или запрос..."
+  },
+  "empty": "Ничего не найдено",
+  "group": {
+    "navigation": "Навигация",
+    "migrations": "Миграции",
+    "sources": "Подключения данных",
+    "errors": "Ошибки",
+    "loading": "Поиск…"
+  },
+  "nav": {
+    "home": "Главная",
+    "sources": "Подключения",
+    "migrations": "Миграции",
+    "errors": "Ошибки",
+    "settings": "Настройки",
+    "profile": "Профиль",
+    "help": "Помощь"
+  },
+  "migrations": {
+    "statusActive": "активна",
+    "statusInactive": "выключена",
+    "noMatches": "Нет совпадений"
+  },
+  "sources": {
+    "noMatches": "Нет совпадений"
+  },
+  "errors": {
+    "noMatches": "Нет совпадений",
+    "fallbackPrefix": "Ошибка #"
+  }
+}

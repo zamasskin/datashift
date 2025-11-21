@@ -1,0 +1,34 @@
+{
+  "input": {
+    "placeholder": "Type a command or query..."
+  },
+  "empty": "No results found",
+  "group": {
+    "navigation": "Navigation",
+    "migrations": "Migrations",
+    "sources": "Data sources",
+    "errors": "Errors",
+    "loading": "Searching…"
+  },
+  "nav": {
+    "home": "Home",
+    "sources": "Sources",
+    "migrations": "Migrations",
+    "errors": "Errors",
+    "settings": "Settings",
+    "profile": "Profile",
+    "help": "Help"
+  },
+  "migrations": {
+    "statusActive": "active",
+    "statusInactive": "disabled",
+    "noMatches": "No matches"
+  },
+  "sources": {
+    "noMatches": "No matches"
+  },
+  "errors": {
+    "noMatches": "No matches",
+    "fallbackPrefix": "Error #"
+  }
+}
