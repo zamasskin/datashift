@@ -1,0 +1,17 @@
+{
+  "button": {
+    "aria": "Notifications"
+  },
+  "title": "Notifications",
+  "empty": "No notifications",
+  "item": {
+    "muteAria": "Mute notification"
+  },
+  "clear": {
+    "title": "Mute all notifications",
+    "button": "Clear notifications"
+  },
+  "misc": {
+    "emDash": "—"
+  }
+}

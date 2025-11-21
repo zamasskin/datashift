@@ -7,6 +7,7 @@ import { Separator } from '~/components/ui/separator'
 import { ScrollArea } from '~/components/ui/scroll-area'
 import { Link, usePage } from '@inertiajs/react'
 import { useNotifications } from '~/store/notifications'
+import { useI18n } from '~/hooks/useI18nLocal'
 import {
   IconX,
   IconAlertCircle,
@@ -37,6 +38,7 @@ export function NotificationsButton() {
     events?: { items: EventItem[]; total: number }
     csrfToken?: string
   }>()
+  const { t } = useI18n()
   const { items, removeItem, clear } = useNotifications()
   const [clearing, setClearing] = useState(false)
   const count = items.length
@@ -88,7 +90,12 @@ export function NotificationsButton() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative" aria-label="Ошибки">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative"
+          aria-label={t('notifications.button.aria', 'Ошибки')}
+        >
           <Bell className="h-4 w-4" />
           {count > 0 && (
             <Badge
@@ -107,7 +114,9 @@ export function NotificationsButton() {
         className="w-80 p-0 max-h-[70vh] overflow-hidden"
       >
         <div className="p-3">
-          <div className="text-sm font-medium">Уведомления</div>
+          <div className="text-sm font-medium">
+            {t('notifications.title', 'Уведомления')}
+          </div>
         </div>
         <Separator />
         <div className="max-h-[60vh]">
@@ -117,14 +126,16 @@ export function NotificationsButton() {
           >
             <div className="p-2">
               {items.length === 0 ? (
-                <div className="px-2 py-4 text-sm text-muted-foreground">Нет уведомлений</div>
+                <div className="px-2 py-4 text-sm text-muted-foreground">
+                  {t('notifications.empty', 'Нет уведомлений')}
+                </div>
               ) : (
                 items.map((e) => {
                   const errId = e.error?.id ?? e.errorId
                   const isError = (e.type ?? 'notify') === 'error'
                   const content = (
                     <div className="text-sm text-foreground/90 line-clamp-2">
-                      {e.message ?? e.error?.message ?? '—'}
+                      {e.message ?? e.error?.message ?? t('notifications.misc.emDash', '—')}
                     </div>
                   )
                   return (
@@ -144,7 +155,7 @@ export function NotificationsButton() {
                             className="text-sm font-medium text-foreground hover:underline"
                             onClick={() => setOpen(false)}
                           >
-                            {e.message ?? e.error?.message ?? '—'}
+                            {e.message ?? e.error?.message ?? t('notifications.misc.emDash', '—')}
                           </Link>
                         ) : (
                           content
@@ -154,7 +165,7 @@ export function NotificationsButton() {
                         variant="ghost"
                         size="icon"
                         onClick={() => mute(e.id)}
-                        aria-label="Отключить уведомление"
+                        aria-label={t('notifications.item.muteAria', 'Отключить уведомление')}
                       >
                         <IconX className="h-4 w-4" />
                       </Button>
@@ -174,14 +185,17 @@ export function NotificationsButton() {
             className="w-full justify-center gap-2"
             onClick={clearAll}
             disabled={items.length === 0 || clearing}
-            title="Отключить все уведомления"
+            title={t('notifications.clear.title', 'Отключить все уведомления')}
           >
             {clearing ? (
               <IconLoader2 className="h-4 w-4 animate-spin" />
             ) : (
               <IconTrash className="h-4 w-4" />
             )}
-            <span>Очистить уведомления{count > 0 ? ` (${count})` : ''}</span>
+            <span>
+              {t('notifications.clear.button', 'Очистить уведомления')}
+              {count > 0 ? ` (${count})` : ''}
+            </span>
           </Button>
         </div>
       </PopoverContent>
