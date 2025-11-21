@@ -35,21 +35,34 @@ type CommandLink = {
 }
 
 export function GlobalSearch({ className }: { className?: string }) {
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
 
-  const navCommands: CommandLink[] = [
-    { label: t('globalSearch.nav.home', 'Главная'), href: '/', icon: IconSearch },
-    { label: t('globalSearch.nav.sources', 'Подключения'), href: '/sources', icon: IconBrandCodepen },
-    { label: t('globalSearch.nav.migrations', 'Миграции'), href: '/migrations', icon: IconArrowUpToArc },
-    { label: t('globalSearch.nav.errors', 'Ошибки'), href: '/errors', icon: IconAlertCircle },
-    { label: t('globalSearch.nav.settings', 'Настройки'), href: '/settings', icon: IconSettings },
-    { label: t('globalSearch.nav.profile', 'Профиль'), href: '/profile', icon: IconUserCircle },
-    { label: t('globalSearch.nav.help', 'Помощь'), href: '/help', icon: IconHelp },
-  ]
+  console.log(locale)
+
+  const navCommands: CommandLink[] = useMemo(
+    () => [
+      { label: t('globalSearch.nav.home', 'Главная'), href: '/', icon: IconSearch },
+      {
+        label: t('globalSearch.nav.sources', 'Подключения'),
+        href: '/sources',
+        icon: IconBrandCodepen,
+      },
+      {
+        label: t('globalSearch.nav.migrations', 'Миграции'),
+        href: '/migrations',
+        icon: IconArrowUpToArc,
+      },
+      { label: t('globalSearch.nav.errors', 'Ошибки'), href: '/errors', icon: IconAlertCircle },
+      { label: t('globalSearch.nav.settings', 'Настройки'), href: '/settings', icon: IconSettings },
+      { label: t('globalSearch.nav.profile', 'Профиль'), href: '/profile', icon: IconUserCircle },
+      { label: t('globalSearch.nav.help', 'Помощь'), href: '/help', icon: IconHelp },
+    ],
+    [locale, t]
+  )
 
   type SearchResults = {
     migrations: Array<{ id: number; name: string; isActive?: boolean }>
@@ -172,7 +185,13 @@ export function GlobalSearch({ className }: { className?: string }) {
         {query.trim().length >= 2 && (
           <>
             <CommandSeparator />
-            <CommandGroup heading={loading ? t('globalSearch.group.loading', 'Поиск…') : t('globalSearch.group.migrations', 'Миграции')}>
+            <CommandGroup
+              heading={
+                loading
+                  ? t('globalSearch.group.loading', 'Поиск…')
+                  : t('globalSearch.group.migrations', 'Миграции')
+              }
+            >
               {results.migrations.map((m) => (
                 <CommandItem key={`migration-${m.id}`} onSelect={() => setOpen(false)}>
                   <IconArrowUpToArc className="size-4" />
@@ -188,13 +207,21 @@ export function GlobalSearch({ className }: { className?: string }) {
               ))}
               {!loading && results.migrations.length === 0 && (
                 <CommandItem disabled>
-                  <span className="text-muted-foreground">{t('globalSearch.migrations.noMatches', 'Нет совпадений')}</span>
+                  <span className="text-muted-foreground">
+                    {t('globalSearch.migrations.noMatches', 'Нет совпадений')}
+                  </span>
                 </CommandItem>
               )}
             </CommandGroup>
 
             <CommandSeparator />
-            <CommandGroup heading={loading ? t('globalSearch.group.loading', 'Поиск…') : t('globalSearch.group.sources', 'Подключения данных')}>
+            <CommandGroup
+              heading={
+                loading
+                  ? t('globalSearch.group.loading', 'Поиск…')
+                  : t('globalSearch.group.sources', 'Подключения данных')
+              }
+            >
               {results.dataSources.map((s) => (
                 <CommandItem key={`source-${s.id}`} onSelect={() => setOpen(false)}>
                   <IconBrandCodepen className="size-4" />
@@ -208,18 +235,30 @@ export function GlobalSearch({ className }: { className?: string }) {
               ))}
               {!loading && results.dataSources.length === 0 && (
                 <CommandItem disabled>
-                  <span className="text-muted-foreground">{t('globalSearch.sources.noMatches', 'Нет совпадений')}</span>
+                  <span className="text-muted-foreground">
+                    {t('globalSearch.sources.noMatches', 'Нет совпадений')}
+                  </span>
                 </CommandItem>
               )}
             </CommandGroup>
 
             <CommandSeparator />
-            <CommandGroup heading={loading ? t('globalSearch.group.loading', 'Поиск…') : t('globalSearch.group.errors', 'Ошибки')}>
+            <CommandGroup
+              heading={
+                loading
+                  ? t('globalSearch.group.loading', 'Поиск…')
+                  : t('globalSearch.group.errors', 'Ошибки')
+              }
+            >
               {results.errors.map((e) => (
                 <CommandItem key={`error-${e.id}`} onSelect={() => setOpen(false)}>
                   <IconAlertCircle className="size-4" />
                   <Link href={`/errors/${e.id}`} className="flex flex-1 items-center gap-2">
-                    <span>{e.message || e.code || `${t('globalSearch.errors.fallbackPrefix', 'Ошибка #')}${e.id}`}</span>
+                    <span>
+                      {e.message ||
+                        e.code ||
+                        `${t('globalSearch.errors.fallbackPrefix', 'Ошибка #')}${e.id}`}
+                    </span>
                     <Badge variant="outline" className="ml-auto">
                       {e.severity}
                     </Badge>
@@ -228,7 +267,9 @@ export function GlobalSearch({ className }: { className?: string }) {
               ))}
               {!loading && results.errors.length === 0 && (
                 <CommandItem disabled>
-                  <span className="text-muted-foreground">{t('globalSearch.errors.noMatches', 'Нет совпадений')}</span>
+                  <span className="text-muted-foreground">
+                    {t('globalSearch.errors.noMatches', 'Нет совпадений')}
+                  </span>
                 </CommandItem>
               )}
             </CommandGroup>
