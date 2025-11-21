@@ -1,9 +1,9 @@
-title: DataShift
+title: 'DataShift'
 description: 'Документация по продукту DataShift'
-theme: minima
-markdown: kramdown
+theme: 'minima'
+markdown: 'kramdown'
 plugins:
-  - jekyll-seo-tag
+  - 'jekyll-seo-tag'
 
 # Укажите базовый путь, если сайт публикуется как /<repo>/
 # Например, если ваш репозиторий называется datashift:
@@ -11,10 +11,10 @@ baseurl: '/datashift'
 url: 'https://zamasskin.github.io'
 
 # Локализация
-lang: ru
+lang: 'ru'
 
 exclude:
-  - node_modules
-  - vendor
-  - tests
-  - test-results
+  - 'node_modules'
+  - 'vendor'
+  - 'tests'
+  - 'test-results'
