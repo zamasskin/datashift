@@ -1,0 +1,55 @@
+{
+  "title": "Help",
+  "welcome": {
+    "title": "Welcome to DataShift",
+    "description": "This page contains short instructions for the main sections and actions. Each section has a place for an interface screenshot."
+  },
+  "tags": {
+    "sources": "Sources",
+    "migrations": "Migrations",
+    "datasets": "Datasets",
+    "errors": "Errors",
+    "settings": "Settings",
+    "profile": "Profile"
+  },
+  "tabs": {
+    "start": "Start",
+    "sources": "Sources",
+    "migrations": "Migrations",
+    "datasets": "Datasets",
+    "errors": "Errors",
+    "settings": "Settings"
+  },
+  "start": {
+    "title": "Quick start",
+    "step1": "Create a data source in the ‘Sources’ section.",
+    "step2": "Configure a migration: choose a source and parameters.",
+    "step3": "Run the migration and track the progress.",
+    "screenshot": "Home and quick actions"
+  },
+  "sources": {
+    "title": "Sources",
+    "description": "In ‘Sources’ you add connections: databases, APIs, files. Specify parameters, test the connection, and save.",
+    "screenshot": "List and create source form"
+  },
+  "migrations": {
+    "title": "Migrations",
+    "description": "Migrations describe what and how is transferred from a source. Configure steps, filters, and schedule (cron) if needed. Start and monitor statuses.",
+    "screenshot": "Migrations list and edit screen"
+  },
+  "datasets": {
+    "title": "Datasets",
+    "description": "Datasets help prepare curated selections for display and analysis. Configure SQL/rules and test the result.",
+    "screenshot": "Datasets list and selection testing"
+  },
+  "errors": {
+    "title": "Errors and notifications",
+    "description": "‘Errors’ shows problem messages, their status and details. You can mark errors as read and filter by type.",
+    "screenshot": "Error log and filters"
+  },
+  "settings": {
+    "title": "Settings and users",
+    "description": "Here you configure users, roles, and interface parameters. Only users with the ‘admin’ role can edit users.",
+    "screenshot": "User management and theme"
+  }
+}
