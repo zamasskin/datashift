@@ -179,4 +179,4 @@ This project uses server-side locale detection and a simple client hook to acces
 
 ## License
 
-This project is private and unlicensed.
+License: MIT. See `LICENSE` for the full text.
