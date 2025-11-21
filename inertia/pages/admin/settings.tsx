@@ -25,6 +25,8 @@ import {
   DialogFooter,
   DialogClose,
 } from '~/components/ui/dialog'
+import React from 'react'
+import { useI18n } from '~/hooks/useI18nLocal'
 
 type AdminSettingsProps = {
   users: Array<{ id: number; email: string; fullName: string | null; role: 'user' | 'admin' }>
@@ -70,20 +72,21 @@ const AdminSettingsPage = () => {
     } catch {}
   }, [])
 
+  const { t } = useI18n()
+
   const onCreateUser = (e: React.FormEvent) => {
     e.preventDefault()
     const payload = { email: newEmail, fullName: newFullName, password: newPassword, role: newRole }
     router.post('/users', payload, {
       onSuccess: () => {
-        toast.success('Пользователь создан')
+        toast.success(t('admin.settings.users.createSuccess', 'Пользователь создан'))
         setNewEmail('')
         setNewFullName('')
         setNewPassword('')
         setNewRole('user')
       },
       onError: (errs: any) => {
-        const msg =
-          errs?.email || errs?.password || errs?.error || 'Не удалось создать пользователя'
+        const msg = errs?.email || errs?.password || errs?.error || t('admin.settings.users.createFail', 'Не удалось создать пользователя')
         toast.error(msg)
       },
     })
@@ -96,34 +99,34 @@ const AdminSettingsPage = () => {
     if (editPassword) payload.password = editPassword
     router.put(`/users/${editingUser.id}`, payload, {
       onSuccess: () => {
-        toast.success('Изменения сохранены')
+        toast.success(t('admin.settings.users.updateSuccess', 'Изменения сохранены'))
         setEditOpenId(null)
       },
       onError: (errs: any) => {
-        const msg = errs?.email || errs?.error || 'Не удалось сохранить изменения'
+        const msg = errs?.email || errs?.error || t('admin.settings.users.updateFail', 'Не удалось сохранить изменения')
         toast.error(msg)
       },
     })
   }
 
   const handleDelete = (id: number) => {
-    if (!confirm('Удалить пользователя?')) return
+    if (!confirm(t('admin.settings.users.confirmDelete', 'Удалить пользователя?'))) return
     router.delete('/users', {
       data: { id, redirectTo: '/settings' },
-      onSuccess: () => toast.success('Пользователь удалён'),
-      onError: () => toast.error('Не удалось удалить пользователя'),
+      onSuccess: () => toast.success(t('admin.settings.users.deleteSuccess', 'Пользователь удалён')),
+      onError: () => toast.error(t('admin.settings.users.deleteFail', 'Не удалось удалить пользователя')),
     })
   }
 
   return (
     <>
-      <Head title="Админ — Настройки" />
+      <Head title={t('admin.settings.title', 'Админ — Настройки')} />
       <div className="px-4 grid grid-cols-1 gap-4">
         <Tabs defaultValue="users">
           <div className="grid gap-4">
             <Card>
               <CardHeader>
-                <CardTitle>Управление пользователями</CardTitle>
+                <CardTitle>{t('admin.settings.users.manageTitle', 'Управление пользователями')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Create user */}
@@ -132,48 +135,48 @@ const AdminSettingsPage = () => {
                   className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end"
                 >
                   <div className="grid gap-2 md:col-span-2">
-                    <Label htmlFor="newEmail">Email</Label>
+                    <Label htmlFor="newEmail">{t('admin.settings.form.emailLabel', 'Email')}</Label>
                     <Input
                       id="newEmail"
                       value={newEmail}
                       onChange={(e) => setNewEmail(e.target.value)}
-                      placeholder="user@example.com"
+                      placeholder={t('admin.settings.form.emailPlaceholder', 'user@example.com')}
                     />
                     {errors?.email && <p className="text-destructive text-sm">{errors.email}</p>}
                   </div>
                   <div className="grid gap-2 md:col-span-2">
-                    <Label htmlFor="newFullName">Имя</Label>
+                    <Label htmlFor="newFullName">{t('admin.settings.form.fullNameLabel', 'Имя')}</Label>
                     <Input
                       id="newFullName"
                       value={newFullName}
                       onChange={(e) => setNewFullName(e.target.value)}
-                      placeholder="Имя пользователя"
+                      placeholder={t('admin.settings.form.fullNamePlaceholder', 'Имя пользователя')}
                     />
                   </div>
                   <div className="grid gap-2 md:col-span-2">
-                    <Label htmlFor="newPassword">Пароль</Label>
+                    <Label htmlFor="newPassword">{t('admin.settings.form.passwordLabel', 'Пароль')}</Label>
                     <Input
                       id="newPassword"
                       type="password"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="Минимум 8 символов"
+                      placeholder={t('admin.settings.form.passwordPlaceholder', 'Минимум 8 символов')}
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label>Роль</Label>
+                    <Label>{t('admin.settings.form.roleLabel', 'Роль')}</Label>
                     <Select value={newRole} onValueChange={(v) => setNewRole(v as 'user' | 'admin')}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="user">user</SelectItem>
-                        <SelectItem value="admin">admin</SelectItem>
+                        <SelectItem value="user">{t('admin.settings.roles.user', 'user')}</SelectItem>
+                        <SelectItem value="admin">{t('admin.settings.roles.admin', 'admin')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="md:col-span-1">
-                    <Button type="submit">Добавить</Button>
+                    <Button type="submit">{t('admin.settings.actions.create', 'Добавить')}</Button>
                   </div>
                 </form>
 
@@ -181,11 +184,11 @@ const AdminSettingsPage = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>ID</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Имя</TableHead>
-                      <TableHead>Роль</TableHead>
-                      <TableHead className="text-right">Действия</TableHead>
+                      <TableHead>{t('admin.settings.table.id', 'ID')}</TableHead>
+                      <TableHead>{t('admin.settings.table.email', 'Email')}</TableHead>
+                      <TableHead>{t('admin.settings.table.fullName', 'Имя')}</TableHead>
+                      <TableHead>{t('admin.settings.table.role', 'Роль')}</TableHead>
+                      <TableHead className="text-right">{t('admin.settings.table.actions', 'Действия')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -195,7 +198,7 @@ const AdminSettingsPage = () => {
                           <TableCell>{u.id}</TableCell>
                           <TableCell>{u.email}</TableCell>
                           <TableCell>{u.fullName || '—'}</TableCell>
-                          <TableCell>{u.role || 'user'}</TableCell>
+                          <TableCell>{u.role || t('admin.settings.roles.user', 'user')}</TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-2">
                               <Dialog
@@ -204,16 +207,18 @@ const AdminSettingsPage = () => {
                               >
                                 <DialogTrigger asChild>
                                   <Button size="sm" variant="outline">
-                                    Редактировать
+                                    {t('admin.settings.actions.edit', 'Редактировать')}
                                   </Button>
                                 </DialogTrigger>
                                 <DialogContent className="sm:max-w-[480px]">
                                   <DialogHeader>
-                                    <DialogTitle>Редактирование пользователя #{u.id}</DialogTitle>
+                                    <DialogTitle>
+                                      {t('admin.settings.dialog.editUserTitlePrefix', 'Редактирование пользователя')} #{u.id}
+                                    </DialogTitle>
                                   </DialogHeader>
                                   <form onSubmit={onUpdateUser} className="space-y-4 mt-2">
                                     <div className="grid gap-2">
-                                      <Label htmlFor="editEmail">Email</Label>
+                                      <Label htmlFor="editEmail">{t('admin.settings.form.emailLabel', 'Email')}</Label>
                                       <Input
                                         id="editEmail"
                                         value={editEmail}
@@ -221,7 +226,7 @@ const AdminSettingsPage = () => {
                                       />
                                     </div>
                                     <div className="grid gap-2">
-                                      <Label htmlFor="editFullName">Имя</Label>
+                                      <Label htmlFor="editFullName">{t('admin.settings.form.fullNameLabel', 'Имя')}</Label>
                                       <Input
                                         id="editFullName"
                                         value={editFullName}
@@ -230,7 +235,7 @@ const AdminSettingsPage = () => {
                                     </div>
                                     <div className="grid gap-2">
                                       <Label htmlFor="editPassword">
-                                        Новый пароль (опционально)
+                                        {t('admin.settings.form.newPasswordOptional', 'Новый пароль (опционально)')}
                                       </Label>
                                       <Input
                                         id="editPassword"
@@ -240,14 +245,14 @@ const AdminSettingsPage = () => {
                                       />
                                     </div>
                                     <div className="grid gap-2">
-                                      <Label>Роль</Label>
+                                      <Label>{t('admin.settings.form.roleLabel', 'Роль')}</Label>
                                       <Select value={editRole} onValueChange={(v) => setEditRole(v as 'user' | 'admin')}>
                                         <SelectTrigger>
                                           <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                          <SelectItem value="user">user</SelectItem>
-                                          <SelectItem value="admin">admin</SelectItem>
+                                          <SelectItem value="user">{t('admin.settings.roles.user', 'user')}</SelectItem>
+                                          <SelectItem value="admin">{t('admin.settings.roles.admin', 'admin')}</SelectItem>
                                         </SelectContent>
                                       </Select>
                                     </div>
@@ -258,10 +263,10 @@ const AdminSettingsPage = () => {
                                           variant="outline"
                                           onClick={() => setEditOpenId(null)}
                                         >
-                                          Отмена
+                                          {t('admin.settings.actions.cancel', 'Отмена')}
                                         </Button>
                                       </DialogClose>
-                                      <Button type="submit">Сохранить</Button>
+                                      <Button type="submit">{t('admin.settings.actions.save', 'Сохранить')}</Button>
                                     </DialogFooter>
                                   </form>
                                 </DialogContent>
@@ -271,7 +276,7 @@ const AdminSettingsPage = () => {
                                 size="sm"
                                 onClick={() => handleDelete(u.id)}
                               >
-                                Удалить
+                                {t('admin.settings.actions.delete', 'Удалить')}
                               </Button>
                             </div>
                           </TableCell>
@@ -280,7 +285,7 @@ const AdminSettingsPage = () => {
                     ) : (
                       <TableRow>
                         <TableCell colSpan={5}>
-                          <div className="text-sm text-muted-foreground">Нет пользователей</div>
+                          <div className="text-sm text-muted-foreground">{t('admin.settings.table.empty', 'Нет пользователей')}</div>
                         </TableCell>
                       </TableRow>
                     )}
@@ -291,15 +296,15 @@ const AdminSettingsPage = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Личные настройки администратора</CardTitle>
+                <CardTitle>{t('admin.settings.adminPrefs.title', 'Личные настройки администратора')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  Эти настройки сохраняются локально в браузере.
+                  {t('admin.settings.adminPrefs.description', 'Эти настройки сохраняются локально в браузере.')}
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                   <div className="grid gap-2">
-                    <Label>Тема</Label>
+                    <Label>{t('admin.settings.theme.label', 'Тема')}</Label>
                     <Select
                       value={prefTheme}
                       onValueChange={(v) => {
@@ -307,9 +312,9 @@ const AdminSettingsPage = () => {
                         setPrefTheme(val)
                         try {
                           localStorage.setItem('dark', val)
-                          toast.success('Тема обновлена')
+                          toast.success(t('admin.settings.theme.updateSuccess', 'Тема обновлена'))
                         } catch {
-                          toast.error('Не удалось сохранить тему')
+                          toast.error(t('admin.settings.theme.updateFail', 'Не удалось сохранить тему'))
                         }
                       }}
                     >
@@ -317,9 +322,9 @@ const AdminSettingsPage = () => {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="system">system</SelectItem>
-                        <SelectItem value="light">light</SelectItem>
-                        <SelectItem value="dark">dark</SelectItem>
+                        <SelectItem value="system">{t('admin.settings.theme.system', 'system')}</SelectItem>
+                        <SelectItem value="light">{t('admin.settings.theme.light', 'light')}</SelectItem>
+                        <SelectItem value="dark">{t('admin.settings.theme.dark', 'dark')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -329,11 +334,11 @@ const AdminSettingsPage = () => {
                       onClick={() => {
                         try {
                           localStorage.removeItem('dark')
-                          toast.success('Сброшены настройки темы')
+                          toast.success(t('admin.settings.theme.resetSuccess', 'Сброшены настройки темы'))
                         } catch {}
                       }}
                     >
-                      Сбросить тему
+                      {t('admin.settings.theme.reset', 'Сбросить тему')}
                     </Button>
                   </div>
                 </div>
@@ -346,8 +351,13 @@ const AdminSettingsPage = () => {
   )
 }
 
+function AdminSettingsLayout({ children }: { children: React.ReactNode }) {
+  const { t } = useI18n()
+  return <RootLayout title={t('admin.settings.title', 'Админ • Настройки')}>{children}</RootLayout>
+}
+
 AdminSettingsPage.layout = (page: React.ReactNode) => {
-  return <RootLayout title="Админ • Настройки">{page}</RootLayout>
+  return <AdminSettingsLayout>{page}</AdminSettingsLayout>
 }
 
 export default AdminSettingsPage

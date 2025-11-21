@@ -1,0 +1,59 @@
+{
+  "title": "Admin — Settings",
+  "users": {
+    "manageTitle": "User management",
+    "createSuccess": "User created",
+    "createFail": "Failed to create user",
+    "updateSuccess": "Changes saved",
+    "updateFail": "Failed to save changes",
+    "confirmDelete": "Delete user?",
+    "deleteSuccess": "User deleted",
+    "deleteFail": "Failed to delete user"
+  },
+  "form": {
+    "emailLabel": "Email",
+    "emailPlaceholder": "user@example.com",
+    "fullNameLabel": "Full name",
+    "fullNamePlaceholder": "User full name",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Minimum 8 characters",
+    "roleLabel": "Role",
+    "newPasswordOptional": "New password (optional)"
+  },
+  "roles": {
+    "user": "user",
+    "admin": "admin"
+  },
+  "actions": {
+    "create": "Add",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "save": "Save"
+  },
+  "table": {
+    "id": "ID",
+    "email": "Email",
+    "fullName": "Full name",
+    "role": "Role",
+    "actions": "Actions",
+    "empty": "No users"
+  },
+  "dialog": {
+    "editUserTitlePrefix": "Edit user"
+  },
+  "adminPrefs": {
+    "title": "Admin personal settings",
+    "description": "These settings are stored locally in the browser."
+  },
+  "theme": {
+    "label": "Theme",
+    "system": "system",
+    "light": "light",
+    "dark": "dark",
+    "updateSuccess": "Theme updated",
+    "updateFail": "Failed to save theme",
+    "reset": "Reset theme",
+    "resetSuccess": "Theme settings reset"
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "title": "Админ — Настройки",
+  "users": {
+    "manageTitle": "Управление пользователями",
+    "createSuccess": "Пользователь создан",
+    "createFail": "Не удалось создать пользователя",
+    "updateSuccess": "Изменения сохранены",
+    "updateFail": "Не удалось сохранить изменения",
+    "confirmDelete": "Удалить пользователя?",
+    "deleteSuccess": "Пользователь удалён",
+    "deleteFail": "Не удалось удалить пользователя"
+  },
+  "form": {
+    "emailLabel": "Email",
+    "emailPlaceholder": "user@example.com",
+    "fullNameLabel": "Имя",
+    "fullNamePlaceholder": "Имя пользователя",
+    "passwordLabel": "Пароль",
+    "passwordPlaceholder": "Минимум 8 символов",
+    "roleLabel": "Роль",
+    "newPasswordOptional": "Новый пароль (опционально)"
+  },
+  "roles": {
+    "user": "user",
+    "admin": "admin"
+  },
+  "actions": {
+    "create": "Добавить",
+    "edit": "Редактировать",
+    "delete": "Удалить",
+    "cancel": "Отмена",
+    "save": "Сохранить"
+  },
+  "table": {
+    "id": "ID",
+    "email": "Email",
+    "fullName": "Имя",
+    "role": "Роль",
+    "actions": "Действия",
+    "empty": "Нет пользователей"
+  },
+  "dialog": {
+    "editUserTitlePrefix": "Редактирование пользователя"
+  },
+  "adminPrefs": {
+    "title": "Личные настройки администратора",
+    "description": "Эти настройки сохраняются локально в браузере."
+  },
+  "theme": {
+    "label": "Тема",
+    "system": "system",
+    "light": "light",
+    "dark": "dark",
+    "updateSuccess": "Тема обновлена",
+    "updateFail": "Не удалось сохранить тему",
+    "reset": "Сбросить тему",
+    "resetSuccess": "Сброшены настройки темы"
+  }
+}
