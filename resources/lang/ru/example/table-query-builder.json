@@ -1,0 +1,34 @@
+{
+  "card": {
+    "title": "Выбор подключения и таблицы"
+  },
+  "applyBtnName": "Перевыполнить",
+  "deleteBtnName": "Удалить блок",
+  "tableLabel": "Таблица",
+  "tableSelect": {
+    "placeholder": "Выберите таблицу"
+  },
+  "filters": {
+    "label": "Фильтры",
+    "columnPlaceholder": "колонка",
+    "valuePlaceholder": "значение",
+    "addBtnName": "Добавить фильтр"
+  },
+  "join": {
+    "label": "Связи (JOIN)",
+    "innerLabel": "INNER JOIN",
+    "leftLabel": "LEFT JOIN",
+    "rightLabel": "RIGHT JOIN",
+    "tablePlaceholder": "таблица",
+    "on": {
+      "leftPlaceholder": "on: левая колонка",
+      "rightPlaceholder": "on: правая колонка"
+    },
+    "addJoinBtnName": "Добавить связь"
+  },
+  "group": {
+    "label": "Группировка",
+    "fieldPlaceholder": "колонка",
+    "addGroupBtnName": "Добавить группировку"
+  }
+}

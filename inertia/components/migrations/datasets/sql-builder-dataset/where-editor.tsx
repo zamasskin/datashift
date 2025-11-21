@@ -113,11 +113,9 @@ export function WhereEditor({
           <ItemContent>
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Badge className="px-4">AND</Badge>
+                <Badge className="px-4">{t('datasets.sql-builder.where.andLabel', 'AND')}</Badge>
                 <div className="text-xs text-muted-foreground">
-                  {String(
-                    t('datasets.sql-builder.where.andHint', 'Все условия должны выполниться')
-                  )}
+                  {t('datasets.sql-builder.where.andHint', 'Все условия должны выполниться')}
                 </div>
               </div>
               <div className="rounded-md bg-muted/40 p-2 border border-border">
@@ -142,11 +140,9 @@ export function WhereEditor({
           <ItemContent>
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Badge className="px-4">OR</Badge>
+                <Badge className="px-4">{t('datasets.sql-builder.where.orLabel', 'OR')}</Badge>
                 <div className="text-xs text-muted-foreground">
-                  {String(
-                    t('datasets.sql-builder.where.orHint', 'Должно выполниться хотя бы одно')
-                  )}
+                  {t('datasets.sql-builder.where.orHint', 'Должно выполниться хотя бы одно')}
                 </div>
               </div>
               <div className="rounded-md bg-muted/40 p-2 border border-border">
@@ -324,7 +320,9 @@ export function ActionsWhere({
     setNewCondErr('')
     //TODO: Написать функцию которая добавляет условия
     if (!newCondKey) {
-      setNewCondErr('Ключ не должен быть пустым')
+      setNewCondErr(
+        t('datasets.sql-builder.where.errors.keyRequired', 'Ключ не должен быть пустым')
+      )
       return
     }
 
@@ -453,12 +451,12 @@ export function ActionsWhere({
           onClick={() => onChangeOpenedAnd && onChangeOpenedAnd(true)}
         >
           <TrashIcon />
-          And
+          {t('datasets.sql-builder.where.andLabel', 'AND')}
         </Button>
       ) : (
         <Button size="sm" onClick={() => onChangeOpenedAnd && onChangeOpenedAnd(false)}>
           <PlusIcon />
-          And
+          {t('datasets.sql-builder.where.andLabel', 'AND')}
         </Button>
       )}
 
@@ -469,12 +467,12 @@ export function ActionsWhere({
           onClick={() => onChangeOpenedOr && onChangeOpenedOr(true)}
         >
           <TrashIcon />
-          Or
+          {t('datasets.sql-builder.where.orLabel', 'OR')}
         </Button>
       ) : (
         <Button size="sm" onClick={() => onChangeOpenedOr && onChangeOpenedOr(false)}>
           <PlusIcon />
-          Or
+          {t('datasets.sql-builder.where.orLabel', 'OR')}
         </Button>
       )}
     </div>

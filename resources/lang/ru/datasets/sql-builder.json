@@ -38,7 +38,14 @@
     "fieldLabel": "Поле",
     "conditionLabel": "Условие",
     "operatorPlaceholder": "=",
-    "valueLabel": "Значение"
+    "valueLabel": "Значение",
+    "andLabel": "AND",
+    "orLabel": "OR",
+    "andHint": "Все условия должны выполниться",
+    "orHint": "Должно выполниться хотя бы одно",
+    "errors": {
+      "keyRequired": "Ключ не должен быть пустым"
+    }
   },
   "join": {
     "typeLabel": "Тип соединения",

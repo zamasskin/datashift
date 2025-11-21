@@ -1,0 +1,34 @@
+{
+  "card": {
+    "title": "Choose source and table"
+  },
+  "applyBtnName": "Re-run",
+  "deleteBtnName": "Delete block",
+  "tableLabel": "Table",
+  "tableSelect": {
+    "placeholder": "Select table"
+  },
+  "filters": {
+    "label": "Filters",
+    "columnPlaceholder": "column",
+    "valuePlaceholder": "value",
+    "addBtnName": "Add filter"
+  },
+  "join": {
+    "label": "Joins (JOIN)",
+    "innerLabel": "INNER JOIN",
+    "leftLabel": "LEFT JOIN",
+    "rightLabel": "RIGHT JOIN",
+    "tablePlaceholder": "table",
+    "on": {
+      "leftPlaceholder": "on: left column",
+      "rightPlaceholder": "on: right column"
+    },
+    "addJoinBtnName": "Add join"
+  },
+  "group": {
+    "label": "Group by",
+    "fieldPlaceholder": "column",
+    "addGroupBtnName": "Add group"
+  }
+}

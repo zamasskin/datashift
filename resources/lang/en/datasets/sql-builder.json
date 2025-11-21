@@ -38,7 +38,14 @@
     "fieldLabel": "Field",
     "conditionLabel": "Condition",
     "operatorPlaceholder": "=",
-    "valueLabel": "Value"
+    "valueLabel": "Value",
+    "andLabel": "AND",
+    "orLabel": "OR",
+    "andHint": "All conditions must be satisfied",
+    "orHint": "At least one must be satisfied",
+    "errors": {
+      "keyRequired": "Key must not be empty"
+    }
   },
   "join": {
     "typeLabel": "Join type",

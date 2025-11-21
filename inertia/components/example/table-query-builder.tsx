@@ -15,6 +15,7 @@ import {
 import { DataSourceOption, DataSourceSelect } from './data-source-select'
 import { ParamsEditor, ParamItem } from './params-editor'
 import { ResultTable } from './result-table'
+import { useI18n } from '~/hooks/useI18nLocal'
 
 type Filter = { column: string; operator: string; value: string }
 type Join = { type: 'inner' | 'left' | 'right'; table: string; onLeft: string; onRight: string }
@@ -39,6 +40,7 @@ export function TableQueryBuilder({
   }) => void
   onRemove?: () => void
 }) {
+  const { t } = useI18n()
   const [dataSourceId, setDataSourceId] = useState<number | null>(null)
   const [table, setTable] = useState<string | null>(tables[0] || null)
   const [filters, setFilters] = useState<Filter[]>([])
@@ -77,13 +79,15 @@ export function TableQueryBuilder({
     <div className="space-y-4">
       <Card>
         <CardHeader>
-        <CardTitle>Выбор подключения и таблицы</CardTitle>
+          <CardTitle>
+            {t('example.table-query-builder.card.title', 'Выбор подключения и таблицы')}
+          </CardTitle>
           <CardAction>
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              title="Перевыполнить"
+              title={t('example.table-query-builder.applyBtnName', 'Перевыполнить')}
               onClick={() =>
                 onApply?.({
                   dataSourceId,
@@ -96,17 +100,21 @@ export function TableQueryBuilder({
               }
             >
               <IconPlayerPlay />
-              <span className="sr-only">Перевыполнить</span>
+              <span className="sr-only">
+                {t('example.table-query-builder.applyBtnName', 'Перевыполнить')}
+              </span>
             </Button>
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              title="Удалить блок"
+              title={t('example.table-query-builder.deleteBtnName', 'Удалить блок')}
               onClick={() => onRemove?.()}
             >
               <IconTrash />
-              <span className="sr-only">Удалить блок</span>
+              <span className="sr-only">
+                {t('example.table-query-builder.deleteBtnName', 'Удалить блок')}
+              </span>
             </Button>
           </CardAction>
         </CardHeader>
@@ -114,10 +122,15 @@ export function TableQueryBuilder({
           <DataSourceSelect options={dataSources} value={dataSourceId} onChange={setDataSourceId} />
 
           <Field>
-            <FieldLabel>Таблица</FieldLabel>
+            <FieldLabel>{t('example.table-query-builder.tableLabel', 'Таблица')}</FieldLabel>
             <Select value={table ?? undefined} onValueChange={(v) => setTable(v)}>
               <SelectTrigger>
-                <SelectValue placeholder="Выберите таблицу" />
+                <SelectValue
+                  placeholder={t(
+                    'example.table-query-builder.tableSelect.placeholder',
+                    'Выберите таблицу'
+                  )}
+                />
               </SelectTrigger>
               <SelectContent>
                 {tables.map((t) => (
@@ -131,11 +144,14 @@ export function TableQueryBuilder({
 
           <FieldGroup>
             <Field>
-              <FieldLabel>Фильтры</FieldLabel>
+              <FieldLabel>{t('example.table-query-builder.filters.label', 'Фильтры')}</FieldLabel>
               {filters.map((f, idx) => (
                 <div key={idx} className="mb-2 flex gap-2">
                   <Input
-                    placeholder="колонка"
+                    placeholder={t(
+                      'example.table-query-builder.filters.columnPlaceholder',
+                      'колонка'
+                    )}
                     value={f.column}
                     onChange={(e) => patchFilter(idx, { column: e.target.value })}
                   />
@@ -155,23 +171,26 @@ export function TableQueryBuilder({
                     </SelectContent>
                   </Select>
                   <Input
-                    placeholder="значение"
+                    placeholder={t(
+                      'example.table-query-builder.filters.valuePlaceholder',
+                      'значение'
+                    )}
                     value={f.value}
                     onChange={(e) => patchFilter(idx, { value: e.target.value })}
                   />
                   <Button type="button" variant="secondary" onClick={() => removeFilter(idx)}>
-                    Удалить
+                    {t('example.table-query-builder.deleteBtnName', 'Удалить')}
                   </Button>
                 </div>
               ))}
               <Button type="button" variant="outline" onClick={addFilter}>
-                Добавить фильтр
+                {t('example.table-query-builder.filters.addBtnName', 'Добавить фильтр')}
               </Button>
             </Field>
           </FieldGroup>
 
           <Field>
-            <FieldLabel>Связи (JOIN)</FieldLabel>
+            <FieldLabel>{t('example.table-query-builder.join.label', 'Связи (JOIN)')}</FieldLabel>
             {joins.map((j, idx) => (
               <div key={idx} className="mb-2 flex flex-wrap gap-2">
                 <Select
@@ -184,14 +203,23 @@ export function TableQueryBuilder({
                   <SelectContent>
                     {['inner', 'left', 'right'].map((jt) => (
                       <SelectItem key={jt} value={jt}>
-                        {jt.toUpperCase()} JOIN
+                        {jt === 'inner'
+                          ? t('example.table-query-builder.join.innerLabel', 'INNER JOIN')
+                          : jt === 'left'
+                            ? t('example.table-query-builder.join.leftLabel', 'LEFT JOIN')
+                            : t('example.table-query-builder.join.rightLabel', 'RIGHT JOIN')}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
                 <Select value={j.table} onValueChange={(v) => patchJoin(idx, { table: v })}>
                   <SelectTrigger>
-                    <SelectValue placeholder="таблица" />
+                    <SelectValue
+                      placeholder={t(
+                        'example.table-query-builder.join.tablePlaceholder',
+                        'таблица'
+                      )}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {tables.map((t) => (
@@ -202,41 +230,47 @@ export function TableQueryBuilder({
                   </SelectContent>
                 </Select>
                 <Input
-                  placeholder="on: левая колонка"
+                  placeholder={t(
+                    'example.table-query-builder.join.on.leftPlaceholder',
+                    'on: левая колонка'
+                  )}
                   value={j.onLeft}
                   onChange={(e) => patchJoin(idx, { onLeft: e.target.value })}
                 />
                 <Input
-                  placeholder="on: правая колонка"
+                  placeholder={t(
+                    'example.table-query-builder.join.on.rightPlaceholder',
+                    'on: правая колонка'
+                  )}
                   value={j.onRight}
                   onChange={(e) => patchJoin(idx, { onRight: e.target.value })}
                 />
                 <Button type="button" variant="secondary" onClick={() => removeJoin(idx)}>
-                  Удалить
+                  {t('example.table-query-builder.deleteBtnName', 'Удалить')}
                 </Button>
               </div>
             ))}
             <Button type="button" variant="outline" onClick={addJoin}>
-              Добавить связь
+              {t('example.table-query-builder.join.addJoinBtnName', 'Добавить связь')}
             </Button>
           </Field>
 
           <Field>
-            <FieldLabel>Группировка</FieldLabel>
+            <FieldLabel>{t('example.table-query-builder.group.label', 'Группировка')}</FieldLabel>
             {groupBy.map((g, idx) => (
               <div key={idx} className="mb-2 flex gap-2">
                 <Input
-                  placeholder="колонка"
+                  placeholder={t('example.table-query-builder.group.fieldPlaceholder', 'колонка')}
                   value={g}
                   onChange={(e) => patchGroup(idx, e.target.value)}
                 />
                 <Button type="button" variant="secondary" onClick={() => removeGroup(idx)}>
-                  Удалить
+                  {t('example.table-query-builder.deleteBtnName', 'Удалить')}
                 </Button>
               </div>
             ))}
             <Button type="button" variant="outline" onClick={addGroup}>
-              Добавить группировку
+              {t('example.table-query-builder.group.addGroupBtnName', 'Добавить группировку')}
             </Button>
           </Field>
         </CardContent>
