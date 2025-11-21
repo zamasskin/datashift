@@ -10,7 +10,6 @@ export default class SettingsController {
     const code = (ctx.request.input('code') || ctx.request.qs().code || '').toString().trim()
     const supported = i18nManager.getSupportedLocaleFor([code]) || i18nManager.defaultLocale
 
-    console.log('changeLocale:', code, '->', supported, i18nManager.supportedLocales())
     ctx.response.cookie('locale', supported, {
       httpOnly: true,
       sameSite: 'lax',
