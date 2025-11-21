@@ -1,0 +1,23 @@
+# Node
+node_modules
+npm-debug.log
+
+# Build output
+build
+
+# Env files
+.env
+.env.*
+
+# Tests and local artifacts
+coverage
+playwright-report
+.test-results
+
+# VCS
+.git
+.gitignore
+
+# IDE
+.vscode
+*.swp

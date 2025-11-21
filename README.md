@@ -59,6 +59,43 @@ DataShift is a Node.js + React + Vite application for configuring and monitoring
 - `npm run format` — Format with Prettier.
 - `npm run typecheck` — Type-check with TypeScript.
 
+## Docker
+
+- Build image: `docker build -t datashift:latest .`
+- Run container: `docker run -p 3333:3333 -e APP_KEY=your_app_key datashift:latest`
+- Compose (app + MySQL): `docker compose up -d`
+
+### Environment variables for Docker
+
+- `APP_KEY` — required. Provide a strong random string.
+- `LOG_LEVEL` — optional, defaults to `info`.
+- `TZ` — optional, defaults to `UTC`.
+- Database (MySQL by default):
+  - `DB_HOST` — set to `db` when using compose.
+  - `DB_PORT` — `3306`.
+  - `DB_USER`, `DB_PASSWORD`, `DB_DATABASE` — defaults are `app`.
+
+### Using docker compose
+
+- Services:
+  - `app` — builds from `Dockerfile`, exposes `3333`.
+  - `db` — MySQL 8 with persistent volume and healthcheck.
+- Steps:
+  - Create `.env` (or export env) with at least `APP_KEY`.
+  - Start: `docker compose up -d`.
+  - Open: `http://localhost:3333`.
+
+### Generating `APP_KEY`
+
+- macOS/Linux: `openssl rand -base64 32`
+- Paste into `.env` or pass with `-e APP_KEY=...`.
+
+### Notes
+
+- Container runs with `NODE_ENV=production` and listens on `0.0.0.0:3333`.
+- Environment variables are injected at runtime; `.env` is not baked into the image.
+- To use PostgreSQL, swap the DB image and ports in `docker-compose.yml` and adjust envs.
+
 ## Project Structure
 
 - `app/` — Server-side application files (controllers, middleware, services, models).
