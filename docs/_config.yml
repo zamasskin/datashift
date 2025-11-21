@@ -1,7 +1,7 @@
 title: 'DataShift'
 description: 'Документация по продукту DataShift'
-theme: 'minima'
 markdown: 'kramdown'
+remote_theme: 'just-the-docs/just-the-docs'
 plugins:
   - 'jekyll-seo-tag'
 
@@ -18,3 +18,9 @@ exclude:
   - 'vendor'
   - 'tests'
   - 'test-results'
+
+# Just the Docs settings
+search_enabled: true
+color_scheme: 'auto'
+aux_links:
+  'GitHub': 'https://github.com/zamasskin/datashift'

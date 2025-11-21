@@ -1,10 +1,9 @@
 ---
-layout: page
+layout: default
 title: Документация DataShift
+nav_order: 1
 permalink: /
 ---
-
-# DataShift — документация
 
 Добро пожаловать! Здесь собраны материалы по установке, настройке и эксплуатации DataShift.
 
