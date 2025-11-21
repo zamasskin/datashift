@@ -34,6 +34,7 @@
   "addColumnBtnName": "Добавить колонку",
   "renameColumnsLabel": "Переименовать колонки",
   "oldColumnLabel": "Старая колонка",
+  "oldNamePlaceholder": "old_name",
   "noColumns": "Нет колонок",
   "deleteTitle": "Удалить",
   "addRenameBtnName": "Добавить переименование",
@@ -44,9 +45,13 @@
   "valueTypePlaceholder": "Тип значения",
   "reference": "ссылка",
   "literal": "литерал",
+  "literalPlaceholder": "строка | число | булево",
   "template": "шаблон",
   "expression": "выражение",
   "function": "функция (скоро)",
   "soon": "Скоро",
-  "functionsSoon": "Поддержка функций появится скоро."
+  "functionsSoon": "Поддержка функций появится скоро.",
+  "columnNameTitle": "имя колонки",
+  "columnNamePlaceholder": "имя колонки",
+  "newNamePlaceholder": "new_name"
 }

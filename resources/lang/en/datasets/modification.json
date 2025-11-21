@@ -34,6 +34,7 @@
   "addColumnBtnName": "Add column",
   "renameColumnsLabel": "Rename columns",
   "oldColumnLabel": "Old column",
+  "oldNamePlaceholder": "old_name",
   "noColumns": "No columns",
   "deleteTitle": "Delete",
   "addRenameBtnName": "Add rename",
@@ -44,9 +45,13 @@
   "valueTypePlaceholder": "Value type",
   "reference": "reference",
   "literal": "literal",
+  "literalPlaceholder": "string | number | boolean",
   "template": "template",
   "expression": "expression",
   "function": "function (soon)",
   "soon": "Soon",
-  "functionsSoon": "Function support will be available soon."
+  "functionsSoon": "Function support will be available soon.",
+  "columnNameTitle": "column name",
+  "columnNamePlaceholder": "column name",
+  "newNamePlaceholder": "new_name"
 }
