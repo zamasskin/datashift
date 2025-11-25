@@ -12,7 +12,8 @@ export function SqlDataSourceFormConfig({
 }) {
   const { t } = useI18n()
   const selectedType = form.watch('type')
-  const port = selectedType == 'mysql' ? 3306 : 5432
+  const port =
+    selectedType === 'mysql' ? 3306 : selectedType === 'postgres' ? 5432 : selectedType === 'clickhouse' ? 8123 : 5432
   return (
     <>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

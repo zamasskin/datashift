@@ -105,6 +105,30 @@ export default class SqlController {
         }
       }
 
+      if (ds.type === 'clickhouse') {
+        const chModule = await import('@clickhouse/client')
+        const { createClient } = chModule as any
+        const client = createClient({
+          url: `http://${String(ds.config?.host)}:${Number(ds.config?.port)}`,
+          username: String(ds.config?.username),
+          password: String(ds.config?.password),
+          database: String(ds.config?.database),
+          request_timeout: 3000,
+        })
+        try {
+          const result = await client.query({
+            query: `SELECT name FROM system.tables WHERE database = '${String(ds.config?.database).replace(/'/g, "''")}' ORDER BY name`,
+            format: 'JSONEachRow',
+          })
+          const json = await result.json()
+          const tables = Array.isArray(json?.data)
+            ? (json.data as any[]).map((r) => r?.name).filter(Boolean)
+            : []
+          return response.send({ tables })
+        } finally {
+          await client.close()
+        }
+      }
       return response.status(400).send({ error: `Тип источника не поддерживается: ${ds.type}` })
     } catch (e: any) {
       const message = e?.message ? String(e.message) : String(e)
@@ -228,6 +252,34 @@ export default class SqlController {
         }
       }
 
+      if (ds.type === 'clickhouse') {
+        const chModule = await import('@clickhouse/client')
+        const { createClient } = chModule as any
+        const client = createClient({
+          url: `http://${String(ds.config?.host)}:${Number(ds.config?.port)}`,
+          username: String(ds.config?.username),
+          password: String(ds.config?.password),
+          database: String(ds.config?.database),
+          request_timeout: 3000,
+        })
+        try {
+          const columnsMap: Record<string, string[]> = {}
+          for (const table of tables) {
+            const tableEsc = String(table).replace(/"/g, '""').replace(/'/g, "''")
+            const result = await client.query({
+              query: `SELECT name FROM system.columns WHERE database = '${String(ds.config?.database).replace(/'/g, "''")}' AND table = '${tableEsc}' ORDER BY position`,
+              format: 'JSONEachRow',
+            })
+            const json = await result.json()
+            columnsMap[table] = Array.isArray(json?.data)
+              ? (json.data as any[]).map((r) => r?.name).filter(Boolean)
+              : []
+          }
+          return response.send({ columns: columnsMap })
+        } finally {
+          await client.close()
+        }
+      }
       return response.status(400).send({ error: `Тип источника не поддерживается: ${ds.type}` })
     } catch (e: any) {
       const message = e?.message ? String(e.message) : String(e)

@@ -72,6 +72,7 @@
     "@adonisjs/shield": "^8.2.0",
     "@adonisjs/static": "^1.1.1",
     "@adonisjs/vite": "^4.0.0",
+    "@clickhouse/client": "^1.14.0",
     "@hookform/resolvers": "^5.2.2",
     "@inertiajs/react": "^2.2.8",
     "@monaco-editor/react": "^4.7.0",

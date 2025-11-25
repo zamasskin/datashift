@@ -178,6 +178,7 @@ function RenderConfig({ form }: { form: UseFormReturn<z.infer<typeof schemaInser
   switch (selectedType) {
     case 'mysql':
     case 'postgres':
+    case 'clickhouse':
       return <SqlDataSourceFormConfig form={form} />
     case 'sqlite':
       return <SqliteDataSourceFormConfig form={form} />

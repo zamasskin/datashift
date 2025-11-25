@@ -133,6 +133,55 @@ export default class SqlService {
       }
     }
 
+    if (type === 'clickhouse') {
+      // Inline variables into SQL for ClickHouse (it doesn't support '?')
+      const escapeLiteral = (val: any): string => {
+        if (val === null || val === undefined) return 'NULL'
+        if (typeof val === 'number') return Number.isFinite(val) ? String(val) : 'NULL'
+        if (typeof val === 'boolean') return val ? 'TRUE' : 'FALSE'
+        if (val instanceof Date) {
+          const pad = (n: number) => String(n).padStart(2, '0')
+          const d = val
+          const s = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+          return `'${s}'`
+        }
+        if (Array.isArray(val)) return val.map((v) => escapeLiteral(v)).join(', ')
+        const s = String(val)
+        if (/^[-+]?\d+(?:\.\d+)?$/.test(s.trim())) return s.trim()
+        return `'${s.replace(/'/g, "''")}'`
+      }
+
+      let sqlWithValues = wrappedSql
+      if (Array.isArray(variables) && variables.length > 0) {
+        let i = 0
+        sqlWithValues = sqlWithValues.replace(/\?/g, () => {
+          const v = variables![i++]
+          return escapeLiteral(v)
+        })
+      }
+
+      const chModule = await import('@clickhouse/client')
+      const { createClient } = chModule as any
+      const client = createClient({
+        url: `http://${String(config?.host)}:${Number(config?.port)}`,
+        username: String(config?.username),
+        password: String(config?.password),
+        database: String(config?.database),
+        request_timeout: 3000,
+      })
+      try {
+        const result = await client.query({ query: sqlWithValues, format: 'JSONEachRow' })
+        const json = await result.json()
+        const rows = Array.isArray(json?.data) ? (json.data as any[]) : []
+        const columns = Array.isArray(json?.meta)
+          ? (json.meta as any[]).map((m: any) => m?.name).filter(Boolean)
+          : undefined
+        return { rows, columns }
+      } finally {
+        await client.close()
+      }
+    }
+
     throw new Error(`Тип источника не поддерживается: ${type}`)
   }
 

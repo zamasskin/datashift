@@ -312,7 +312,7 @@ export default class DataSourcesController {
     const baseSchema = vine.compile(
       vine.object({
         name: vine.string().trim().minLength(3).maxLength(64),
-        type: vine.enum(['mysql', 'postgres', 'sqlite']),
+        type: vine.enum(['mysql', 'postgres', 'sqlite', 'clickhouse']),
       })
     )
 
@@ -347,6 +347,8 @@ export default class DataSourcesController {
         rawConfig.port = 3306
       } else if (basePayload.type === 'postgres') {
         rawConfig.port = 5432
+      } else if (basePayload.type === 'clickhouse') {
+        rawConfig.port = 8123
       }
     }
 
@@ -459,6 +461,27 @@ export default class DataSourcesController {
       return
     }
 
+    if (type === 'clickhouse') {
+      const chModule = await import('@clickhouse/client')
+      const { createClient } = chModule as any
+      const client = createClient({
+        // Prefer URL-style host if provided as host+port
+        url: `http://${String(config.host)}:${Number(config.port)}`,
+        username: String(config.username),
+        password: String(config.password),
+        database: String(config.database),
+        request_timeout: 3000,
+      })
+      try {
+        // ping is lightweight; alternatively run a simple SELECT
+        const ok = await client.ping()
+        if (!ok) throw new Error('ClickHouse ping failed')
+      } finally {
+        await client.close()
+      }
+      return
+    }
+
     throw new Error('Unsupported data source type')
   }
 
@@ -501,6 +524,19 @@ export default class DataSourcesController {
     // Postgres: база не существует
     if (code === '3D000') {
       return { 'config.database': i18n.t('sources.validation.databaseNotExist') }
+    }
+
+    // ClickHouse-specific hints
+    if (type === 'clickhouse') {
+      const m = msg.toLowerCase()
+      // Authentication failures often surface as 401/403 or explicit message
+      if (m.includes('401') || m.includes('unauthorized') || m.includes('authentication')) {
+        return { 'config.username': i18n.t('sources.validation.invalidCredentials') }
+      }
+      // Unknown database in ClickHouse: commonly contains 'Code: 81' or 'Unknown database'
+      if (m.includes('unknown database') || m.includes('code: 81')) {
+        return { 'config.database': i18n.t('sources.validation.databaseNotExist') }
+      }
     }
 
     // По умолчанию — показать общий текст у поля host

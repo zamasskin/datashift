@@ -4,12 +4,14 @@ export const types = [
   { title: 'MySQL', value: 'mysql' },
   { title: 'PostgreSQL', value: 'postgres' },
   { title: 'SQLite', value: 'sqlite' },
+  { title: 'ClickHouse', value: 'clickhouse' },
 ]
 
 export const typesIcon: Record<string, string> = {
   mysql: '/icons/mysql.png',
   postgres: '/icons/postgresql.png',
   sqlite: '/icons/sqlite.png',
+  clickhouse: '/icons/clickhouse.png',
 }
 
 const sqlConfigSchema = z.object({
@@ -28,6 +30,7 @@ const typeUnion = z.discriminatedUnion('type', [
   z.object({ type: z.literal('mysql'), config: sqlConfigSchema }),
   z.object({ type: z.literal('postgres'), config: sqlConfigSchema }),
   z.object({ type: z.literal('sqlite'), config: sqliteConfigSchema }),
+  z.object({ type: z.literal('clickhouse'), config: sqlConfigSchema }),
 ])
 
 const rootSchema = z.object({
