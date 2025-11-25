@@ -4,37 +4,25 @@ import { Field, FieldDescription, FieldGroup, FieldLabel } from './ui/field'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
 import { Link, useForm, usePage } from '@inertiajs/react'
+import { useI18n } from '~/hooks/useI18nLocal'
 
 interface LoginFormProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string
   method?: string
   action?: string
-  messages?: {
-    title?: string
-    welcome?: string
-    prompt?: string
-    email?: string
-    password?: string
-    submit?: string
-    submitting?: string
-    termsText1?: string
-    termsService?: string
-    termsText2?: string
-    privacyPolicy?: string
-  }
 }
 
 export function LoginForm({
   className,
   method = 'POST',
   action = '/login',
-  messages = {},
   ...props
 }: LoginFormProps) {
   const { props: pageProps } = usePage<{ csrfToken?: string; errors?: Record<string, string> }>()
   const csrfToken = pageProps?.csrfToken
   const errors = pageProps?.errors
   const form = useForm({ email: '', password: '', _csrf: csrfToken || '' })
+  const { t } = useI18n()
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card className="overflow-hidden p-0">
@@ -52,9 +40,9 @@ export function LoginForm({
               {csrfToken && <input type="hidden" name="_csrf" value={csrfToken} />}
 
               <div className="flex flex-col items-center gap-2 text-center">
-                <h1 className="text-2xl font-bold">{messages.welcome || 'Welcome'}</h1>
+                <h1 className="text-2xl font-bold">{t('login.welcome', 'Welcome')}</h1>
                 <p className="text-muted-foreground text-balance">
-                  {messages.prompt || 'Sign in to your account'}
+                  {t('login.prompt', 'Sign in to your account')}
                 </p>
               </div>
               {errors?.login && (
@@ -63,7 +51,7 @@ export function LoginForm({
                 </div>
               )}
               <Field>
-                <FieldLabel htmlFor="email">{messages.email || 'Email'}</FieldLabel>
+                <FieldLabel htmlFor="email">{t('login.email', 'Email')}</FieldLabel>
                 <Input
                   id="email"
                   name="email"
@@ -77,7 +65,7 @@ export function LoginForm({
 
               <Field>
                 <div className="flex items-center">
-                  <FieldLabel htmlFor="password">{messages.password || 'Password'}</FieldLabel>
+                  <FieldLabel htmlFor="password">{t('login.password', 'Password')}</FieldLabel>
                   {/* <a href="#" className="ml-auto text-sm underline-offset-2 hover:underline">
                     Забыли пароль?
                   </a> */}
@@ -93,9 +81,7 @@ export function LoginForm({
               </Field>
               <Field>
                 <Button type="submit" disabled={form.processing}>
-                  {form.processing
-                    ? messages.submitting || 'Signing in...'
-                    : messages.submit || 'Sign In'}
+                  {form.processing ? t('login.submitting', 'Signing in...') : t('login.submit', 'Sign In')}
                 </Button>
               </Field>
             </FieldGroup>
@@ -110,10 +96,10 @@ export function LoginForm({
         </CardContent>
       </Card>
       <FieldDescription className="px-6 text-center">
-        {messages.termsText1 || 'By clicking “Continue”, you agree to our '}
-        <Link href="/terms">{messages.termsService || 'Terms of Service'}</Link>
-        {messages.termsText2 || ' and '}
-        <Link href="/privacy">{messages.privacyPolicy || 'Privacy Policy.'}</Link>
+        {t('login.termsText1', 'By clicking “Continue”, you agree to our ')}
+        <Link href="/terms">{t('login.termsService', 'Terms of Service')}</Link>
+        {t('login.termsText2', ' and ')}
+        <Link href="/privacy">{t('login.privacyPolicy', 'Privacy Policy.')}</Link>
       </FieldDescription>
     </div>
   )
