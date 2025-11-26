@@ -172,7 +172,8 @@ export default class SqlService {
       try {
         const result = await client.query({ query: sqlWithValues, format: 'JSONEachRow' })
         const json = await result.json()
-        const rows = Array.isArray(json?.data) ? (json.data as any[]) : []
+        console.log('sqlWithValues', sqlWithValues, json)
+        const rows = Array.isArray(json) ? (json as any[]) : []
         const columns = Array.isArray(json?.meta)
           ? (json.meta as any[]).map((m: any) => m?.name).filter(Boolean)
           : undefined
