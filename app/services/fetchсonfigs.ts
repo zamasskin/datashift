@@ -11,7 +11,6 @@ export default class FetchConfigService {
   private modificationConfig: ModificationConfigService
 
   constructor(limit = 100) {
-    console.log(limit)
     this.sqlConfig = new SqlConfigService(limit)
     this.sqlBuilderConfig = new SqlBuilderConfigService(limit)
     this.mergeConfig = new MergeConfigService()
