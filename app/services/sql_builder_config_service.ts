@@ -85,10 +85,6 @@ export default class SqlBuilderConfigService {
         }
       }
     }
-
-    // for await (const res of this.sqlConfigService.execute(executeConfig, resultList)) {
-    //   yield res
-    // }
   }
 
   private buildSql(config: SqlBuilderConfigExecute, sources?: Record<string, any>) {
