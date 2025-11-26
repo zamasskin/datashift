@@ -5,12 +5,17 @@ import ModificationConfigService from '#services/modification_config_service'
 import { FetchConfig, FetchConfigMeta, FetchConfigResult } from '#interfaces/fetchсonfigs'
 
 export default class FetchConfigService {
-  constructor(
-    private sqlConfig = new SqlConfigService(),
-    private sqlBuilderConfig = new SqlBuilderConfigService(),
-    private mergeConfig = new MergeConfigService(),
-    private modificationConfig = new ModificationConfigService()
-  ) {}
+  private sqlConfig: SqlConfigService
+  private sqlBuilderConfig: SqlBuilderConfigService
+  private mergeConfig: MergeConfigService
+  private modificationConfig: ModificationConfigService
+
+  constructor(limit = 100) {
+    this.sqlConfig = new SqlConfigService(limit)
+    this.sqlBuilderConfig = new SqlBuilderConfigService(limit)
+    this.mergeConfig = new MergeConfigService()
+    this.modificationConfig = new ModificationConfigService()
+  }
 
   async *execute(
     configList: FetchConfig[],
