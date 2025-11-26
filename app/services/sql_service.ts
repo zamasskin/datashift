@@ -138,14 +138,14 @@ export default class SqlService {
       const escapeLiteral = (val: any): string => {
         if (val === null || val === undefined) return 'NULL'
         if (typeof val === 'number') return Number.isFinite(val) ? String(val) : 'NULL'
-        if (typeof val === 'boolean') return val ? 'TRUE' : 'FALSE'
+        if (typeof val === 'boolean') return val ? 'true' : 'false'
         if (val instanceof Date) {
           const pad = (n: number) => String(n).padStart(2, '0')
           const d = val
           const s = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
           return `'${s}'`
         }
-        if (Array.isArray(val)) return val.map((v) => escapeLiteral(v)).join(', ')
+        if (Array.isArray(val)) return `[${val.map((v) => escapeLiteral(v)).join(', ')}]`
         const s = String(val)
         if (/^[-+]?\d+(?:\.\d+)?$/.test(s.trim())) return s.trim()
         return `'${s.replace(/'/g, "''")}'`
@@ -448,6 +448,68 @@ export default class SqlService {
         }
       } finally {
         await client.end()
+      }
+    } else if (type === 'clickhouse') {
+      const chModule = await import('@clickhouse/client')
+      const { createClient } = chModule as any
+      const client = createClient({
+        url: `http://${String(config?.host)}:${Number(config?.port)}`,
+        username: String(config?.username),
+        password: String(config?.password),
+        database: String(config?.database),
+        request_timeout: 3000,
+      })
+      // Локальные помощники для экранирования и подстановки значений
+      const escapeLiteral = (val: any): string => {
+        if (val === null || val === undefined) return 'NULL'
+        if (typeof val === 'number') return Number.isFinite(val) ? String(val) : 'NULL'
+        if (typeof val === 'boolean') return val ? 'TRUE' : 'FALSE'
+        if (val instanceof Date) {
+          const pad = (n: number) => String(n).padStart(2, '0')
+          const d = val
+          const s = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+          return `'${s}'`
+        }
+        if (Array.isArray(val)) return val.map((v) => escapeLiteral(v)).join(', ')
+        const s = String(val)
+        if (/^[-+]?\d+(?:\.\d+)?$/.test(s.trim())) return s.trim()
+        return `'${s.replace(/'/g, "''")}'`
+      }
+      const inline = (sqlStr: string, vals: any[]): string => {
+        let i = 0
+        return sqlStr.replace(/\?/g, () => escapeLiteral(vals[i++]))
+      }
+      try {
+        for (const row of rows) {
+          const { setSql, setValues } = this.buildSet(savedMapping, row)
+          const { whereSql, whereValues } = this.buildWhere(updateOn, row)
+
+          let matched = 0
+          if (whereSql) {
+            const whereCond = inline(whereSql, whereValues)
+            const countSql = `SELECT COUNT(*) AS cnt FROM ${table} WHERE ${whereCond}`
+            const res = await client.query({ query: countSql, format: 'JSONEachRow' })
+            const json = await res.json()
+            const cntRow = Array.isArray(json) ? (json as any[])[0] : undefined
+            const cntVal = cntRow ? (cntRow.cnt ?? (Object.values(cntRow)[0] as any)) : 0
+            matched = Number(cntVal || 0)
+            if (matched > 0) {
+              const setInlined = inline(setSql, setValues)
+              const updateSql = `ALTER TABLE ${table} UPDATE ${setInlined} WHERE ${whereCond}`
+              await client.command({ query: updateSql })
+              savedCount++
+              continue
+            }
+          }
+
+          const insertCols = savedMapping.map((m) => m.tableColumn).join(', ')
+          const insertVals = setValues.map((v) => escapeLiteral(v)).join(', ')
+          const insertSql = `INSERT INTO ${table} (${insertCols}) VALUES (${insertVals})`
+          await client.command({ query: insertSql })
+          savedCount++
+        }
+      } finally {
+        await client.close()
       }
     } else {
       throw new Error(`Тип источника не поддерживается для сохранения: ${type}`)
