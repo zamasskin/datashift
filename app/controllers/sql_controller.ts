@@ -121,8 +121,9 @@ export default class SqlController {
             format: 'JSONEachRow',
           })
           const json = await result.json()
-          const tables = Array.isArray(json?.data)
-            ? (json.data as any[]).map((r) => r?.name).filter(Boolean)
+          console.log(json)
+          const tables = Array.isArray(json)
+            ? (json as any[]).map((r) => r?.name).filter(Boolean)
             : []
           return response.send({ tables })
         } finally {
