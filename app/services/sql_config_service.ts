@@ -4,9 +4,10 @@ import DataSource from '#models/data_source'
 import SqlService from '#services/sql_service'
 
 export default class SqlConfigService {
-  private limit = 100
-
-  constructor(private sqlService = new SqlService()) {}
+  constructor(
+    private sqlService = new SqlService(),
+    private limit = 100
+  ) {}
 
   async *execute(
     config: SqlConfigExecute,
