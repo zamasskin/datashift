@@ -172,11 +172,12 @@ export default class SqlService {
       try {
         const result = await client.query({ query: sqlWithValues, format: 'JSONEachRow' })
         const json = await result.json()
-        console.log('sqlWithValues', sqlWithValues, json)
         const rows = Array.isArray(json) ? (json as any[]) : []
-        const columns = Array.isArray(json?.meta)
-          ? (json.meta as any[]).map((m: any) => m?.name).filter(Boolean)
-          : undefined
+        const columns = (() => {
+          const set = new Set<string>()
+          rows.forEach((r) => Object.keys(r || {}).forEach((k) => set.add(k)))
+          return Array.from(set)
+        })()
         return { rows, columns }
       } finally {
         await client.close()
