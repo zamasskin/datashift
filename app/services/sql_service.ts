@@ -481,33 +481,80 @@ export default class SqlService {
         return sqlStr.replace(/\?/g, () => escapeLiteral(vals[i++]))
       }
       try {
-        for (const row of rows) {
-          const { setSql, setValues } = this.buildSet(savedMapping, row)
-          const { whereSql, whereValues } = this.buildWhere(updateOn, row)
+        // Если есть одно равенство по ключу, делаем массовую проверку существования
+        const canBulkCheck =
+          Array.isArray(updateOn) && updateOn.length === 1 && (updateOn[0].operator || '=') === '='
 
-          let matched = 0
-          if (whereSql) {
-            const whereCond = inline(whereSql, whereValues)
-            const countSql = `SELECT COUNT(*) AS cnt FROM ${table} WHERE ${whereCond}`
-            const res = await client.query({ query: countSql, format: 'JSONEachRow' })
-            const json = await res.json()
-            const cntRow = Array.isArray(json) ? (json as any[])[0] : undefined
-            const cntVal = cntRow ? (cntRow.cnt ?? (Object.values(cntRow)[0] as any)) : 0
-            matched = Number(cntVal || 0)
-            if (matched > 0) {
+        if (canBulkCheck) {
+          const keyCol = updateOn[0].tableColumn
+          const keyAlias = updateOn[0].aliasColumn
+          const str = (v: any) => String(v)
+          const keys = rows.map((r) => r[keyAlias])
+          const inList = keys.map((v) => escapeLiteral(v)).join(', ')
+          const existsRes = await client.query({
+            query: `SELECT ${keyCol} AS key FROM ${table} WHERE ${keyCol} IN (${inList})`,
+            format: 'JSONEachRow',
+          })
+          const existsJson = await existsRes.json()
+          const existingKeys = new Set<string>(
+            Array.isArray(existsJson)
+              ? (existsJson as any[]).map((r) => str(r?.key)).filter(Boolean)
+              : []
+          )
+
+          const insertRows: Record<string, any>[] = []
+          for (const row of rows) {
+            const { setSql, setValues } = this.buildSet(savedMapping, row)
+            const { whereSql, whereValues } = this.buildWhere(updateOn, row)
+            const keyValStr = str(row[keyAlias])
+
+            if (whereSql && existingKeys.has(keyValStr)) {
+              const whereCond = inline(whereSql, whereValues)
               const setInlined = inline(setSql, setValues)
               const updateSql = `ALTER TABLE ${table} UPDATE ${setInlined} WHERE ${whereCond}`
               await client.command({ query: updateSql })
               savedCount++
-              continue
+            } else {
+              const obj: Record<string, any> = {}
+              for (const m of savedMapping) obj[m.tableColumn] = row[m.resultColumn]
+              insertRows.push(obj)
             }
           }
 
-          const insertCols = savedMapping.map((m) => m.tableColumn).join(', ')
-          const insertVals = setValues.map((v) => escapeLiteral(v)).join(', ')
-          const insertSql = `INSERT INTO ${table} (${insertCols}) VALUES (${insertVals})`
-          await client.command({ query: insertSql })
-          savedCount++
+          if (insertRows.length > 0) {
+            await client.insert({ table, values: insertRows, format: 'JSONEachRow' })
+            savedCount += insertRows.length
+          }
+        } else {
+          // Фолбэк: построчные проверки и операции
+          for (const row of rows) {
+            const { setSql, setValues } = this.buildSet(savedMapping, row)
+            const { whereSql, whereValues } = this.buildWhere(updateOn, row)
+
+            let matched = 0
+            if (whereSql) {
+              const whereCond = inline(whereSql, whereValues)
+              const countSql = `SELECT COUNT(*) AS cnt FROM ${table} WHERE ${whereCond}`
+              const res = await client.query({ query: countSql, format: 'JSONEachRow' })
+              const json = await res.json()
+              const cntRow = Array.isArray(json) ? (json as any[])[0] : undefined
+              const cntVal = cntRow ? (cntRow.cnt ?? (Object.values(cntRow)[0] as any)) : 0
+              matched = Number(cntVal || 0)
+              if (matched > 0) {
+                const setInlined = inline(setSql, setValues)
+                const updateSql = `ALTER TABLE ${table} UPDATE ${setInlined} WHERE ${whereCond}`
+                await client.command({ query: updateSql })
+                savedCount++
+                continue
+              }
+            }
+
+            const insertCols = savedMapping.map((m) => m.tableColumn).join(', ')
+            const insertVals = setValues.map((v) => escapeLiteral(v)).join(', ')
+            const insertSql = `INSERT INTO ${table} (${insertCols}) VALUES (${insertVals})`
+            await client.command({ query: insertSql })
+            savedCount++
+          }
         }
       } finally {
         await client.close()
