@@ -13,6 +13,7 @@ import FetchConfigService from '#services/fetchсonfigs'
 import MigrationRun from '#models/migration_run'
 import MigrationRunnerService, { RunPayload } from '#services/migration_runner_service'
 import logger from '@adonisjs/core/services/logger'
+import app from '@adonisjs/core/services/app'
 
 export default class MigrationsController {
   async index({ inertia, request, i18n }: HttpContext) {
@@ -239,7 +240,8 @@ export default class MigrationsController {
       const fetchConfigs = this.applyPreviewPages(fetchConfigsBase, data.pages || {})
 
       const paramsService = new ParamsService()
-      const fetchConfigService = new FetchConfigService()
+      const limitPreview = Number(app.config.get('datashift.limitPreview')) || undefined
+      const fetchConfigService = new FetchConfigService(limitPreview)
 
       const paramsSource = paramsService.getSource(params)
       const initialResults: FetchConfigResult[] = [{ dataType: 'params', data: paramsSource }]

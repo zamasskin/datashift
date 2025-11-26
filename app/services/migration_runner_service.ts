@@ -1,3 +1,4 @@
+import app from '@adonisjs/core/services/app'
 import MigrationRun from '#models/migration_run'
 import Migration from '#models/migration'
 import { ParamsService } from '#services/params_service'
@@ -80,8 +81,9 @@ export default class MigrationRunnerService {
     // SIGINT cancel handling removed: canceled status is not used for restarts
 
     try {
+      const limitRun = Number(app.config.get('datashift.limitRun')) || undefined
       const paramsService = new ParamsService()
-      const fetchConfigService = new FetchConfigService()
+      const fetchConfigService = new FetchConfigService(limitRun)
       const sqlService = new SqlService()
 
       const paramsSource = paramsService.getSource(params)
